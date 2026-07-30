@@ -2,48 +2,49 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
+    protected $table = 'users';
+    protected $primaryKey = 'id_user';
+
     protected $fillable = [
-        'name',
-        'email',
-        'password',
+        'id_pegawai', 'username', 'password_hash', 'role', 'last_login', 'status',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
-        'password',
-        'remember_token',
+        'password_hash', 'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    protected $casts = [
+        'last_login' => 'datetime',
+    ];
+
+    public function pegawai(): BelongsTo
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->belongsTo(Pegawai::class, 'id_pegawai', 'id_pegawai');
+    }
+
+    // Laravel Auth defaultnya cari kolom "password" - kita override ke "password_hash"
+    public function getAuthPassword(): string
+    {
+        return $this->password_hash;
+    }
+
+    // Laravel Auth defaultnya login pakai "email" - kita pakai "username"
+    public function username(): string
+    {
+        return 'username';
+    }
+
+    public function isRole(string $role): bool
+    {
+        return $this->role === $role;
     }
 }
