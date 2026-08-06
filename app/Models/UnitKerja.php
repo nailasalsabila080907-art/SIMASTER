@@ -25,4 +25,9 @@ class UnitKerja extends Model
     {
         return $this->hasMany(Pegawai::class, 'id_unit', 'id_unit');
     }
+
+    public function penomoranSurat(): HasMany
+    {
+        return $this->hasMany(PenomoranSurat::class, 'id_unit', 'id_unit');
+    }
 }

@@ -2,21 +2,21 @@
 
 namespace App\Http\Controllers\Auth;
 
-//use App\Http\Controllers\Controller;
+use App\Http\Controllers\Controller;
+use App\Models\LogAktivitas;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller as RoutingController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
-class LoginController extends RoutingController
+class LoginController extends Controller
 {
     public function create()
     {
         return view('auth.login');
     }
 
-    public function store(Request $request) 
+    public function store(Request $request)
     {
         $credentials = $request->validate([
             'username' => ['required', 'string'],
@@ -42,11 +42,15 @@ class LoginController extends RoutingController
 
         Auth::user()->update(['last_login' => now()]);
 
+        LogAktivitas::catat('login', 'Autentikasi', 'Berhasil login ke sistem');
+
         return redirect()->intended($this->redirectPath());
     }
 
     public function destroy(Request $request)
     {
+        LogAktivitas::catat('logout', 'Autentikasi', 'Keluar dari sistem');
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();

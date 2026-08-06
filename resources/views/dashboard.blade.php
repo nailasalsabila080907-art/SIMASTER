@@ -1,41 +1,47 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard — Sistem Persuratan Sekolah</title>
-    @vite('resources/css/app.css')
-    <style>
-        :root { --navy: #16324F; --gold: #C9972F; --paper: #F4F5F7; --ink: #23262B; --ink-muted: #767C86; }
-        body { font-family: -apple-system, sans-serif; background: var(--paper); color: var(--ink); }
-    </style>
-</head>
-<body class="min-h-screen">
-    <nav class="flex items-center justify-between px-8 py-4 bg-white border-b border-gray-200">
-        <span class="font-semibold" style="color: var(--navy);">Sistem Persuratan Sekolah</span>
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit" class="text-sm px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50">
-                Keluar
-            </button>
-        </form>
-    </nav>
+@extends('layouts.app')
 
-    <main class="max-w-2xl mx-auto mt-16 px-6 text-center">
-        <div class="w-14 h-14 rounded-full mx-auto flex items-center justify-center" style="background: var(--navy);">
-            <span class="text-white text-xl">✓</span>
-        </div>
-        <h1 class="mt-6 text-2xl font-semibold" style="color: var(--navy);">Login berhasil</h1>
-        <p class="mt-2" style="color: var(--ink-muted);">
-            Selamat datang, {{ $user->pegawai->nama_lengkap ?? $user->username }}.
-            Ini halaman dashboard sementara — fitur aslinya masih dalam pengerjaan.
-        </p>
+@section('title', 'Dashboard')
 
-        <div class="mt-8 text-left bg-white rounded-xl border border-gray-200 p-6 text-sm">
-            <p><span class="font-medium">Username:</span> {{ $user->username }}</p>
-            <p class="mt-1"><span class="font-medium">Role:</span> {{ $user->role }}</p>
-            <p class="mt-1"><span class="font-medium">Login terakhir:</span> {{ $user->last_login?->format('d M Y, H:i') ?? '—' }}</p>
+@section('content')
+<div class="max-w-5xl">
+    <p class="text-sm" style="color: var(--ink-muted);">
+        Selamat datang kembali, <span style="color: var(--ink);">{{ $user->pegawai->nama_lengkap ?? $user->username }}</span>.
+    </p>
+
+    {{-- Kartu statistik --}}
+    <div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+        @foreach($statistik as $item)
+            <div class="bg-white rounded-xl border border-gray-200 p-5">
+                <p class="text-2xl font-semibold font-display" style="color: var(--navy);">{{ $item['nilai'] }}</p>
+                <p class="mt-1 text-xs" style="color: var(--ink-muted);">{{ $item['label'] }}</p>
+            </div>
+        @endforeach
+
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+            <p class="text-2xl font-semibold font-display" style="color: var(--gold);">{{ $notifikasiBelumDibaca }}</p>
+            <p class="mt-1 text-xs" style="color: var(--ink-muted);">Notifikasi Belum Dibaca</p>
         </div>
-    </main>
-</body>
-</html>
+    </div>
+
+    {{-- Aktivitas terbaru --}}
+    <div class="mt-8">
+        <h2 class="font-display text-base" style="color: var(--navy);">Aktivitas Terakhir Anda</h2>
+        <div class="mt-3 bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
+            @forelse($aktivitasTerbaru as $log)
+                <div class="px-5 py-3 flex items-center justify-between text-sm">
+                    <span>{{ $log->deskripsi ?? $log->aktivitas }}</span>
+                    <span class="text-xs" style="color: var(--ink-muted);">{{ $log->created_at->diffForHumans() }}</span>
+                </div>
+            @empty
+                <div class="px-5 py-6 text-sm text-center" style="color: var(--ink-muted);">
+                    Belum ada aktivitas tercatat.
+                </div>
+            @endforelse
+        </div>
+    </div>
+
+    <div class="mt-6 rounded-xl border border-dashed border-gray-300 p-5 text-sm" style="color: var(--ink-muted);">
+        Menu di sidebar sebelah kiri yang masih redup (Surat Keluar, Surat Masuk, dll) adalah fitur yang belum dibangun — akan aktif satu per satu di fase-fase selanjutnya.
+    </div>
+</div>
+@endsection
