@@ -50,24 +50,36 @@
                 </a>
 
                 <p class="px-3 pt-4 pb-1 text-[11px] uppercase tracking-wider text-white/35">Surat</p>
-                <a href="#" class="sidebar-link disabled">Surat Keluar</a>
-                <a href="#" class="sidebar-link disabled">Surat Masuk</a>
+                <a href="{{ route('surat-keluar.index') }}" class="sidebar-link {{ request()->routeIs('surat-keluar.*') ? 'active' : '' }}">Surat Keluar</a>
+                <a href="{{ route('surat-masuk.index') }}" class="sidebar-link {{ request()->routeIs('surat-masuk.*') ? 'active' : '' }}">Surat Masuk</a>
 
                 @if(auth()->user()->role === 'kepala_sekolah')
-                    <a href="#" class="sidebar-link disabled">Approval Surat</a>
-                    <a href="#" class="sidebar-link disabled">Disposisi</a>
+                    <a href="{{ route('approval.index') }}" class="sidebar-link {{ request()->routeIs('approval.*') ? 'active' : '' }}">Approval Surat</a>
                 @endif
 
                 @if(in_array(auth()->user()->role, ['admin_tu', 'super_admin']))
                     <p class="px-3 pt-4 pb-1 text-[11px] uppercase tracking-wider text-white/35">Master Data</p>
-                    <a href="#" class="sidebar-link disabled">Pegawai</a>
-                    <a href="#" class="sidebar-link disabled">Template Surat</a>
-                    <a href="#" class="sidebar-link disabled">Kategori Surat</a>
+                    <a href="{{ route('pegawai.index') }}" class="sidebar-link {{ request()->routeIs('pegawai.*') ? 'active' : '' }}">Pegawai</a>
+                    <a href="{{ route('jabatan.index') }}" class="sidebar-link {{ request()->routeIs('jabatan.*') ? 'active' : '' }}">Jabatan</a>
+                    <a href="{{ route('template-surat.index') }}" class="sidebar-link {{ request()->routeIs('template-surat.*') ? 'active' : '' }}">Template Surat</a>
+                    <a href="{{ route('kategori-surat.index') }}" class="sidebar-link {{ request()->routeIs('kategori-surat.*') ? 'active' : '' }}">Kategori Surat</a>
                 @endif
 
                 <p class="px-3 pt-4 pb-1 text-[11px] uppercase tracking-wider text-white/35">Lainnya</p>
-                <a href="#" class="sidebar-link disabled">Notifikasi</a>
+                <a href="{{ route('notifikasi.index') }}" class="sidebar-link {{ request()->routeIs('notifikasi.*') ? 'active' : '' }}">
+                    Notifikasi
+                    @php $jmlNotif = \App\Models\Notifikasi::where('id_user', auth()->id())->where('sudah_dibaca', false)->count(); @endphp
+                    @if($jmlNotif > 0)
+                        <span class="ml-auto text-[10px] px-1.5 py-0.5 rounded-full text-white" style="background: var(--gold);">{{ $jmlNotif }}</span>
+                    @endif
+                </a>
                 <a href="#" class="sidebar-link disabled">Arsip</a>
+                <a href="{{ route('log-aktivitas.index') }}" class="sidebar-link {{ request()->routeIs('log-aktivitas.*') ? 'active' : '' }}">
+                    Log Aktivitas
+                </a>
+                @if(in_array(auth()->user()->role, ['admin_tu', 'super_admin']))
+                    <a href="{{ route('sekolah.edit') }}" class="sidebar-link {{ request()->routeIs('sekolah.*') ? 'active' : '' }}">Profil Sekolah</a>
+                @endif
             </nav>
 
             <div class="px-3 py-4 border-t border-white/10">

@@ -16,11 +16,19 @@
                 <p class="mt-1 text-xs" style="color: var(--ink-muted);">{{ $item['label'] }}</p>
             </div>
         @endforeach
+    </div>
 
-        <div class="bg-white rounded-xl border border-gray-200 p-5">
-            <p class="text-2xl font-semibold font-display" style="color: var(--gold);">{{ $notifikasiBelumDibaca }}</p>
-            <p class="mt-1 text-xs" style="color: var(--ink-muted);">Notifikasi Belum Dibaca</p>
+    {{-- Banner notifikasi --}}
+    <div class="mt-4 rounded-xl border p-4 flex items-center justify-between" style="background: #FBF3E1; border-color: var(--gold);">
+        <div class="flex items-center gap-3">
+            <span class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold text-white" style="background: var(--gold);">
+                {{ $notifikasiBelumDibaca }}
+            </span>
+            <span class="text-sm" style="color: var(--ink);">
+                {{ $notifikasiBelumDibaca > 0 ? 'notifikasi belum dibaca' : 'Tidak ada notifikasi baru' }}
+            </span>
         </div>
+        <a href="#" class="text-xs font-medium" style="color: var(--navy);">Lihat semua &rarr;</a>
     </div>
 
     {{-- Aktivitas terbaru --}}
