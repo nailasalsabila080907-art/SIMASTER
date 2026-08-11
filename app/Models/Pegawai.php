@@ -18,7 +18,7 @@ class Pegawai extends Model
     protected $fillable = [
         'id_sekolah', 'id_unit', 'id_jabatan', 'id_jurusan', 'nip', 'nama_lengkap',
         'gelar_depan', 'gelar_belakang', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir',
-        'pangkat_golongan', 'no_hp', 'email', 'tanda_tangan_path', 'status',
+        'pangkat_golongan', 'no_hp', 'email', 'tanda_tangan_path', 'status', 'foto_path',
     ];
 
     protected $casts = [

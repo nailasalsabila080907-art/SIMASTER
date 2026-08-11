@@ -25,7 +25,17 @@
 <div class="min-h-screen flex">
     <aside class="sidebar-shell w-64 shrink-0 flex flex-col" style="background:var(--navy-deep)">
         <div class="sidebar-brand px-5 py-5 flex items-center gap-3 border-b border-white/10">
-            <div class="w-10 h-10 rounded-full border-2 flex items-center justify-center shrink-0" style="border-color:var(--gold-light)"><span class="font-display text-sm" style="color:var(--gold-light)">S7</span></div>
+            <div class="w-10 h-10 rounded-full border-2 flex items-center justify-center shrink-0 overflow-hidden bg-white" style="border-color:var(--gold-light)">
+                @php
+                    $logoCandidates = ['images/logo-smkn7.jpeg.jpg', 'images/logo-smkn7.jpeg.jpg', 'images/logo-smkn7.jpeg.jpeg', 'images/logo-smkn7.webp'];
+                    $logoPath = collect($logoCandidates)->first(fn($path) => file_exists(public_path($path)));
+                @endphp
+                @if($logoPath)
+                    <img src="{{ asset($logoPath) }}" alt="Logo SMK Negeri 7" class="w-full h-full object-contain">
+                @else
+                    <span class="font-display text-sm" style="color:var(--gold-light)">S7</span>
+                @endif
+            </div>
             <div class="leading-tight sidebar-text"><p class="text-white text-sm font-semibold">SMK Negeri 7</p><p class="text-white/50 text-xs">SIMASTER</p></div>
         </div>
 
@@ -72,7 +82,30 @@
     <div class="flex-1 min-w-0 flex flex-col">
         <header class="bg-white border-b border-gray-200 px-6 lg:px-8 py-4 flex items-center justify-between sticky top-0 z-20">
             <div><p class="text-[11px] uppercase tracking-wider" style="color:var(--ink-muted)">Sistem Informasi Manajemen</p><h1 class="font-display text-xl" style="color:var(--navy)">@yield('title','Dashboard')</h1></div>
-            <div class="text-right leading-tight"><p class="text-sm font-semibold">{{ auth()->user()->pegawai->nama_lengkap ?? auth()->user()->username }}</p><p class="text-xs" style="color:var(--ink-muted)">{{ ucwords(str_replace('_',' ',auth()->user()->role)) }}</p></div>
+            <a href="{{ route('profil.index') }}" class="flex items-center gap-3 hover:opacity-75 transition">
+    <div class="w-10 h-10 rounded-full overflow-hidden border-2 shrink-0" style="border-color:var(--gold-light);background:#f3f4f6">
+        @if(auth()->user()->pegawai && auth()->user()->pegawai->foto_path)
+            <img
+                src="{{ asset('storage/' . auth()->user()->pegawai->foto_path) }}"
+                alt="Foto Profil"
+                class="w-full h-full object-cover"
+            >
+        @else
+            <div class="w-full h-full flex items-center justify-center text-sm font-semibold" style="color:var(--navy)">
+                {{ strtoupper(substr(auth()->user()->pegawai->nama_lengkap ?? auth()->user()->username, 0, 1)) }}
+            </div>
+        @endif
+    </div>
+
+    <div class="text-right leading-tight">
+        <p class="text-sm font-semibold">
+            {{ auth()->user()->pegawai->nama_lengkap ?? auth()->user()->username }}
+        </p>
+        <p class="text-xs" style="color:var(--ink-muted)">
+            {{ ucwords(str_replace('_',' ',auth()->user()->role)) }}
+        </p>
+    </div>
+</a>
         </header>
 
         <main class="flex-1 p-5 lg:p-7 xl:p-8 w-full">
