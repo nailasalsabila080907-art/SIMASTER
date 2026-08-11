@@ -3,7 +3,7 @@
 @section('title', 'Log Aktivitas')
 
 @section('content')
-<div class="max-w-5xl">
+<div class="w-full">
     <p class="text-sm mb-6" style="color: var(--ink-muted);">
         @if($bolehLihatSemua)
             Riwayat aktivitas seluruh pengguna sistem.
@@ -40,7 +40,7 @@
     </form>
 
     {{-- Tabel log --}}
-    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden">
         <table class="w-full text-sm">
             <thead>
                 <tr class="text-left border-b border-gray-100" style="color: var(--ink-muted);">

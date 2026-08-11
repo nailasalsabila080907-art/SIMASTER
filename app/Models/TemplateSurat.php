@@ -37,4 +37,9 @@ class TemplateSurat extends Model
     {
         return $this->hasMany(VariabelTemplate::class, 'id_template', 'id_template');
     }
+
+    public function suratKeluar(): HasMany
+    {
+        return $this->hasMany(SuratKeluar::class, 'id_template', 'id_template');
+    }
 }

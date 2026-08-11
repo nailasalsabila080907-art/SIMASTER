@@ -11,7 +11,7 @@ class UpdateIsiTemplateAsliSeeder extends Seeder
     {
         $ttdKepala = '<p style="text-align:right">Pekanbaru, {{tanggal_surat}}<br>Kepala Sekolah,</p>'
             .'<p style="text-align:right">&nbsp;</p><p style="text-align:right">&nbsp;</p>'
-            .'<p style="text-align:right"><u><strong>PADMI RIANA, S.Pi., M.Pd</strong></u><br>NIP. 19750316 200501 2 008</p>';
+            .'<p style="text-align:right"><u><strong>PADMI RIANA, M.Pi., M.Pd</strong></u><br>NIP. 19750316 200501 2 008</p>';
 
         $isi = [
             'TPL-UNDANGAN-01' => '

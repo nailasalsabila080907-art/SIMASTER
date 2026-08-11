@@ -2,7 +2,7 @@
 @section('title', $template->exists ? 'Kelola Template' : 'Tambah Template')
 
 @section('content')
-<div class="max-w-2xl">
+<div class="w-full max-w-6xl">
     @if(session('sukses'))<div class="mb-4 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3">{{ session('sukses') }}</div>@endif
 
     <form method="POST" action="{{ $template->exists ? route('template-surat.update', $template) : route('template-surat.store') }}" class="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
@@ -42,6 +42,11 @@
             <div class="col-span-2">
                 <label class="block text-sm font-medium mb-1.5">Isi Template (HTML, pakai {{ '{{nama_field}}' }} untuk placeholder)</label>
                 <textarea name="isi_template" rows="10" class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm font-mono">{{ old('isi_template', $template->isi_template) }}</textarea>
+            </div>
+            <div class="col-span-2 flex items-center gap-3">
+                <input type="hidden" name="is_active" value="0">
+                <input id="is_active" type="checkbox" name="is_active" value="1" class="rounded border-gray-300" {{ old('is_active', $template->exists ? $template->is_active : true) ? 'checked' : '' }}>
+                <label for="is_active" class="text-sm">Template aktif dan dapat dipilih saat membuat surat</label>
             </div>
         </div>
 

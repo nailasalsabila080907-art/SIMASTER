@@ -25,4 +25,14 @@ class KlasifikasiArsip extends Model
     {
         return $this->hasMany(KlasifikasiArsip::class, 'parent_id', 'id_klasifikasi');
     }
+
+    public function suratKeluar(): HasMany
+    {
+        return $this->hasMany(SuratKeluar::class, 'id_klasifikasi', 'id_klasifikasi');
+    }
+
+    public function suratMasuk(): HasMany
+    {
+        return $this->hasMany(SuratMasuk::class, 'id_klasifikasi', 'id_klasifikasi');
+    }
 }

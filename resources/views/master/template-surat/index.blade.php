@@ -2,7 +2,7 @@
 @section('title', 'Template Surat')
 
 @section('content')
-<div class="max-w-4xl">
+<div class="w-full">
     <div class="flex items-center justify-between mb-4">
         <p class="text-sm" style="color: var(--ink-muted);">Kelola template surat dan field dinamisnya.</p>
         <a href="{{ route('template-surat.create') }}" class="text-sm px-4 py-2 rounded-lg text-white" style="background: var(--navy);">+ Tambah Template</a>
@@ -18,7 +18,7 @@
                     <th class="px-5 py-3 font-medium">Nama Template</th>
                     <th class="px-5 py-3 font-medium">Kategori</th>
                     <th class="px-5 py-3 font-medium">Kode</th>
-                    <th class="px-5 py-3 font-medium text-right">Aksi</th>
+                    <th class="px-5 py-3 font-medium">Status</th><th class="px-5 py-3 font-medium text-right">Aksi</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
@@ -27,6 +27,7 @@
                         <td class="px-5 py-3">{{ $t->nama_template }}</td>
                         <td class="px-5 py-3" style="color: var(--ink-muted);">{{ $t->kategori->nama_kategori }}</td>
                         <td class="px-5 py-3 font-mono text-xs">{{ $t->kode_template }}</td>
+                        <td class="px-5 py-3">{{ $t->is_active ? 'Aktif' : 'Nonaktif' }}</td>
                         <td class="px-5 py-3 text-right space-x-3">
                             <a href="{{ route('template-surat.edit', $t) }}" class="text-xs font-medium" style="color: var(--navy);">Kelola</a>
                             <form action="{{ route('template-surat.destroy', $t) }}" method="POST" class="inline" onsubmit="return confirm('Yakin hapus?')">
@@ -36,7 +37,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="4" class="px-5 py-8 text-center" style="color: var(--ink-muted);">Belum ada template.</td></tr>
+                    <tr><td colspan="5" class="px-5 py-8 text-center" style="color: var(--ink-muted);">Belum ada template.</td></tr>
                 @endforelse
             </tbody>
         </table>

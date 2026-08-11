@@ -1,18 +1,23 @@
 <?php
 
 use App\Http\Controllers\ApprovalSuratKeluarController;
+use App\Http\Controllers\ArsipController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DisposisiSuratMasukController;
 use App\Http\Controllers\JabatanController;
+use App\Http\Controllers\JurusanController;
 use App\Http\Controllers\KategoriSuratController;
+use App\Http\Controllers\KlasifikasiArsipController;
 use App\Http\Controllers\LogAktivitasController;
 use App\Http\Controllers\NotifikasiController;
 use App\Http\Controllers\PegawaiController;
+use App\Http\Controllers\PenggunaController;
 use App\Http\Controllers\SekolahController;
 use App\Http\Controllers\SuratKeluarController;
 use App\Http\Controllers\SuratMasukController;
 use App\Http\Controllers\TemplateSuratController;
+use App\Http\Controllers\UnitKerjaController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -29,40 +34,52 @@ Route::middleware('auth')->group(function () {
     Route::post('/notifikasi/{notifikasi}/tandai-dibaca', [NotifikasiController::class, 'tandaiDibaca'])->name('notifikasi.tandai-dibaca');
     Route::post('/notifikasi/tandai-semua', [NotifikasiController::class, 'tandaiSemuaDibaca'])->name('notifikasi.tandai-semua');
 
-    Route::get('/sekolah', [SekolahController::class, 'edit'])->name('sekolah.edit');
-    Route::put('/sekolah', [SekolahController::class, 'update'])->name('sekolah.update');
+    Route::get('/arsip', [ArsipController::class, 'index'])->name('arsip.index');
+    Route::post('/arsip/surat-keluar/{suratKeluar}', [ArsipController::class, 'arsipkanKeluar'])->name('arsip.surat-keluar');
+    Route::post('/arsip/surat-masuk/{suratMasuk}', [ArsipController::class, 'arsipkanMasuk'])->name('arsip.surat-masuk');
 
-    // Master Data
-    Route::resource('jabatan', JabatanController::class)->except(['show']);
-    Route::resource('pegawai', PegawaiController::class)->except(['show']);
-    Route::resource('kategori-surat', KategoriSuratController::class)->except(['show']);
-    Route::resource('template-surat', TemplateSuratController::class)->except(['show']);
-    Route::delete('/template-surat/variabel/{variabel}', [TemplateSuratController::class, 'hapusVariabel'])->name('template-surat.variabel.hapus');
+    Route::middleware('role:admin_tu,super_admin')->group(function () {
+        Route::get('/sekolah', [SekolahController::class, 'edit'])->name('sekolah.edit');
+        Route::put('/sekolah', [SekolahController::class, 'update'])->name('sekolah.update');
 
-    // Surat Keluar
+        Route::resource('jabatan', JabatanController::class)->except(['show']);
+        Route::resource('pegawai', PegawaiController::class)->except(['show']);
+        Route::resource('kategori-surat', KategoriSuratController::class)->parameters(['kategori-surat' => 'kategoriSurat'])->except(['show']);
+        Route::resource('template-surat', TemplateSuratController::class)->parameters(['template-surat' => 'templateSurat'])->except(['show']);
+        Route::delete('/template-surat/variabel/{variabel}', [TemplateSuratController::class, 'hapusVariabel'])->name('template-surat.variabel.hapus');
+        Route::resource('unit-kerja', UnitKerjaController::class)->parameters(['unit-kerja' => 'unitKerja'])->except(['show']);
+        Route::resource('jurusan', JurusanController::class)->except(['show']);
+        Route::resource('klasifikasi-arsip', KlasifikasiArsipController::class)->parameters(['klasifikasi-arsip' => 'klasifikasiArsip'])->except(['show']);
+        Route::get('/pengguna', [PenggunaController::class, 'index'])->name('pengguna.index');
+        Route::get('/pengguna/{pengguna}/edit', [PenggunaController::class, 'edit'])->name('pengguna.edit');
+        Route::put('/pengguna/{pengguna}', [PenggunaController::class, 'update'])->name('pengguna.update');
+        Route::delete('/pengguna/{pengguna}', [PenggunaController::class, 'destroy'])->name('pengguna.destroy');
+    });
+
     Route::controller(SuratKeluarController::class)->prefix('surat-keluar')->name('surat-keluar.')->group(function () {
         Route::get('/', 'index')->name('index');
         Route::get('/create', 'create')->name('create');
         Route::post('/', 'store')->name('store');
+        Route::get('/{suratKeluar}/edit', 'edit')->name('edit');
+        Route::put('/{suratKeluar}', 'update')->name('update');
         Route::get('/{suratKeluar}', 'show')->name('show');
         Route::post('/{suratKeluar}/ajukan', 'ajukan')->name('ajukan');
         Route::get('/{suratKeluar}/cetak-pdf', 'cetakPdf')->name('cetak-pdf');
     });
 
-    // Approval
-    Route::controller(ApprovalSuratKeluarController::class)->prefix('approval')->name('approval.')->group(function () {
+    Route::middleware('role:admin_tu,super_admin,kepala_sekolah')->controller(ApprovalSuratKeluarController::class)->prefix('approval')->name('approval.')->group(function () {
         Route::get('/', 'index')->name('index');
         Route::post('/{approval}/setujui', 'setujui')->name('setujui');
         Route::post('/{approval}/tolak', 'tolak')->name('tolak');
     });
 
-    // Surat Masuk & Disposisi
     Route::controller(SuratMasukController::class)->prefix('surat-masuk')->name('surat-masuk.')->group(function () {
         Route::get('/', 'index')->name('index');
         Route::get('/create', 'create')->name('create');
         Route::post('/', 'store')->name('store');
         Route::get('/{suratMasuk}', 'show')->name('show');
     });
+
     Route::post('/surat-masuk/{suratMasuk}/disposisi', [DisposisiSuratMasukController::class, 'store'])->name('surat-masuk.disposisi.store');
     Route::post('/disposisi/{disposisi}/tindaklanjuti', [DisposisiSuratMasukController::class, 'tindaklanjuti'])->name('disposisi.tindaklanjuti');
     Route::post('/disposisi/{disposisi}/selesaikan', [DisposisiSuratMasukController::class, 'selesaikan'])->name('disposisi.selesaikan');

@@ -2,7 +2,7 @@
 @section('title', 'Notifikasi')
 
 @section('content')
-<div class="max-w-2xl">
+<div class="w-full">
     <div class="flex items-center justify-between mb-4">
         <p class="text-sm" style="color: var(--ink-muted);">Semua notifikasi untuk Anda.</p>
         <form method="POST" action="{{ route('notifikasi.tandai-semua') }}">

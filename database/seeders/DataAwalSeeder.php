@@ -13,99 +13,103 @@ class DataAwalSeeder extends Seeder
 {
     public function run(): void
     {
-        $admin = User::where('username', 'admin')->first();
+        $admin = User::where('role', 'admin_tu')->where('status', 'aktif')->orderBy('id_user')->first();
         if (! $admin) {
-            $this->command->warn('User admin tidak ditemukan. buat akun admin terlebih dahulu.');
+            $this->command->error('Belum ada akun admin_tu aktif. Jalankan DatabaseSeeder terlebih dahulu.');
             return;
         }
 
-        $klasifikasi = KlasifikasiArsip::firstOrCreate(
+        KlasifikasiArsip::firstOrCreate(
             ['kode_klasifikasi' => '420.5'],
             ['nama_klasifikasi' => 'Persuratan Dinas Pendidikan']
         );
 
-        // 6 kategori sesuai contoh surat SMK Negeri 7 Pekanbaru
         $kategoriList = [
-            ['nama_kategori' => 'Undangan', 'kode_unit' => 'KP', 'kode_template' => 'TPL-UNDANGAN-01'],
-            ['nama_kategori' => 'Surat Tugas', 'kode_unit' => 'KP', 'kode_template' => 'TPL-TUGAS-01'],
-            ['nama_kategori' => 'Surat Keterangan Pegawai', 'kode_unit' => 'KP', 'kode_template' => 'TPL-KET-PEGAWAI-01'],
-            ['nama_kategori' => 'Surat Pengantar', 'kode_unit' => 'KP', 'kode_template' => 'TPL-PENGANTAR-01'],
-            ['nama_kategori' => 'Surat Izin Riset', 'kode_unit' => 'KM', 'kode_template' => 'TPL-IZIN-RISET-01'],
-            ['nama_kategori' => 'Surat Keterangan Riset', 'kode_unit' => 'KM', 'kode_template' => 'TPL-KET-RISET-01'],
+            ['nama' => 'Undangan', 'jenis' => 'keluar', 'kode_unit' => 'KP', 'kode' => 'TPL-UNDANGAN-01'],
+            ['nama' => 'Surat Tugas', 'jenis' => 'keluar', 'kode_unit' => 'KP', 'kode' => 'TPL-TUGAS-01'],
+            ['nama' => 'Surat Keterangan Pegawai', 'jenis' => 'keluar', 'kode_unit' => 'KP', 'kode' => 'TPL-KET-PEGAWAI-01'],
+            ['nama' => 'Surat Pengantar', 'jenis' => 'keluar', 'kode_unit' => 'KP', 'kode' => 'TPL-PENGANTAR-01'],
+            ['nama' => 'Surat Izin Riset', 'jenis' => 'keluar', 'kode_unit' => 'KM', 'kode' => 'TPL-IZIN-RISET-01'],
+            ['nama' => 'Surat Keterangan Riset', 'jenis' => 'keluar', 'kode_unit' => 'KM', 'kode' => 'TPL-KET-RISET-01'],
+            ['nama' => 'Surat Dinas Masuk', 'jenis' => 'masuk', 'kode_unit' => 'KP', 'kode' => null],
+            ['nama' => 'Surat Umum', 'jenis' => 'umum', 'kode_unit' => 'KP', 'kode' => null],
         ];
 
-        // Field per template - sesuai hasil analisa 6 surat asli
-        $fieldPerTemplate = [
+        $fields = [
             'TPL-UNDANGAN-01' => [
-                ['nama_variabel' => 'tujuan_undangan', 'label' => 'Ditujukan kepada', 'tipe_input' => 'text'],
-                ['nama_variabel' => 'nama_acara', 'label' => 'Nama acara', 'tipe_input' => 'text'],
-                ['nama_variabel' => 'hari_tanggal', 'label' => 'Hari, tanggal', 'tipe_input' => 'date'],
-                ['nama_variabel' => 'pukul', 'label' => 'Pukul', 'tipe_input' => 'text'],
-                ['nama_variabel' => 'tempat', 'label' => 'Tempat', 'tipe_input' => 'text'],
+                ['tujuan_undangan', 'Ditujukan kepada', 'text'],
+                ['nama_acara', 'Nama acara', 'text'],
+                ['hari_tanggal', 'Hari, tanggal', 'date'],
+                ['pukul', 'Pukul', 'text'],
+                ['tempat', 'Tempat', 'text'],
             ],
             'TPL-TUGAS-01' => [
-                ['nama_variabel' => 'nama_pegawai', 'label' => 'Nama pegawai', 'tipe_input' => 'text'],
-                ['nama_variabel' => 'nip', 'label' => 'NIP', 'tipe_input' => 'text'],
-                ['nama_variabel' => 'pangkat_golongan', 'label' => 'Pangkat/Golongan', 'tipe_input' => 'text'],
-                ['nama_variabel' => 'jabatan', 'label' => 'Jabatan', 'tipe_input' => 'text'],
-                ['nama_variabel' => 'nama_kegiatan', 'label' => 'Nama kegiatan', 'tipe_input' => 'text'],
-                ['nama_variabel' => 'tanggal_kegiatan', 'label' => 'Tanggal pelaksanaan', 'tipe_input' => 'date'],
-                ['nama_variabel' => 'lokasi_kegiatan', 'label' => 'Tempat kegiatan', 'tipe_input' => 'text'],
+                ['nama_pegawai', 'Nama pegawai', 'text'],
+                ['nip', 'NIP', 'text'],
+                ['pangkat_golongan', 'Pangkat/Golongan', 'text'],
+                ['jabatan', 'Jabatan', 'text'],
+                ['nama_kegiatan', 'Nama kegiatan', 'text'],
+                ['tanggal_kegiatan', 'Tanggal pelaksanaan', 'date'],
+                ['lokasi_kegiatan', 'Tempat kegiatan', 'text'],
             ],
             'TPL-KET-PEGAWAI-01' => [
-                ['nama_variabel' => 'nama_pegawai', 'label' => 'Nama pegawai', 'tipe_input' => 'text'],
-                ['nama_variabel' => 'nip', 'label' => 'NIP/NIPPPK', 'tipe_input' => 'text'],
-                ['nama_variabel' => 'ttl', 'label' => 'Tempat, tanggal lahir', 'tipe_input' => 'text'],
-                ['nama_variabel' => 'jenis_kelamin', 'label' => 'Jenis kelamin', 'tipe_input' => 'select'],
-                ['nama_variabel' => 'jabatan', 'label' => 'Jabatan', 'tipe_input' => 'text'],
-                ['nama_variabel' => 'keterangan', 'label' => 'Isi keterangan', 'tipe_input' => 'textarea'],
+                ['nama_pegawai', 'Nama pegawai', 'text'],
+                ['nip', 'NIP/NIPPPK', 'text'],
+                ['ttl', 'Tempat, tanggal lahir', 'text'],
+                ['jenis_kelamin', 'Jenis kelamin', 'select'],
+                ['jabatan', 'Jabatan', 'text'],
+                ['keterangan', 'Isi keterangan', 'textarea'],
             ],
             'TPL-PENGANTAR-01' => [
-                ['nama_variabel' => 'tujuan_surat', 'label' => 'Ditujukan kepada', 'tipe_input' => 'text'],
-                ['nama_variabel' => 'perihal_lampiran', 'label' => 'Perihal lampiran', 'tipe_input' => 'textarea'],
+                ['tujuan_surat', 'Ditujukan kepada', 'text'],
+                ['perihal_lampiran', 'Perihal lampiran', 'textarea'],
             ],
             'TPL-IZIN-RISET-01' => [
-                ['nama_variabel' => 'nama_mahasiswa', 'label' => 'Nama mahasiswa', 'tipe_input' => 'text'],
-                ['nama_variabel' => 'nim', 'label' => 'NIM/No. identitas', 'tipe_input' => 'text'],
-                ['nama_variabel' => 'prodi', 'label' => 'Program studi', 'tipe_input' => 'text'],
-                ['nama_variabel' => 'guru_pamong', 'label' => 'Guru pamong', 'tipe_input' => 'text'],
-                ['nama_variabel' => 'tanggal_riset', 'label' => 'Periode riset', 'tipe_input' => 'text'],
+                ['nama_mahasiswa', 'Nama mahasiswa', 'text'],
+                ['nim', 'NIM/No. identitas', 'text'],
+                ['prodi', 'Program studi', 'text'],
+                ['guru_pamong', 'Guru pamong', 'text'],
+                ['tanggal_riset', 'Periode riset', 'text'],
             ],
             'TPL-KET-RISET-01' => [
-                ['nama_variabel' => 'nama_mahasiswa', 'label' => 'Nama mahasiswa', 'tipe_input' => 'text'],
-                ['nama_variabel' => 'nim', 'label' => 'NIM', 'tipe_input' => 'text'],
-                ['nama_variabel' => 'prodi', 'label' => 'Program studi', 'tipe_input' => 'text'],
-                ['nama_variabel' => 'judul_penelitian', 'label' => 'Judul penelitian', 'tipe_input' => 'textarea'],
-                ['nama_variabel' => 'periode_riset', 'label' => 'Periode riset', 'tipe_input' => 'text'],
+                ['nama_mahasiswa', 'Nama mahasiswa', 'text'],
+                ['nim', 'NIM', 'text'],
+                ['prodi', 'Program studi', 'text'],
+                ['judul_penelitian', 'Judul penelitian', 'textarea'],
+                ['periode_riset', 'Periode riset', 'text'],
             ],
         ];
 
         foreach ($kategoriList as $item) {
-            $jenisKategori = KategoriSurat::firstOrCreate(
-                ['nama_kategori' => $item['nama_kategori']],
-                ['jenis' => 'keluar']
+            $kategori = KategoriSurat::firstOrCreate(
+                ['nama_kategori' => $item['nama']],
+                ['jenis' => $item['jenis']]
             );
 
+            if (! $item['kode']) {
+                continue;
+            }
+
             $template = TemplateSurat::firstOrCreate(
-                ['kode_template' => $item['kode_template']],
+                ['kode_template' => $item['kode']],
                 [
-                    'id_kategori' => $jenisKategori->id_kategori,
-                    'nama_template' => $item['nama_kategori'],
-                    'isi_template' => "<p>Isi surat {$item['nama_kategori']} - placeholder, tinggal ganti sesuai kop surat asli.</p>",
-                    'format_nomor' => "420.5/SMKN-07/{$item['kode_unit']}/{tahun}/{no_urut}",
+                    'id_kategori' => $kategori->id_kategori,
+                    'nama_template' => $item['nama'],
+                    'isi_template' => '<p>Template '.$item['nama'].'.</p>',
+                    'format_nomor' => '420.5/SMKN-07/'.$item['kode_unit'].'/{tahun}/{no_urut}',
                     'is_active' => true,
                     'created_by' => $admin->id_user,
                 ]
             );
 
-            foreach ($fieldPerTemplate[$item['kode_template']] as $field) {
+            foreach ($fields[$item['kode']] as [$nama, $label, $tipe]) {
                 VariabelTemplate::firstOrCreate(
-                    ['id_template' => $template->id_template, 'nama_variabel' => $field['nama_variabel']],
-                    ['label' => $field['label'], 'tipe_input' => $field['tipe_input'], 'wajib' => true]
+                    ['id_template' => $template->id_template, 'nama_variabel' => $nama],
+                    ['label' => $label, 'tipe_input' => $tipe, 'wajib' => true]
                 );
             }
         }
 
-        $this->command->info('Data awal (klasifikasi, kategori, template, variabel) berhasil diisi.');
+        $this->command->info('Data master, kategori, template, dan variabel surat berhasil diisi.');
     }
 }

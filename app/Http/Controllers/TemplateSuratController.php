@@ -31,7 +31,7 @@ class TemplateSuratController extends Controller
 
         $template = TemplateSurat::create([
             ...$data,
-            'is_active' => true,
+            'is_active' => $request->boolean('is_active', true),
             'created_by' => Auth::id(),
         ]);
 
@@ -76,6 +76,7 @@ class TemplateSuratController extends Controller
             'kode_template' => 'required|string|max:30|unique:template_surat,kode_template,'.$idTemplate.',id_template',
             'isi_template' => 'required|string',
             'format_nomor' => 'required|string|max:100',
+            'is_active' => 'nullable|boolean',
         ]);
     }
 

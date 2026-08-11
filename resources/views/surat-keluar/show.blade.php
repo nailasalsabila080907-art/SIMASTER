@@ -38,19 +38,24 @@
             </div>
         @endif
 
-        @if($suratKeluar->status === 'draft' && $suratKeluar->dibuat_oleh === auth()->id())
-            <form method="POST" action="{{ route('surat-keluar.ajukan', $suratKeluar) }}" class="mt-6">
-                @csrf
-                <button type="submit" class="px-5 py-2.5 rounded-lg text-white text-sm font-medium" style="background: var(--navy);">
-                    Ajukan untuk Persetujuan
-                </button>
-            </form>
+        @if(in_array($suratKeluar->status, ['draft', 'ditolak']) && ($suratKeluar->dibuat_oleh === auth()->id() || in_array(auth()->user()->role, ['admin_tu', 'super_admin'])))
+            <div class="mt-6 flex flex-wrap gap-3">
+                <a href="{{ route('surat-keluar.edit', $suratKeluar) }}" class="px-5 py-2.5 rounded-lg border border-gray-300 text-sm">Ubah Draft</a>
+                <form method="POST" action="{{ route('surat-keluar.ajukan', $suratKeluar) }}">
+                    @csrf
+                    <button type="submit" class="px-5 py-2.5 rounded-lg text-white text-sm font-medium" style="background: var(--navy);">Ajukan untuk Persetujuan</button>
+                </form>
+            </div>
         @endif
 
         @if($suratKeluar->status === 'terkirim')
-            <a href="{{ route('surat-keluar.cetak-pdf', $suratKeluar) }}" target="_blank" class="inline-block mt-6 px-5 py-2.5 rounded-lg text-white text-sm font-medium" style="background: var(--gold);">
-                Cetak PDF
-            </a>
+            <div class="mt-6 flex flex-wrap gap-3">
+                <a href="{{ route('surat-keluar.cetak-pdf', $suratKeluar) }}" target="_blank" class="px-5 py-2.5 rounded-lg text-white text-sm font-medium" style="background: var(--gold);">Cetak PDF</a>
+                <form method="POST" action="{{ route('arsip.surat-keluar', $suratKeluar) }}">
+                    @csrf
+                    <button type="submit" class="px-5 py-2.5 rounded-lg border border-gray-300 text-sm">Arsipkan Surat</button>
+                </form>
+            </div>
         @endif
     </div>
 

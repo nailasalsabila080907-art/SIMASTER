@@ -62,11 +62,6 @@ class LoginController extends Controller
     // Tiap role diarahkan ke dashboard masing-masing setelah login
     protected function redirectPath(): string
     {
-        return match (Auth::user()->role) {
-            'kepala_sekolah' => '/dashboard/kepala-sekolah',
-            'admin_tu', 'staff' => '/dashboard/tu',
-            'guru' => '/dashboard/guru',
-            default => '/dashboard',
-        };
+        return '/dashboard';
     }
 }
