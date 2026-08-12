@@ -1,81 +1,146 @@
 @extends('layouts.app')
 @section('title', 'Detail Surat')
-
 @section('content')
-<div class="max-w-2xl">
-    @if(session('sukses'))<div class="mb-4 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3">{{ session('sukses') }}</div>@endif
-    @if(session('gagal'))<div class="mb-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3">{{ session('gagal') }}</div>@endif
 
-    <div class="bg-white rounded-xl border border-gray-200 p-6">
-        <div class="flex items-start justify-between">
-            <div>
-                <h2 class="font-display text-lg" style="color: var(--navy);">{{ $suratKeluar->perihal }}</h2>
-                <p class="text-sm mt-1" style="color: var(--ink-muted);">{{ $suratKeluar->kategori->nama_kategori }} &middot; {{ $suratKeluar->tanggal_surat?->format('d M Y') }}</p>
-            </div>
-            @php $warna = ['draft'=>'#767C86','diajukan'=>'#C9972F','disetujui'=>'#2F6B4F','ditolak'=>'#B0432E','terkirim'=>'#16324F','diarsipkan'=>'#767C86']; @endphp
-            <span class="text-xs px-2.5 py-1 rounded" style="background: {{ $warna[$suratKeluar->status] }}22; color: {{ $warna[$suratKeluar->status] }};">
-                {{ ucfirst($suratKeluar->status) }}
-            </span>
+@php
+    $badge = [
+        'draft'      => 'text-bg-secondary',
+        'diajukan'   => 'text-bg-warning',
+        'disetujui'  => 'text-bg-success',
+        'ditolak'    => 'text-bg-danger',
+        'terkirim'   => 'text-bg-primary',
+        'diarsipkan' => 'text-bg-secondary',
+    ][$suratKeluar->status] ?? 'text-bg-secondary';
+@endphp
+
+<div style="max-width:760px">
+
+    <div class="d-flex align-items-start gap-3 mb-4">
+        <a href="{{ route('surat-keluar.index') }}" class="btn btn-light rounded-circle d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:38px;height:38px" title="Kembali">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <div>
+            <p class="text-muted mb-1" style="font-size:.82rem">Persuratan / Surat Keluar</p>
+            <h2 class="mb-0" style="font-size:1.4rem">Detail Surat</h2>
         </div>
+    </div>
 
-        @if($suratKeluar->nomor_surat)
-            <p class="mt-4 text-sm font-mono px-3 py-2 rounded" style="background: var(--paper);">{{ $suratKeluar->nomor_surat }}</p>
-        @endif
+    @if(session('sukses'))
+        <div class="alert alert-success rounded-3 d-flex align-items-center gap-2 mb-3" style="font-size:.85rem" role="alert">
+            <i class="bi bi-check-circle"></i>
+            <div>{{ session('sukses') }}</div>
+        </div>
+    @endif
+    @if(session('gagal'))
+        <div class="alert alert-danger rounded-3 d-flex align-items-center gap-2 mb-3" style="font-size:.85rem" role="alert">
+            <i class="bi bi-x-circle"></i>
+            <div>{{ session('gagal') }}</div>
+        </div>
+    @endif
 
-        @if($suratKeluar->isi_surat)
-            <div class="mt-5 prose prose-sm max-w-none border-t border-gray-100 pt-5" style="color: var(--ink);">
-                {!! $suratKeluar->isi_surat !!}
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="d-flex align-items-start justify-content-between gap-3">
+                <div>
+                    <h3 class="mb-1" style="font-size:1.15rem">{{ $suratKeluar->perihal }}</h3>
+                    <p class="text-muted mb-0" style="font-size:.82rem">
+                        {{ $suratKeluar->kategori->nama_kategori }} &middot; {{ $suratKeluar->tanggal_surat?->format('d M Y') }}
+                    </p>
+                </div>
+                <span class="badge rounded-pill {{ $badge }}" style="font-size:.75rem;padding:.5rem .9rem">{{ ucfirst($suratKeluar->status) }}</span>
             </div>
-        @else
-            <div class="mt-5 space-y-3">
-                @foreach($suratKeluar->data_variabel ?? [] as $key => $value)
-                    @php $labelVar = $suratKeluar->template->variabel->firstWhere('nama_variabel', $key)?->label ?? $key; @endphp
-                    <div class="flex text-sm">
-                        <span class="w-48 shrink-0" style="color: var(--ink-muted);">{{ $labelVar }}</span>
-                        <span>{{ $value }}</span>
+
+            @if($suratKeluar->nomor_surat)
+                <span class="d-inline-block font-monospace text-muted mt-3" style="font-size:.82rem;background:var(--surface);border-radius:8px;padding:.5rem .85rem">
+                    {{ $suratKeluar->nomor_surat }}
+                </span>
+            @endif
+
+            @if($suratKeluar->isi_surat)
+                <div class="mt-4 pt-4 border-top" style="font-size:.88rem">
+                    {!! $suratKeluar->isi_surat !!}
+                </div>
+            @else
+                <div class="mt-4 pt-4 border-top">
+                    <div class="row g-3">
+                        @foreach($suratKeluar->data_variabel ?? [] as $key => $value)
+                            @php $labelVar = $suratKeluar->template->variabel->firstWhere('nama_variabel', $key)?->label ?? $key; @endphp
+                            <div class="col-md-6">
+                                <p class="text-muted mb-1" style="font-size:.72rem;text-transform:uppercase;letter-spacing:.04em">{{ $labelVar }}</p>
+                                <p class="fw-semibold mb-0" style="font-size:.88rem">{{ $value }}</p>
+                            </div>
+                        @endforeach
                     </div>
-                @endforeach
-            </div>
-        @endif
+                </div>
+            @endif
 
-        @if(in_array($suratKeluar->status, ['draft', 'ditolak']) && ($suratKeluar->dibuat_oleh === auth()->id() || in_array(auth()->user()->role, ['admin_tu', 'super_admin'])))
-            <div class="mt-6 flex flex-wrap gap-3">
-                <a href="{{ route('surat-keluar.edit', $suratKeluar) }}" class="px-5 py-2.5 rounded-lg border border-gray-300 text-sm">Ubah Draft</a>
-                <form method="POST" action="{{ route('surat-keluar.ajukan', $suratKeluar) }}">
-                    @csrf
-                    <button type="submit" class="px-5 py-2.5 rounded-lg text-white text-sm font-medium" style="background: var(--navy);">Ajukan untuk Persetujuan</button>
-                </form>
-            </div>
-        @endif
+            @if(in_array($suratKeluar->status, ['draft', 'ditolak']) && ($suratKeluar->dibuat_oleh === auth()->id() || in_array(auth()->user()->role, ['admin_tu', 'super_admin'])))
+                <div class="d-flex flex-wrap gap-2 mt-4 pt-4 border-top">
+                    <a href="{{ route('surat-keluar.edit', $suratKeluar) }}" class="btn btn-light">Ubah Draft</a>
+                    <form method="POST" action="{{ route('surat-keluar.ajukan', $suratKeluar) }}">
+                        @csrf
+                        <button type="submit" class="btn d-inline-flex align-items-center gap-2 text-white"
+                                style="background:linear-gradient(135deg,#178754,#0EA5A4);border:none">
+                            <i class="bi bi-send"></i> Ajukan untuk Persetujuan
+                        </button>
+                    </form>
+                </div>
+            @endif
 
-        @if($suratKeluar->status === 'terkirim')
-            <div class="mt-6 flex flex-wrap gap-3">
-                <a href="{{ route('surat-keluar.cetak-pdf', $suratKeluar) }}" target="_blank" class="px-5 py-2.5 rounded-lg text-white text-sm font-medium" style="background: var(--gold);">Cetak PDF</a>
-                <form method="POST" action="{{ route('arsip.surat-keluar', $suratKeluar) }}">
-                    @csrf
-                    <button type="submit" class="px-5 py-2.5 rounded-lg border border-gray-300 text-sm">Arsipkan Surat</button>
-                </form>
-            </div>
-        @endif
+            @if($suratKeluar->status === 'terkirim')
+                <div class="d-flex flex-wrap gap-2 mt-4 pt-4 border-top">
+                    <a href="{{ route('surat-keluar.cetak-pdf', $suratKeluar) }}" target="_blank"
+                       class="btn d-inline-flex align-items-center gap-2 text-white"
+                       style="background:linear-gradient(135deg,#D98C00,#F0A202);border:none">
+                        <i class="bi bi-printer"></i> Cetak PDF
+                    </a>
+                    <form method="POST" action="{{ route('arsip.surat-keluar', $suratKeluar) }}">
+                        @csrf
+                        <button type="submit" class="btn btn-light d-inline-flex align-items-center gap-2">
+                            <i class="bi bi-archive"></i> Arsipkan Surat
+                        </button>
+                    </form>
+                </div>
+            @endif
+        </div>
     </div>
 
     {{-- Riwayat approval --}}
     @if($suratKeluar->approval->isNotEmpty())
-        <div class="mt-6">
-            <h3 class="font-display text-base mb-3" style="color: var(--navy);">Riwayat Persetujuan</h3>
-            <div class="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
-                @foreach($suratKeluar->approval as $a)
-                    <div class="px-5 py-3 flex items-center justify-between text-sm">
-                        <div>
-                            <p>{{ $a->pegawaiPemberiApproval->nama_lengkap ?? '-' }}</p>
-                            @if($a->catatan)<p class="text-xs mt-0.5" style="color: var(--ink-muted);">{{ $a->catatan }}</p>@endif
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-1" style="font-size:1.05rem">Riwayat Persetujuan</h3>
+                <p class="text-muted mb-0" style="font-size:.78rem">{{ $suratKeluar->approval->count() }} tahap persetujuan</p>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    @foreach($suratKeluar->approval as $a)
+                        @php
+                            $wStatus = [
+                                'menunggu'  => ['bg' => '#FDF1E2', 'ink' => '#F7A02A', 'badge' => 'text-bg-light text-muted'],
+                                'disetujui' => ['bg' => '#E6F5EC', 'ink' => '#178754', 'badge' => 'text-bg-success'],
+                                'ditolak'   => ['bg' => '#FBEAE7', 'ink' => '#E5484D', 'badge' => 'text-bg-danger'],
+                            ][$a->status] ?? ['bg' => '#F1F2F4', 'ink' => '#8B8D97', 'badge' => 'text-bg-light text-muted'];
+                        @endphp
+                        <div class="list-group-item d-flex align-items-center justify-content-between gap-3 py-3 px-3 border-0 border-bottom">
+                            <div class="d-flex gap-3 min-w-0">
+                                <span class="d-inline-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
+                                      style="width:34px;height:34px;background:{{ $wStatus['bg'] }};color:{{ $wStatus['ink'] }};font-size:.6rem">
+                                    <i class="bi bi-dot fs-4"></i>
+                                </span>
+                                <div class="min-w-0">
+                                    <span class="d-block fw-semibold text-truncate" style="font-size:.85rem;color:var(--ink)">
+                                        {{ $a->pegawaiPemberiApproval->nama_lengkap ?? '-' }}
+                                    </span>
+                                    @if($a->catatan)
+                                        <span class="d-block text-muted" style="font-size:.76rem">{{ $a->catatan }}</span>
+                                    @endif
+                                </div>
+                            </div>
+                            <span class="badge rounded-pill {{ $wStatus['badge'] }} flex-shrink-0" style="font-size:.72rem">{{ ucfirst($a->status) }}</span>
                         </div>
-                        @php $wStatus = ['menunggu'=>'#C9972F','disetujui'=>'#2F6B4F','ditolak'=>'#B0432E']; @endphp
-                        <span class="text-xs px-2 py-0.5 rounded" style="background: {{ $wStatus[$a->status] }}22; color: {{ $wStatus[$a->status] }};">
-                            {{ ucfirst($a->status) }}
-                        </span>
-                    </div>
-                @endforeach
+                    @endforeach
+                </div>
             </div>
         </div>
     @endif
