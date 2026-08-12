@@ -392,7 +392,7 @@
             <a href="#alur" class="nav-link-top">Alur Surat</a>
             <a href="#faq" class="nav-link-top">FAQ</a>
         </div>
-        <a href="{{ route('login') }}" class="btn btn-primary btn-sm px-3 text-white d-none d-lg-inline-flex">Masuk</a>
+        {{-- <a href="{{ route('login') }}" class="btn btn-primary btn-sm px-3 text-white d-none d-lg-inline-flex">Masuk</a> --}}
     </div>
 
     <div class="collapse d-lg-none border-top" id="navMenu">
