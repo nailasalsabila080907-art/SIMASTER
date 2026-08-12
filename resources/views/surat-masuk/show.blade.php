@@ -1,12 +1,188 @@
 @extends('layouts.app')
 @section('title','Detail Surat Masuk')
 @section('content')
-<div class="w-full space-y-5">
-@if(session('sukses'))<div class="rounded-xl bg-green-50 border border-green-200 text-green-700 px-5 py-4 text-sm">{{session('sukses')}}</div>@endif
-<div class="bg-white rounded-2xl border border-gray-200 p-6 lg:p-8"><div class="flex flex-wrap items-start justify-between gap-4"><div><p class="text-xs uppercase tracking-wider" style="color:var(--gold)">Surat Masuk</p><h2 class="font-display text-2xl mt-1" style="color:var(--navy)">{{$suratMasuk->perihal}}</h2><p class="text-sm mt-2" style="color:var(--ink-muted)">Dari {{$suratMasuk->asal_instansi}} · Agenda {{$suratMasuk->nomor_surat_masuk}}</p></div>@php $w=['baru'=>'#C9972F','didisposisi'=>'#16324F','diproses'=>'#16324F','selesai'=>'#2F6B4F','diarsipkan'=>'#767C86']; @endphp<span class="text-xs px-3 py-1.5 rounded-full" style="background:{{$w[$suratMasuk->status]}}22;color:{{$w[$suratMasuk->status]}}">{{ucfirst($suratMasuk->status)}}</span></div><div class="grid md:grid-cols-4 gap-4 mt-6 text-sm"><div><p class="text-xs" style="color:var(--ink-muted)">Nomor Asal</p><p class="mt-1">{{$suratMasuk->nomor_surat_asal??'-'}}</p></div><div><p class="text-xs" style="color:var(--ink-muted)">Tanggal Surat</p><p class="mt-1">{{$suratMasuk->tanggal_surat?->format('d/m/Y')??'-'}}</p></div><div><p class="text-xs" style="color:var(--ink-muted)">Diterima</p><p class="mt-1">{{$suratMasuk->tanggal_diterima?->format('d/m/Y')}}</p></div><div><p class="text-xs" style="color:var(--ink-muted)">Sifat</p><p class="mt-1">{{ucfirst($suratMasuk->sifat_surat)}}</p></div></div>@if($suratMasuk->file_scan_path)<a target="_blank" href="{{asset('storage/'.$suratMasuk->file_scan_path)}}" class="inline-block mt-5 text-sm font-medium" style="color:var(--navy)">Buka scan surat ↗</a>@endif</div>
-@if(in_array(auth()->user()->role,['admin_tu','super_admin','kepala_sekolah']))<div class="bg-white rounded-2xl border border-gray-200 p-6"><h3 class="font-display text-lg" style="color:var(--navy)">Buat Disposisi</h3><form method="POST" action="{{route('surat-masuk.disposisi.store',$suratMasuk)}}" class="mt-5 grid md:grid-cols-3 gap-4">@csrf<div><label class="block text-sm font-medium mb-1.5">Tujuan</label><select name="tujuan_tipe" id="tujuan_tipe" onchange="ubahTujuan()" class="w-full rounded-xl border border-gray-300 px-3 py-3"><option value="pegawai">Pegawai</option><option value="unit">Unit Kerja</option></select></div><div><label class="block text-sm font-medium mb-1.5">Penerima</label><select name="tujuan_id" id="tujuan_id" class="w-full rounded-xl border border-gray-300 px-3 py-3">@foreach($pegawaiList as $p)<option data-tipe="pegawai" value="{{$p->id_pegawai}}">{{$p->nama_lengkap}}</option>@endforeach @foreach($unitList as $u)<option data-tipe="unit" value="{{$u->id_unit}}" style="display:none">{{$u->nama_unit}}</option>@endforeach</select></div><div><label class="block text-sm font-medium mb-1.5">Instruksi</label><input name="instruksi" class="w-full rounded-xl border border-gray-300 px-3 py-3" placeholder="Mohon ditindaklanjuti"></div><div class="md:col-span-3"><label class="block text-sm font-medium mb-1.5">Catatan</label><textarea name="catatan" rows="2" class="w-full rounded-xl border border-gray-300 px-3 py-3"></textarea></div><div class="md:col-span-3 flex justify-end"><button class="px-6 py-2.5 rounded-xl text-white text-sm" style="background:var(--navy)">Kirim Disposisi</button></div></form></div>@endif
-@if($suratMasuk->disposisi->isNotEmpty())<div><h3 class="font-display text-lg mb-3" style="color:var(--navy)">Riwayat Disposisi</h3><div class="space-y-3">@foreach($suratMasuk->disposisi as $d)<div class="bg-white rounded-2xl border border-gray-200 p-5 flex flex-wrap justify-between gap-3"><div><p class="text-sm font-medium">Ke: {{$d->tujuan_label}}</p><p class="text-xs mt-1" style="color:var(--ink-muted)">Dari {{$d->pemberiDisposisi->nama_lengkap??'-'}} · {{$d->tanggal_disposisi?->diffForHumans()}}</p>@if($d->instruksi)<p class="text-sm mt-2">{{$d->instruksi}}</p>@endif</div><div class="flex items-center gap-3"><span class="text-xs">{{ucfirst($d->status)}}</span>@if($d->status!=='selesai')<form method="POST" action="{{route('disposisi.selesaikan',$d)}}">@csrf<button class="text-xs font-medium" style="color:var(--navy)">Tandai Selesai</button></form>@endif</div></div>@endforeach</div></div>@endif
-@if($suratMasuk->status==='selesai' && auth()->user()->role!=='guru')<form method="POST" action="{{route('arsip.surat-masuk',$suratMasuk)}}">@csrf<button class="px-5 py-2.5 rounded-xl text-white text-sm" style="background:var(--navy)">Arsipkan Surat</button></form>@endif
+
+@php
+    $badge = [
+        'baru'        => 'text-bg-warning',
+        'didisposisi' => 'text-bg-info',
+        'diproses'    => 'text-bg-primary',
+        'selesai'     => 'text-bg-success',
+        'diarsipkan'  => 'text-bg-secondary',
+    ][$suratMasuk->status] ?? 'text-bg-secondary';
+@endphp
+
+<div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
+    <div class="d-flex align-items-start gap-3">
+        <a href="{{ route('surat-masuk.index') }}" class="btn btn-light rounded-circle d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:38px;height:38px" title="Kembali">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <div>
+            <p class="text-muted mb-1" style="font-size:.82rem">Persuratan / Surat Masuk</p>
+            <h2 class="mb-1" style="font-size:1.4rem">{{ $suratMasuk->perihal }}</h2>
+            <p class="text-muted mb-0" style="font-size:.78rem">Dari {{ $suratMasuk->asal_instansi }} &middot; Agenda {{ $suratMasuk->nomor_surat_masuk }}</p>
+        </div>
+    </div>
+    <span class="badge rounded-pill {{ $badge }}" style="font-size:.75rem;padding:.5rem .9rem">{{ ucfirst($suratMasuk->status) }}</span>
 </div>
-@push('scripts')<script>function ubahTujuan(){const t=document.getElementById('tujuan_tipe').value;document.querySelectorAll('#tujuan_id option').forEach(o=>o.style.display=o.dataset.tipe===t?'block':'none');const f=document.querySelector('#tujuan_id option[data-tipe="'+t+'"]');if(f)document.getElementById('tujuan_id').value=f.value}ubahTujuan();</script>@endpush
+
+@if(session('sukses'))
+    <div class="alert alert-success rounded-3 d-flex align-items-center gap-2 mb-4" style="font-size:.85rem" role="alert">
+        <i class="bi bi-check-circle"></i>
+        <div>{{ session('sukses') }}</div>
+    </div>
+@endif
+
+<div class="row g-3 mb-3">
+    @php
+        $ringkasan = [
+            ['icon' => 'bi-file-earmark-text', 'label' => 'Nomor Asal', 'nilai' => $suratMasuk->nomor_surat_asal ?? '-', 'grad' => 'linear-gradient(135deg,#0F5C39,#178754)'],
+            ['icon' => 'bi-calendar3', 'label' => 'Tanggal Surat', 'nilai' => $suratMasuk->tanggal_surat?->format('d/m/Y') ?? '-', 'grad' => 'linear-gradient(135deg,#0EA5A4,#22C3A6)'],
+            ['icon' => 'bi-calendar-check', 'label' => 'Diterima', 'nilai' => $suratMasuk->tanggal_diterima?->format('d/m/Y'), 'grad' => 'linear-gradient(135deg,#178754,#4FBE85)'],
+            ['icon' => 'bi-flag', 'label' => 'Sifat', 'nilai' => ucfirst($suratMasuk->sifat_surat), 'grad' => 'linear-gradient(135deg,#D98C00,#F0A202)'],
+        ];
+    @endphp
+    @foreach($ringkasan as $r)
+        <div class="col-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <span class="d-inline-flex align-items-center justify-content-center rounded-3 text-white flex-shrink-0"
+                          style="width:38px;height:38px;background:{{ $r['grad'] }};font-size:1rem">
+                        <i class="bi {{ $r['icon'] }}"></i>
+                    </span>
+                    <div class="min-w-0">
+                        <p class="text-muted mb-0 text-truncate" style="font-size:.72rem">{{ $r['label'] }}</p>
+                        <p class="fw-semibold mb-0 text-truncate" style="font-size:.9rem">{{ $r['nilai'] }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endforeach
+</div>
+
+@if($suratMasuk->file_scan_path)
+    <div class="mb-3">
+        <a target="_blank" href="{{ asset('storage/' . $suratMasuk->file_scan_path) }}"
+           class="d-inline-flex align-items-center gap-2 text-decoration-none" style="font-size:.85rem">
+            <i class="bi bi-file-earmark-arrow-up"></i> Buka scan surat
+        </a>
+    </div>
+@endif
+
+@if(in_array(auth()->user()->role, ['admin_tu', 'super_admin', 'kepala_sekolah']))
+    <div class="card mb-3">
+        <div class="card-header d-flex align-items-center gap-3">
+            <span class="d-inline-flex align-items-center justify-content-center rounded-3 text-white flex-shrink-0"
+                  style="width:38px;height:38px;background:linear-gradient(135deg,#178754,#0EA5A4);font-size:1rem">
+                <i class="bi bi-signpost-split"></i>
+            </span>
+            <div>
+                <h3 class="mb-1" style="font-size:1.05rem">Buat Disposisi</h3>
+                <p class="text-muted mb-0" style="font-size:.78rem">Teruskan surat ini ke pegawai atau unit kerja</p>
+            </div>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ route('surat-masuk.disposisi.store', $suratMasuk) }}" class="row g-3">
+                @csrf
+                <div class="col-md-4">
+                    <label class="form-label" style="font-size:.85rem">Tujuan</label>
+                    <select name="tujuan_tipe" id="tujuan_tipe" onchange="ubahTujuan()" class="form-select">
+                        <option value="pegawai">Pegawai</option>
+                        <option value="unit">Unit Kerja</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" style="font-size:.85rem">Penerima</label>
+                    <select name="tujuan_id" id="tujuan_id" class="form-select">
+                        @foreach($pegawaiList as $p)
+                            <option data-tipe="pegawai" value="{{ $p->id_pegawai }}">{{ $p->nama_lengkap }}</option>
+                        @endforeach
+                        @foreach($unitList as $u)
+                            <option data-tipe="unit" value="{{ $u->id_unit }}" style="display:none">{{ $u->nama_unit }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" style="font-size:.85rem">Instruksi</label>
+                    <input type="text" name="instruksi" class="form-control" placeholder="Mohon ditindaklanjuti">
+                </div>
+                <div class="col-12">
+                    <label class="form-label" style="font-size:.85rem">Catatan</label>
+                    <textarea name="catatan" rows="2" class="form-control"></textarea>
+                </div>
+                <div class="col-12 d-flex justify-content-end">
+                    <button type="submit" class="btn d-inline-flex align-items-center gap-2 text-white"
+                            style="background:linear-gradient(135deg,#178754,#0EA5A4);border:none">
+                        <i class="bi bi-send"></i> Kirim Disposisi
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+@endif
+
+@if($suratMasuk->disposisi->isNotEmpty())
+    <div class="card mb-3">
+        <div class="card-header">
+            <h3 class="mb-1" style="font-size:1.05rem">Riwayat Disposisi</h3>
+            <p class="text-muted mb-0" style="font-size:.78rem">{{ $suratMasuk->disposisi->count() }} disposisi tercatat</p>
+        </div>
+        <div class="card-body p-0">
+            <div class="list-group list-group-flush">
+                @foreach($suratMasuk->disposisi as $d)
+                    <div class="list-group-item d-flex flex-wrap align-items-center justify-content-between gap-3 py-3 px-3 border-0 border-bottom">
+                        <div class="d-flex gap-3 min-w-0">
+                            <span class="d-inline-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
+                                  style="width:34px;height:34px;background:{{ $d->status === 'selesai' ? '#E6F5EC' : '#FDF1E2' }};color:{{ $d->status === 'selesai' ? '#178754' : '#F7A02A' }};font-size:.6rem">
+                                <i class="bi bi-dot fs-4"></i>
+                            </span>
+                            <div class="min-w-0">
+                                <span class="d-block fw-semibold text-truncate" style="font-size:.85rem;color:var(--ink)">Ke: {{ $d->tujuan_label }}</span>
+                                <span class="d-block text-muted" style="font-size:.76rem">Dari {{ $d->pemberiDisposisi->nama_lengkap ?? '-' }} &middot; {{ $d->tanggal_disposisi?->diffForHumans() }}</span>
+                                @if($d->instruksi)
+                                    <span class="d-block mt-1" style="font-size:.82rem">{{ $d->instruksi }}</span>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                            <span class="badge rounded-pill {{ $d->status === 'selesai' ? 'text-bg-success' : 'text-bg-light text-muted' }}" style="font-size:.72rem">
+                                {{ ucfirst($d->status) }}
+                            </span>
+                            @if($d->status !== 'selesai')
+                                <form method="POST" action="{{ route('disposisi.selesaikan', $d) }}">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-light" style="font-size:.78rem">Tandai Selesai</button>
+                                </form>
+                            @endif
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+@endif
+
+@if($suratMasuk->status === 'selesai' && auth()->user()->role !== 'guru')
+    <form method="POST" action="{{ route('arsip.surat-masuk', $suratMasuk) }}">
+        @csrf
+        <button type="submit" class="btn d-inline-flex align-items-center gap-2 text-white"
+                style="background:linear-gradient(135deg,#3E4652,#5B5D6B);border:none">
+            <i class="bi bi-archive"></i> Arsipkan Surat
+        </button>
+    </form>
+@endif
+
+@push('scripts')
+<script>
+    function ubahTujuan() {
+        const t = document.getElementById('tujuan_tipe').value;
+        document.querySelectorAll('#tujuan_id option').forEach(o => {
+            o.style.display = o.dataset.tipe === t ? 'block' : 'none';
+        });
+        const f = document.querySelector('#tujuan_id option[data-tipe="' + t + '"]');
+        if (f) document.getElementById('tujuan_id').value = f.value;
+    }
+    ubahTujuan();
+</script>
+@endpush
 @endsection

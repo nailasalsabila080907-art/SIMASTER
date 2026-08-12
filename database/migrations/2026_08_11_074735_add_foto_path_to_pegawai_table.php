@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('pegawai', function (Blueprint $table) {
-            $table->string('foto_path')->nullable()->after('nama_lengkap');
-        });
+        // Schema::table('pegawai', function (Blueprint $table) {
+        //     $table->string('foto_path')->nullable()->after('nama_lengkap');
+        // });
     }
 
     /**
