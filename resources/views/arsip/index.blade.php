@@ -1,7 +1,94 @@
 @extends('layouts.app')
-@section('title','Arsip Surat')
+
+@section('title', 'Arsip Surat')
+
 @section('content')
-<div class="w-full">@if(session('sukses'))<div class="mb-5 rounded-xl bg-green-50 border border-green-200 text-green-700 px-5 py-4 text-sm">{{session('sukses')}}</div>@endif
-<div class="mb-5"><h2 class="font-display text-xl" style="color:var(--navy)">Arsip Surat</h2><p class="text-sm mt-1" style="color:var(--ink-muted)">Daftar surat yang telah selesai diproses dan diarsipkan.</p></div>
-<div class="bg-white rounded-2xl border border-gray-200 overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-50"><tr class="text-left"><th class="px-5 py-4">Jenis</th><th class="px-5 py-4">Nomor / ID</th><th class="px-5 py-4">Diarsipkan</th><th class="px-5 py-4">Pengarsip</th><th class="px-5 py-4 text-right">Buka</th></tr></thead><tbody class="divide-y divide-gray-100">@forelse($arsip as $a) @php $surat=$a->suratTerkait(); @endphp<tr><td class="px-5 py-4">{{ucfirst($a->tipe_surat)}}</td><td class="px-5 py-4 font-mono text-xs">{{$surat->nomor_surat ?? $surat->nomor_surat_masuk ?? ('#'.$a->id_surat)}}</td><td class="px-5 py-4">{{$a->tanggal_diarsipkan?->format('d/m/Y H:i')}}</td><td class="px-5 py-4">{{$a->pengarsip->pegawai->nama_lengkap ?? $a->pengarsip->username ?? '-'}}</td><td class="px-5 py-4 text-right">@if($surat)<a href="{{ $a->tipe_surat==='keluar' ? route('surat-keluar.show',$surat) : route('surat-masuk.show',$surat) }}" class="text-xs" style="color:var(--navy)">Lihat</a>@endif</td></tr>@empty<tr><td colspan="5" class="px-5 py-10 text-center" style="color:var(--ink-muted)">Belum ada arsip.</td></tr>@endforelse</tbody></table></div></div><div class="mt-5">{{$arsip->links()}}</div></div>
+
+    {{-- Header --}}
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
+        <div>
+            <h5 class="mb-1" style="color:var(--ink)">Arsip Surat</h5>
+            <p class="mb-0" style="color:var(--ink-muted);font-size:.85rem">
+                Daftar surat yang telah selesai diproses dan diarsipkan.
+            </p>
+        </div>
+    </div>
+
+    {{-- Alert --}}
+    @if(session('sukses'))
+        <div class="alert d-flex align-items-center gap-2 border-0 mb-4" style="background:var(--primary-light);color:var(--primary-dark);border-radius:12px;">
+            <i class="bi bi-check-circle-fill"></i>
+            <div>{{ session('sukses') }}</div>
+        </div>
+    @endif
+
+    {{-- Table --}}
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0" style="font-size:.85rem;">
+                <thead>
+                    <tr style="background:var(--surface);">
+                        <th class="px-4 py-3 border-0" style="color:var(--ink-muted);font-weight:700;text-transform:uppercase;font-size:.7rem;letter-spacing:.05em;">Jenis</th>
+                        <th class="px-4 py-3 border-0" style="color:var(--ink-muted);font-weight:700;text-transform:uppercase;font-size:.7rem;letter-spacing:.05em;">Nomor / ID</th>
+                        <th class="px-4 py-3 border-0" style="color:var(--ink-muted);font-weight:700;text-transform:uppercase;font-size:.7rem;letter-spacing:.05em;">Diarsipkan</th>
+                        <th class="px-4 py-3 border-0" style="color:var(--ink-muted);font-weight:700;text-transform:uppercase;font-size:.7rem;letter-spacing:.05em;">Pengarsip</th>
+                        <th class="px-4 py-3 border-0 text-end" style="color:var(--ink-muted);font-weight:700;text-transform:uppercase;font-size:.7rem;letter-spacing:.05em;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($arsip as $a)
+                        @php $surat = $a->suratTerkait(); @endphp
+                        <tr style="border-top:1px solid var(--border);">
+                            <td class="px-4 py-3">
+                                @if($a->tipe_surat === 'keluar')
+                                    <span class="badge" style="background:var(--primary-light);color:var(--bs-primary);font-weight:600;">
+                                        <i class="bi bi-send"></i> Keluar
+                                    </span>
+                                @else
+                                    <span class="badge" style="background:#EAF4FB;color:var(--info);font-weight:600;">
+                                        <i class="bi bi-envelope-arrow-down"></i> Masuk
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="px-4 py-3 font-monospace" style="font-size:.8rem;color:var(--ink);">
+                                {{ $surat->nomor_surat ?? $surat->nomor_surat_masuk ?? ('#'.$a->id_surat) }}
+                            </td>
+                            <td class="px-4 py-3" style="color:var(--ink-muted);">
+                                {{ $a->tanggal_diarsipkan?->format('d/m/Y H:i') }}
+                            </td>
+                            <td class="px-4 py-3">
+                                {{ $a->pengarsip->pegawai->nama_lengkap ?? $a->pengarsip->username ?? '-' }}
+                            </td>
+                            <td class="px-4 py-3 text-end">
+                                @if($surat)
+                                    <a href="{{ $a->tipe_surat === 'keluar' ? route('surat-keluar.show', $surat) : route('surat-masuk.show', $surat) }}"
+                                       class="btn btn-sm"
+                                       style="border:1px solid var(--border);border-radius:8px;color:var(--bs-primary);font-weight:600;background:#fff;">
+                                        <i class="bi bi-eye"></i> Lihat
+                                    </a>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="text-center py-5" style="color:var(--ink-muted);">
+                                <div class="d-inline-flex align-items-center justify-content-center mb-3"
+                                     style="width:56px;height:56px;border-radius:14px;background:var(--primary-light);color:var(--bs-primary);">
+                                    <i class="bi bi-archive fs-4"></i>
+                                </div>
+                                <p class="mb-0">Belum ada arsip.</p>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @if($arsip->hasPages())
+        <div class="mt-4">
+            {{ $arsip->links('pagination::bootstrap-5') }}
+        </div>
+    @endif
+
 @endsection
