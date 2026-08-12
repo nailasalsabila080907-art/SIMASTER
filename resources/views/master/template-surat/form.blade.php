@@ -40,7 +40,7 @@
                 <input type="text" name="format_nomor" value="{{ old('format_nomor', $template->format_nomor ?: '420.5/SMKN-07/KP/{tahun}/{no_urut}') }}" class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm font-mono" required>
             </div>
             <div class="col-span-2">
-                <label class="block text-sm font-medium mb-1.5">Isi Template (HTML, pakai {{ '{{nama_field}}' }} untuk placeholder)</label>
+                <label class="block text-sm font-medium mb-1.5">Isi Template (HTML, gunakan placeholder seperti nama_field)</label>
                 <textarea name="isi_template" rows="10" class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm font-mono">{{ old('isi_template', $template->isi_template) }}</textarea>
             </div>
             <div class="col-span-2 flex items-center gap-3">
@@ -56,7 +56,8 @@
             <div class="space-y-2">
                 @forelse($template->variabel as $v)
                     <div class="flex items-center justify-between text-sm bg-gray-50 rounded-lg px-3 py-2">
-                        <span>{{ $v->label }} <span class="text-xs font-mono" style="color: var(--ink-muted);">{{ '{{'.$v->nama_variabel.'}}' }}</span> &middot; {{ $v->tipe_input }}</span>
+                        <span> {{ $v->label }}
+                        <span class="text-xs font-mono" style="color: var(--ink-muted);"> &#123;&#123;{{ $v->nama_variabel }}&#125;&#125;</span>&middot; {{ $v->tipe_input }}</span>
                         <a href="{{ route('template-surat.variabel.hapus', $v) }}" onclick="event.preventDefault(); document.getElementById('hapus-var-{{ $v->id_variabel }}').submit();" class="text-xs text-red-600">Hapus</a>
                         <form id="hapus-var-{{ $v->id_variabel }}" method="POST" action="{{ route('template-surat.variabel.hapus', $v) }}" class="hidden">@csrf @method('DELETE')</form>
                     </div>
