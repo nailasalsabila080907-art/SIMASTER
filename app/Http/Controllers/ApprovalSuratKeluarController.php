@@ -10,6 +10,7 @@ use App\Models\SuratKeluar;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -31,42 +32,80 @@ class ApprovalSuratKeluarController extends Controller
             ->filter(function (ApprovalSuratKeluar $approval) {
                 return ! $approval->suratKeluar->approval
                     ->where('urutan', '<', $approval->urutan)
-                    ->contains(fn ($sebelumnya) => $sebelumnya->status !== 'disetujui');
+                    ->contains(function ($sebelumnya) {
+                        return $sebelumnya->status !== 'disetujui';
+                    });
             })
             ->values();
 
         $perPage = 15;
+
         $page = LengthAwarePaginator::resolveCurrentPage();
-        $items = $semua->slice(($page - 1) * $perPage, $perPage)->values();
+
+        $items = $semua
+            ->slice(($page - 1) * $perPage, $perPage)
+            ->values();
+
         $approvalSaya = new LengthAwarePaginator(
             $items,
             $semua->count(),
             $perPage,
             $page,
-            ['path' => $request->url(), 'query' => $request->query()]
+            [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ]
         );
 
-        return view('approval.index', compact('approvalSaya'));
+        return view(
+            'approval.index',
+            compact('approvalSaya')
+        );
     }
 
-    public function setujui(Request $request, ApprovalSuratKeluar $approval)
-    {
+    public function setujui(
+        Request $request,
+        ApprovalSuratKeluar $approval
+    ) {
         $this->pastikanApproverSah($approval);
+
         $this->pastikanTahapBerjalan($approval);
 
         DB::transaction(function () use ($approval, $request) {
-            $approval->setujui($request->input('catatan'));
-            $suratKeluar = $approval->suratKeluar()->with(['approval', 'pembuat', 'template', 'kategori', 'klasifikasi', 'unitPembuat'])->firstOrFail();
+            $approval->setujui(
+                $request->input('catatan')
+            );
 
-            LogAktivitas::catat('ubah_data', 'Approval Surat Keluar', "Menyetujui surat: {$suratKeluar->perihal}");
+            $suratKeluar = $approval
+                ->suratKeluar()
+                ->with([
+                    'approval',
+                    'pembuat',
+                    'template',
+                    'kategori',
+                    'klasifikasi',
+                    'unitPembuat',
+                ])
+                ->firstOrFail();
 
-            $approvalBerikutnya = $suratKeluar->approval()
+            LogAktivitas::catat(
+                'ubah_data',
+                'Approval Surat Keluar',
+                "Menyetujui surat: {$suratKeluar->perihal}"
+            );
+
+            $approvalBerikutnya = $suratKeluar
+                ->approval()
                 ->where('status', 'menunggu')
                 ->orderBy('urutan')
                 ->first();
 
             if ($approvalBerikutnya) {
-                $userBerikutnya = $approvalBerikutnya->pegawaiPemberiApproval?->user;
+                $userBerikutnya =
+                    $approvalBerikutnya
+                        ->pegawaiPemberiApproval
+                        ?->user;
+
                 if ($userBerikutnya) {
                     Notifikasi::kirim(
                         $userBerikutnya->id_user,
@@ -81,25 +120,54 @@ class ApprovalSuratKeluarController extends Controller
             }
         });
 
-        return back()->with('sukses', 'Persetujuan berhasil diproses.');
+        return back()->with(
+            'sukses',
+            'Persetujuan berhasil diproses.'
+        );
     }
 
-    public function tolak(Request $request, ApprovalSuratKeluar $approval)
-    {
-        $data = $request->validate(['catatan' => 'required|string|max:255']);
+    public function tolak(
+        Request $request,
+        ApprovalSuratKeluar $approval
+    ) {
+        $data = $request->validate([
+            'catatan' => 'required|string|max:255',
+        ]);
+
         $this->pastikanApproverSah($approval);
+
         $this->pastikanTahapBerjalan($approval);
 
-        DB::transaction(function () use ($approval, $data) {
-            $suratKeluar = $approval->suratKeluar()->with('pembuat')->firstOrFail();
-            $approval->tolak($data['catatan']);
-            $suratKeluar->approval()->where('status', 'menunggu')->update([
-                'status' => 'ditolak',
-                'tanggal_approval' => now(),
-            ]);
-            $suratKeluar->update(['status' => 'ditolak']);
+        DB::transaction(function () use (
+            $approval,
+            $data
+        ) {
+            $suratKeluar = $approval
+                ->suratKeluar()
+                ->with('pembuat')
+                ->firstOrFail();
 
-            LogAktivitas::catat('ubah_data', 'Approval Surat Keluar', "Menolak surat: {$suratKeluar->perihal}");
+            $approval->tolak(
+                $data['catatan']
+            );
+
+            $suratKeluar
+                ->approval()
+                ->where('status', 'menunggu')
+                ->update([
+                    'status' => 'ditolak',
+                    'tanggal_approval' => now(),
+                ]);
+
+            $suratKeluar->update([
+                'status' => 'ditolak',
+            ]);
+
+            LogAktivitas::catat(
+                'ubah_data',
+                'Approval Surat Keluar',
+                "Menolak surat: {$suratKeluar->perihal}"
+            );
 
             if ($suratKeluar->pembuat) {
                 Notifikasi::kirim(
@@ -112,79 +180,171 @@ class ApprovalSuratKeluarController extends Controller
             }
         });
 
-        return back()->with('sukses', 'Surat ditolak dan dikembalikan untuk diperbaiki.');
+        return back()->with(
+            'sukses',
+            'Surat ditolak dan dikembalikan untuk diperbaiki.'
+        );
     }
 
-    protected function pastikanApproverSah(ApprovalSuratKeluar $approval): void
-    {
+    protected function pastikanApproverSah(
+        ApprovalSuratKeluar $approval
+    ): void {
         abort_unless(
-            $approval->id_pegawai_pemberi_approval === Auth::user()->pegawai?->id_pegawai,
+            $approval->id_pegawai_pemberi_approval ===
+                Auth::user()->pegawai?->id_pegawai,
             403,
             'Anda bukan approver untuk surat ini.'
         );
 
-        abort_if($approval->status !== 'menunggu', 422, 'Approval ini sudah diproses.');
+        abort_if(
+            $approval->status !== 'menunggu',
+            422,
+            'Approval ini sudah diproses.'
+        );
     }
 
-    protected function pastikanTahapBerjalan(ApprovalSuratKeluar $approval): void
-    {
-        $adaSebelumnya = $approval->suratKeluar()
+    protected function pastikanTahapBerjalan(
+        ApprovalSuratKeluar $approval
+    ): void {
+        $adaSebelumnya = $approval
+            ->suratKeluar()
             ->firstOrFail()
             ->approval()
-            ->where('urutan', '<', $approval->urutan)
-            ->where('status', '!=', 'disetujui')
+            ->where(
+                'urutan',
+                '<',
+                $approval->urutan
+            )
+            ->where(
+                'status',
+                '!=',
+                'disetujui'
+            )
             ->exists();
 
-        abort_if($adaSebelumnya, 422, 'Tahap approval sebelumnya belum selesai.');
+        abort_if(
+            $adaSebelumnya,
+            422,
+            'Tahap approval sebelumnya belum selesai.'
+        );
     }
 
-    protected function terbitkanSurat(SuratKeluar $suratKeluar): void
-    {
-        if ($suratKeluar->nomor_surat) {
+    protected function terbitkanSurat(
+        SuratKeluar $suratKeluar
+    ): void {
+        if (! empty($suratKeluar->nomor_surat)) {
             return;
         }
 
-        $suratKeluar->loadMissing(['template', 'klasifikasi', 'unitPembuat', 'pembuat']);
+        $suratKeluar->loadMissing([
+            'template',
+            'klasifikasi',
+            'unitPembuat',
+            'pembuat',
+        ]);
 
-        $tahun = (int) ($suratKeluar->tanggal_surat?->format('Y') ?? now()->format('Y'));
+        $tahun = (int) (
+            $suratKeluar->tanggal_surat?->format('Y')
+            ?? now()->format('Y')
+        );
+
         $noUrut = PenomoranSurat::nomorUrutBerikutnya(
             $suratKeluar->id_unit_pembuat,
             $suratKeluar->id_kategori,
             $tahun
         );
 
-        $sekolah = $suratKeluar->unitPembuat?->sekolah;
-        $formatNomor = $suratKeluar->template->format_nomor;
+        $sekolah = $suratKeluar
+            ->unitPembuat
+            ?->sekolah;
+
+        $formatNomor =
+            $suratKeluar->template->format_nomor;
+
         $nomorSurat = str_replace(
-            ['{kode_klasifikasi}', '{kode_sekolah}', '{kode_unit}', '{tahun}', '{no_urut}'],
             [
-                $suratKeluar->klasifikasi?->kode_klasifikasi ?? '420.5',
-                $sekolah?->kode_surat ?? 'SMKN-07',
-                $suratKeluar->unitPembuat?->kode_unit ?? '-',
+                '{kode_klasifikasi}',
+                '{kode_sekolah}',
+                '{kode_unit}',
+                '{tahun}',
+                '{no_urut}',
+            ],
+            [
+                $suratKeluar
+                    ->klasifikasi
+                    ?->kode_klasifikasi
+                    ?? '420.5',
+
+                $sekolah
+                    ?->kode_surat
+                    ?? 'SMKN-07',
+
+                $suratKeluar
+                    ->unitPembuat
+                    ?->kode_unit
+                    ?? '-',
+
                 $tahun,
-                str_pad((string) $noUrut, 3, '0', STR_PAD_LEFT),
+
+                str_pad(
+                    (string) $noUrut,
+                    3,
+                    '0',
+                    STR_PAD_LEFT
+                ),
             ],
             $formatNomor
         );
 
-        $isiSurat = $suratKeluar->template->isi_template;
-        $dataUntukRender = array_merge($suratKeluar->data_variabel ?? [], [
-            'nomor_surat' => $nomorSurat,
-            'tanggal_surat' => $suratKeluar->tanggal_surat?->format('d F Y'),
-        ]);
+        $isiSurat =
+            $suratKeluar
+                ->template
+                ->isi_template;
 
-        foreach ($suratKeluar->template->variabel as $variabel) {
-            if ($variabel->tipe_input === 'date' && ! empty($dataUntukRender[$variabel->nama_variabel])) {
+        $dataUntukRender = array_merge(
+            $suratKeluar->data_variabel ?? [],
+            [
+                'nomor_surat' => $nomorSurat,
+                'tanggal_surat' =>
+                    $suratKeluar
+                        ->tanggal_surat
+                        ?->format('d F Y'),
+            ]
+        );
+
+        foreach (
+            $suratKeluar->template->variabel
+            as $variabel
+        ) {
+            if (
+                $variabel->tipe_input === 'date' &&
+                ! empty(
+                    $dataUntukRender[
+                        $variabel->nama_variabel
+                    ]
+                )
+            ) {
                 try {
-                    $dataUntukRender[$variabel->nama_variabel] = \Illuminate\Support\Carbon::parse($dataUntukRender[$variabel->nama_variabel])->format('d F Y');
+                    $dataUntukRender[
+                        $variabel->nama_variabel
+                    ] = Carbon::parse(
+                        $dataUntukRender[
+                            $variabel->nama_variabel
+                        ]
+                    )->format('d F Y');
                 } catch (\Throwable $e) {
-                    // Pertahankan nilai asli jika bukan tanggal yang valid.
                 }
             }
         }
 
-        foreach ($dataUntukRender as $key => $value) {
-            $isiSurat = str_replace('{{'.$key.'}}', e((string) $value), $isiSurat);
+        foreach (
+            $dataUntukRender as $key => $value
+        ) {
+            $isiSurat = str_replace(
+                '{{' . $key . '}}',
+                e((string) $value),
+                $isiSurat
+            );
         }
 
         $suratKeluar->update([
@@ -194,22 +354,59 @@ class ApprovalSuratKeluarController extends Controller
         ]);
 
         try {
-            $directory = storage_path('app/public/surat-keluar');
+            $directory =
+                storage_path(
+                    'app/public/surat-keluar'
+                );
+
             if (! is_dir($directory)) {
-                mkdir($directory, 0755, true);
+                mkdir(
+                    $directory,
+                    0755,
+                    true
+                );
             }
 
-            $namaFile = 'surat-'.$suratKeluar->id_surat_keluar.'-'.now()->format('YmdHis').'.pdf';
-            Pdf::loadView('pdf.surat-keluar', compact('suratKeluar'))
-                ->setPaper('a4', 'portrait')
-                ->save($directory.'/'.$namaFile);
+            $namaFile =
+                'surat-' .
+                $suratKeluar->id_surat_keluar .
+                '-' .
+                now()->format('YmdHis') .
+                '.pdf';
 
-            $suratKeluar->update(['file_final_path' => 'surat-keluar/'.$namaFile]);
+            Pdf::loadView(
+                'pdf.surat-keluar',
+                compact('suratKeluar')
+            )
+                ->setPaper(
+                    'a4',
+                    'portrait'
+                )
+                ->save(
+                    $directory .
+                    '/' .
+                    $namaFile
+                );
+
+            $suratKeluar->update([
+                'file_final_path' =>
+                    'surat-keluar/' .
+                    $namaFile,
+            ]);
         } catch (\Throwable $e) {
-            LogAktivitas::catat('ubah_data', 'Surat Keluar', 'Surat terbit, tetapi PDF belum tersimpan otomatis: '.$e->getMessage());
+            LogAktivitas::catat(
+                'ubah_data',
+                'Surat Keluar',
+                'Surat terbit, tetapi PDF belum tersimpan otomatis: ' .
+                    $e->getMessage()
+            );
         }
 
-        LogAktivitas::catat('ubah_data', 'Surat Keluar', "Surat terbit dengan nomor {$nomorSurat}");
+        LogAktivitas::catat(
+            'ubah_data',
+            'Surat Keluar',
+            "Surat terbit dengan nomor {$nomorSurat}"
+        );
 
         if ($suratKeluar->pembuat) {
             Notifikasi::kirim(

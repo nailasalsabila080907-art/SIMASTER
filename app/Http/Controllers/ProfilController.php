@@ -77,4 +77,52 @@ class ProfilController extends Controller
 
         return redirect()->route('profil.index')->with('sukses', 'Profil berhasil diperbarui.');
     }
+
+        public function updateKeamanan(Request $request)
+{
+    $user = Auth::user();
+
+    $validated = $request->validate([
+        'username' => [
+            'required',
+            'string',
+            'max:100',
+            'unique:users,username,' . $user->id_user . ',id_user',
+        ],
+        'password_lama' => [
+            'nullable',
+            'required_with:password_baru',
+            'string',
+        ],
+        'password_baru' => [
+            'nullable',
+            'string',
+            'min:8',
+            'confirmed',
+        ],
+    ], [
+        'username.required' => 'Username wajib diisi.',
+        'username.unique' => 'Username tersebut sudah digunakan.',
+        'password_lama.required_with' => 'Password lama wajib diisi jika ingin mengganti password.',
+        'password_baru.min' => 'Password baru minimal 8 karakter.',
+        'password_baru.confirmed' => 'Konfirmasi password tidak cocok.',
+    ]);
+
+    if (!empty($validated['password_baru'])) {
+        if (!Hash::check($validated['password_lama'], $user->password_hash)) {
+            return back()
+                ->withErrors(['password_lama' => 'Password lama tidak sesuai.'])
+                ->withInput();
+        }
+
+        $user->password_hash = Hash::make($validated['password_baru']);
+    }
+
+    $user->username = $validated['username'];
+    $user->save();
+
+    return redirect()
+        ->route('profil.index')
+        ->with('success', 'Keamanan akun berhasil diperbarui.');
+}
 }

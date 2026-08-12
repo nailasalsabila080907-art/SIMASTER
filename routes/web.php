@@ -32,6 +32,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profil', [ProfilController::class, 'index'])->name('profil.index');
     Route::get('/profil/edit', [ProfilController::class, 'edit'])->name('profil.edit');
     Route::put('/profil', [ProfilController::class, 'update'])->name('profil.update');
+    Route::put('/profil/keamanan', [ProfilController::class, 'updateKeamanan'])->name('profil.keamanan.update');
     Route::get('/log-aktivitas', [LogAktivitasController::class, 'index'])->name('log-aktivitas.index');
 
     Route::get('/notifikasi', [NotifikasiController::class, 'index'])->name('notifikasi.index');
@@ -71,12 +72,19 @@ Route::middleware('auth')->group(function () {
         Route::get('/{suratKeluar}/cetak-pdf', 'cetakPdf')->name('cetak-pdf');
     });
 
-    Route::middleware('role:admin_tu,super_admin,kepala_sekolah')->controller(ApprovalSuratKeluarController::class)->prefix('approval')->name('approval.')->group(function () {
-        Route::get('/', 'index')->name('index');
-        Route::post('/{approval}/setujui', 'setujui')->name('setujui');
-        Route::post('/{approval}/tolak', 'tolak')->name('tolak');
-    });
 
+Route::middleware(['auth', 'role:admin_tu,super_admin,kepala_sekolah'])->group(function () {
+
+    Route::get('/approval', [ApprovalSuratKeluarController::class, 'index'])
+        ->name('approval.index');
+
+    Route::post('/approval/{approval}/setujui', [ApprovalSuratKeluarController::class, 'setujui'])
+        ->name('approval.setujui');
+
+    Route::post('/approval/{approval}/tolak', [ApprovalSuratKeluarController::class, 'tolak'])
+        ->name('approval.tolak');
+
+});
     Route::controller(SuratMasukController::class)->prefix('surat-masuk')->name('surat-masuk.')->group(function () {
         Route::get('/', 'index')->name('index');
         Route::get('/create', 'create')->name('create');

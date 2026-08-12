@@ -102,5 +102,93 @@
             <div><p class="text-[11px] uppercase tracking-wider" style="color:var(--ink-muted)">Gelar Belakang</p><p class="font-medium mt-1">{{ $pegawai?->gelar_belakang ?: '-' }}</p></div>
         </div>
     </section>
+
+    <section class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mt-6">
+    <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between gap-4">
+        <div>
+            <h3 class="font-display text-xl" style="color:var(--navy)">Keamanan Akun</h3>
+            <p class="text-sm mt-1" style="color:var(--ink-muted)">
+                Kelola username dan password akun SIMASTER Anda
+            </p>
+        </div>
+
+        <div class="w-11 h-11 rounded-xl flex items-center justify-center"
+             style="background:#fbf5e7;color:var(--gold)">
+            🔐
+        </div>
+    </div>
+
+    @if(session('success'))
+        <div class="mx-6 mt-5 rounded-xl px-4 py-3 text-sm"
+             style="background:#edf7f1;color:#2f6b4f">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div class="mx-6 mt-5 rounded-xl px-4 py-3 text-sm"
+             style="background:#fff1ef;color:#b0432e">
+            {{ $errors->first() }}
+        </div>
+    @endif
+
+    <form method="POST" action="{{ route('profil.keamanan.update') }}" class="p-6">
+        @csrf
+        @method('PUT')
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label class="block text-sm font-medium mb-2"> Username</label>
+                <input type="text" name="username" value="{{ old('username', $user->username) }}" class="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" required>
+                <p class="text-xs mt-2" style="color:var(--ink-muted)">Username digunakan untuk masuk ke SIMASTER.</p>
+
+                @error('username')
+                    <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div></div>
+
+            <div class="md:col-span-2">
+                <div class="border-t border-gray-100 pt-6">
+                    <h4 class="font-semibold text-sm" style="color:var(--navy)"> Ganti Password</h4>
+
+                    <p class="text-xs mt-1" style="color:var(--ink-muted)"> Kosongkan bagian password jika Anda tidak ingin menggantinya.</p>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-2"> Password Lama</label>
+                <input type="password" name="password_lama" class="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" autocomplete="current-password">
+
+                @error('password_lama')
+                    <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+            <div></div>
+
+            <div>
+                <label class="block text-sm font-medium mb-2"> Password Baru </label>
+
+                <input type="password" name="password_baru" class="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" autocomplete="new-password">
+
+                @error('password_baru')
+                    <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-2"> Konfirmasi Password Baru</label>
+                <input type="password" name="password_baru_confirmation" class="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" autocomplete="new-password">
+            </div>
+        </div>
+
+        <div class="mt-6 pt-5 border-t border-gray-100 flex justify-end">
+            <button type="submit" class="px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition hover:opacity-90" style="background:var(--navy)">
+                Simpan Perubahan
+            </button>
+        </div>
+    </form>
+</section>
 </div>
 @endsection
