@@ -157,7 +157,8 @@ class SuratKeluarController extends Controller
         abort_unless($suratKeluar->status === 'terkirim', 404, 'Surat belum terbit.');
 
         $suratKeluar->load(['kategori', 'unitPembuat.sekolah']);
-        $pdf = Pdf::loadView('pdf.surat-keluar', compact('suratKeluar'))->setPaper('a4', 'portrait');
+        $pdf = Pdf::loadView('pdf.surat-keluar', compact('suratKeluar'))
+        ->setPaper('a4', 'portrait');
 
         return $pdf->stream('Surat-'.str_replace(['/', ' '], '-', $suratKeluar->nomor_surat).'.pdf');
     }

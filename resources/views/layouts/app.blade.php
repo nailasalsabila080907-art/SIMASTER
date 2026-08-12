@@ -286,5 +286,6 @@
     backdrop?.addEventListener('click', closeSidebar);
 </script>
 @stack('scripts')
+
 </body>
 </html>
