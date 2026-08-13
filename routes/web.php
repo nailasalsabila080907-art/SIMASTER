@@ -74,6 +74,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/{suratKeluar}', 'show')->name('show');
         Route::post('/{suratKeluar}/ajukan', 'ajukan')->name('ajukan');
         Route::get('/{suratKeluar}/cetak-pdf', 'cetakPdf')->name('cetak-pdf');
+        Route::get('/surat-keluar/{suratKeluar}/cetak-pdf', [SuratKeluarController::class, 'cetakPdf'])->name('surat-keluar.cetak-pdf');
     });
 
 

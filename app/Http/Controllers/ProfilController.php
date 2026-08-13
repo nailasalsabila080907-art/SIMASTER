@@ -56,7 +56,7 @@ class ProfilController extends Controller
             'pangkat_golongan' => ['nullable', 'string', 'max:50'],
             'no_hp' => ['nullable', 'string', 'max:20'],
             'email' => ['nullable', 'email', 'max:100'],
-            'foto' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+                'foto' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
         $fotoPath = $pegawai->foto_path;

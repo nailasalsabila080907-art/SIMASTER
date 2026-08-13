@@ -30,18 +30,23 @@ class Notifikasi extends Model
     }
 
     // Helper cepat buat kirim notifikasi ke seorang user
-    public static function kirim(int $idUser, string $tipeSurat, int $idSurat, string $judul, string $pesan): self
-    {
-        return self::create([
-            'id_user' => $idUser,
-            'tipe_surat' => $tipeSurat,
-            'id_surat' => $idSurat,
-            'judul' => $judul,
-            'pesan' => $pesan,
-            'sudah_dibaca' => false,
-            'created_at' => now(),
-        ]);
-    }
+    public static function kirim(
+    int $idUser,
+    string $tipeSurat,
+    string $idSurat,
+    string $judul,
+    string $pesan
+): self {
+    return self::create([
+        'id_user' => $idUser,
+        'tipe_surat' => $tipeSurat,
+        'id_surat' => $idSurat,
+        'judul' => $judul,
+        'pesan' => $pesan,
+        'sudah_dibaca' => false,
+        'created_at' => now(),
+    ]);
+}
 
     public function tandaiDibaca(): void
     {
