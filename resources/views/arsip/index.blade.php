@@ -61,11 +61,21 @@
                             </td>
                             <td class="px-4 py-3 text-end">
                                 @if($surat)
-                                    <a href="{{ $a->tipe_surat === 'keluar' ? route('surat-keluar.show', $surat) : route('surat-masuk.show', $surat) }}"
-                                       class="btn btn-sm"
-                                       style="border:1px solid var(--border);border-radius:8px;color:var(--bs-primary);font-weight:600;background:#fff;">
-                                        <i class="bi bi-eye"></i> Lihat
-                                    </a>
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <a href="{{ $a->tipe_surat === 'keluar' ? route('surat-keluar.show', $surat) : route('surat-masuk.show', $surat) }}"
+                                           class="btn btn-sm"
+                                           style="border:1px solid var(--border);border-radius:8px;color:var(--bs-primary);font-weight:600;background:#fff;">
+                                            <i class="bi bi-eye"></i> Lihat
+                                        </a>
+                                        @if($a->tipe_surat === 'keluar' && in_array($surat->status, ['terkirim', 'diarsipkan'], true))
+                                            <a href="{{ route('surat-keluar.cetak-pdf', $surat) }}"
+                                               class="btn btn-sm"
+                                               target="_blank"
+                                               style="border:1px solid #2F6B4F;border-radius:8px;color:#2F6B4F;font-weight:600;background:#fff;">
+                                                <i class="bi bi-file-earmark-pdf"></i> PDF
+                                            </a>
+                                        @endif
+                                    </div>
                                 @endif
                             </td>
                         </tr>

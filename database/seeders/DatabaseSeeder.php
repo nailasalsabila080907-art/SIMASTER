@@ -27,23 +27,37 @@ class DatabaseSeeder extends Seeder
         );
 
         $unitTu = UnitKerja::firstOrCreate(
-            ['id_sekolah' => $sekolah->id_sekolah, 'kode_unit' => 'KP'],
-            ['nama_unit' => 'Kepegawaian / Tata Usaha', 'status' => 'aktif']
+            [
+                'id_sekolah' => $sekolah->id_sekolah,
+                'kode_unit' => 'KP'
+            ],
+            [
+                'nama_unit' => 'Kepegawaian / Tata Usaha',
+                'status' => 'aktif'
+            ]
         );
 
         $unitKurikulum = UnitKerja::firstOrCreate(
-            ['id_sekolah' => $sekolah->id_sekolah, 'kode_unit' => 'KUR'],
-            ['nama_unit' => 'Kurikulum', 'status' => 'aktif']
+            [
+                'id_sekolah' => $sekolah->id_sekolah,
+                'kode_unit' => 'KUR'
+            ],
+            [
+                'nama_unit' => 'Kurikulum',
+                'status' => 'aktif'
+            ]
         );
 
         $jabatanStaff = Jabatan::firstOrCreate(
             ['nama_jabatan' => 'Staff TU'],
             ['level_jabatan' => 1]
         );
+
         $jabatanKepalaTu = Jabatan::firstOrCreate(
             ['nama_jabatan' => 'Kepala TU'],
             ['level_jabatan' => 2]
         );
+
         $jabatanKepala = Jabatan::firstOrCreate(
             ['nama_jabatan' => 'Kepala Sekolah'],
             ['level_jabatan' => 3]

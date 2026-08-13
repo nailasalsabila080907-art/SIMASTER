@@ -153,19 +153,16 @@ class SuratKeluarController extends Controller
 
     public function cetakPdf(SuratKeluar $suratKeluar)
     {
-        $this->pastikanBolehLihat($suratKeluar);
-        abort_unless($suratKeluar->status === 'terkirim', 404, 'Surat belum terbit.');
-
-        $suratKeluar->load(['kategori', 'unitPembuat.sekolah']);
-        $pdf = Pdf::loadView('pdf.surat-keluar', compact('suratKeluar'))
-        ->setPaper('a4', 'portrait');
-
-        return $pdf->stream('Surat-'.str_replace(['/', ' '], '-', $suratKeluar->nomor_surat).'.pdf');
+    $this->pastikanBolehLihat($suratKeluar);
+    abort_unless( in_array($suratKeluar->status, ['terkirim', 'diarsipkan'], true), 404, 'Surat belum terbit.');
+    $suratKeluar->load(['kategori', 'unitPembuat.sekolah']);
+    $pdf = Pdf::loadView('pdf.surat-keluar',compact('suratKeluar'))->setPaper('a4', 'portrait');
+    return $pdf->stream('Surat-'.str_replace(['/', ' '],'-',$suratKeluar->nomor_surat).'.pdf');
     }
 
     protected function form(Request $request, ?SuratKeluar $suratKeluar = null)
     {
-        $kategoriList = KategoriSurat::where('jenis', 'keluar')->orderBy('nama_kategori')->get();
+        $kategoriList = KategoriSurat::where('jenis', 'keluar')->orderBy('nama_kategori')->get();   
         $kategoriId = $request->input('kategori') ?: $suratKeluar?->id_kategori;
         $templateId = $request->input('template') ?: $suratKeluar?->id_template;
 
