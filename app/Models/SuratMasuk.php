@@ -5,10 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SuratMasuk extends Model
 {
+    use HasUuids;
     use HasFactory;
 
     protected $table = 'surat_masuk';
@@ -55,5 +57,14 @@ class SuratMasuk extends Model
     public function disposisiAwal(): HasMany
     {
         return $this->disposisi()->whereNull('id_disposisi_asal');
+    }
+     public function uniqueIds(): array
+    {
+        return ['uuid'];
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'uuid';
     }
 }
