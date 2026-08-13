@@ -13,7 +13,13 @@ class ProfilController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $user->load('pegawai.jabatan', 'pegawai.unitKerja', 'pegawai.jurusan', 'pegawai.sekolah');
+
+        $user->load(
+            'pegawai.jabatan',
+            'pegawai.unitKerja',
+            'pegawai.jurusan',
+            'pegawai.sekolah'
+        );
 
         return view('profil.index', compact('user'));
     }
@@ -21,7 +27,13 @@ class ProfilController extends Controller
     public function edit()
     {
         $user = Auth::user();
-        $user->load('pegawai.jabatan', 'pegawai.unitKerja', 'pegawai.jurusan', 'pegawai.sekolah');
+
+        $user->load(
+            'pegawai.jabatan',
+            'pegawai.unitKerja',
+            'pegawai.jurusan',
+            'pegawai.sekolah'
+        );
 
         return view('profil.edit', compact('user'));
     }
@@ -44,17 +56,17 @@ class ProfilController extends Controller
             'pangkat_golongan' => ['nullable', 'string', 'max:50'],
             'no_hp' => ['nullable', 'string', 'max:20'],
             'email' => ['nullable', 'email', 'max:100'],
-            'foto' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            'username' => ['required', 'string', 'max:50', Rule::unique('users', 'username')->ignore($user->id_user, 'id_user')],
-            'password' => ['nullable', 'string', 'min:6', 'confirmed'],
+                'foto' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
+        $fotoPath = $pegawai->foto_path;
+
         if ($request->hasFile('foto')) {
-            if ($pegawai->foto_path && Storage::disk('public')->exists($pegawai->foto_path)) {
-                Storage::disk('public')->delete($pegawai->foto_path);
+            if ($fotoPath && Storage::disk('public')->exists($fotoPath)) {
+                Storage::disk('public')->delete($fotoPath);
             }
 
-            $data['foto_path'] = $request->file('foto')->store('foto-pegawai', 'public');
+            $fotoPath = $request->file('foto')->store('foto-pegawai', 'public');
         }
 
         $pegawai->update([
@@ -66,63 +78,61 @@ class ProfilController extends Controller
             'pangkat_golongan' => $data['pangkat_golongan'] ?? null,
             'no_hp' => $data['no_hp'] ?? null,
             'email' => $data['email'] ?? null,
-            'foto_path' => $data['foto_path'] ?? $pegawai->foto_path,
+            'foto_path' => $fotoPath,
         ]);
 
-        $user->username = $data['username'];
-        if (! empty($data['password'])) {
-            $user->password_hash = Hash::make($data['password']);
+        return redirect()
+            ->route('profil.index')
+            ->with('sukses', 'Profil berhasil diperbarui.');
+    }
+
+    public function updateKeamanan(Request $request)
+    {
+        $user = Auth::user();
+
+        $validated = $request->validate([
+            'username' => [
+                'required',
+                'string',
+                'max:100',
+                'unique:users,username,' . $user->id_user . ',id_user',
+            ],
+            'password_lama' => [
+                'nullable',
+                'required_with:password_baru',
+                'string',
+            ],
+            'password_baru' => [
+                'nullable',
+                'string',
+                'min:8',
+                'confirmed',
+            ],
+        ], [
+            'username.required' => 'Username wajib diisi.',
+            'username.unique' => 'Username tersebut sudah digunakan.',
+            'password_lama.required_with' => 'Password lama wajib diisi jika ingin mengganti password.',
+            'password_baru.min' => 'Password baru minimal 8 karakter.',
+            'password_baru.confirmed' => 'Konfirmasi password tidak cocok.',
+        ]);
+
+        if (! empty($validated['password_baru'])) {
+            if (! Hash::check($validated['password_lama'], $user->password_hash)) {
+                return back()
+                    ->withErrors([
+                        'password_lama' => 'Password lama tidak sesuai.',
+                    ])
+                    ->withInput();
+            }
+
+            $user->password_hash = Hash::make($validated['password_baru']);
         }
+
+        $user->username = $validated['username'];
         $user->save();
 
-        return redirect()->route('profil.index')->with('sukses', 'Profil berhasil diperbarui.');
+        return redirect()
+            ->route('profil.index')
+            ->with('sukses', 'Keamanan akun berhasil diperbarui.');
     }
-
-        public function updateKeamanan(Request $request)
-{
-    $user = Auth::user();
-
-    $validated = $request->validate([
-        'username' => [
-            'required',
-            'string',
-            'max:100',
-            'unique:users,username,' . $user->id_user . ',id_user',
-        ],
-        'password_lama' => [
-            'nullable',
-            'required_with:password_baru',
-            'string',
-        ],
-        'password_baru' => [
-            'nullable',
-            'string',
-            'min:8',
-            'confirmed',
-        ],
-    ], [
-        'username.required' => 'Username wajib diisi.',
-        'username.unique' => 'Username tersebut sudah digunakan.',
-        'password_lama.required_with' => 'Password lama wajib diisi jika ingin mengganti password.',
-        'password_baru.min' => 'Password baru minimal 8 karakter.',
-        'password_baru.confirmed' => 'Konfirmasi password tidak cocok.',
-    ]);
-
-    if (!empty($validated['password_baru'])) {
-        if (!Hash::check($validated['password_lama'], $user->password_hash)) {
-            return back()
-                ->withErrors(['password_lama' => 'Password lama tidak sesuai.'])
-                ->withInput();
-        }
-
-        $user->password_hash = Hash::make($validated['password_baru']);
-    }
-
-    $user->username = $validated['username'];
-    $user->save();
-
-    return redirect()
-        ->route('profil.index')
-        ->with('success', 'Keamanan akun berhasil diperbarui.');
-}
 }
