@@ -100,10 +100,11 @@ class TemplateSuratController extends Controller
         }
     }
 
-    public function hapusVariabel(VariabelTemplate $variabel)
-    {
-        $templateId = $variabel->id_template;
+   
+        public function hapusVariabel(VariabelTemplate $variabel)
+        {
+        $template = TemplateSurat::find($variabel->id_template); 
         $variabel->delete();
-        return redirect()->route('template-surat.edit', $templateId)->with('sukses', 'Field berhasil dihapus.');
+        return redirect()->route('template-surat.edit', $template); 
     }
 }

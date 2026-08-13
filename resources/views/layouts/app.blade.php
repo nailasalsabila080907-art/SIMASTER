@@ -83,6 +83,15 @@
             font-weight:700;border-radius:99px;padding:.1rem .45rem;
         }
 
+        /* ===== Collapsible sidebar group (e.g. Master Data) ===== */
+        .nav-link-toggle{cursor:pointer;width:100%;border:none;background:transparent;text-align:left}
+        .nav-chevron{margin-left:auto;font-size:.8rem;color:#A6A8B4;transition:transform .2s ease;flex-shrink:0}
+        .nav-link-toggle[aria-expanded="true"]{background:var(--surface);color:var(--ink)}
+        .nav-link-toggle[aria-expanded="true"] .nav-chevron{transform:rotate(180deg)}
+        .nav-submenu{padding-left:.2rem;margin-bottom:.15rem}
+        .nav-link-sub{padding-left:2.5rem;font-size:.82rem}
+        .nav-link-sub i{font-size:.95rem;width:16px}
+
         .sidebar-footer{padding:.85rem;border-top:1px solid var(--border)}
         .btn-logout{
             display:flex;align-items:center;gap:.7rem;width:100%;border:none;background:transparent;
@@ -140,6 +149,11 @@
 </head>
 <body>
 
+@php
+    $masterDataRoutes = ['pegawai.*','pengguna.*','unit-kerja.*','jurusan.*','jabatan.*','kategori-surat.*','klasifikasi-arsip.*','template-surat.*'];
+    $masterDataAktif = request()->routeIs($masterDataRoutes);
+@endphp
+
 <aside class="sidebar" id="appSidebar">
     <div class="sidebar-brand">
         <div class="logo-badge">
@@ -182,30 +196,45 @@
 
         @if(in_array(auth()->user()->role,['admin_tu','super_admin']))
             <p class="nav-section-label">Master Data</p>
-            <a href="{{ route('pegawai.index') }}" class="nav-link-custom {{ request()->routeIs('pegawai.*') ? 'active' : '' }}">
-                <i class="bi bi-people"></i> Pegawai
-            </a>
-            <a href="{{ route('pengguna.index') }}" class="nav-link-custom {{ request()->routeIs('pengguna.*') ? 'active' : '' }}">
-                <i class="bi bi-person-gear"></i> Pengguna
-            </a>
-            <a href="{{ route('unit-kerja.index') }}" class="nav-link-custom {{ request()->routeIs('unit-kerja.*') ? 'active' : '' }}">
-                <i class="bi bi-diagram-3"></i> Unit Kerja
-            </a>
-            <a href="{{ route('jurusan.index') }}" class="nav-link-custom {{ request()->routeIs('jurusan.*') ? 'active' : '' }}">
-                <i class="bi bi-mortarboard"></i> Jurusan
-            </a>
-            <a href="{{ route('jabatan.index') }}" class="nav-link-custom {{ request()->routeIs('jabatan.*') ? 'active' : '' }}">
-                <i class="bi bi-briefcase"></i> Jabatan
-            </a>
-            <a href="{{ route('kategori-surat.index') }}" class="nav-link-custom {{ request()->routeIs('kategori-surat.*') ? 'active' : '' }}">
-                <i class="bi bi-tags"></i> Kategori Surat
-            </a>
-            <a href="{{ route('klasifikasi-arsip.index') }}" class="nav-link-custom {{ request()->routeIs('klasifikasi-arsip.*') ? 'active' : '' }}">
-                <i class="bi bi-folder2-open"></i> Klasifikasi Arsip
-            </a>
-            <a href="{{ route('template-surat.index') }}" class="nav-link-custom {{ request()->routeIs('template-surat.*') ? 'active' : '' }}">
-                <i class="bi bi-file-earmark-richtext"></i> Template Surat
-            </a>
+
+            <button type="button"
+                    class="nav-link-custom nav-link-toggle {{ $masterDataAktif ? 'active' : '' }}"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#masterDataMenu"
+                    aria-expanded="{{ $masterDataAktif ? 'true' : 'false' }}"
+                    aria-controls="masterDataMenu">
+                <i class="bi bi-database"></i> Master Data
+                <i class="bi bi-chevron-down nav-chevron"></i>
+            </button>
+
+            <div class="collapse {{ $masterDataAktif ? 'show' : '' }}" id="masterDataMenu">
+                <div class="nav-submenu">
+                    <a href="{{ route('pegawai.index') }}" class="nav-link-custom nav-link-sub {{ request()->routeIs('pegawai.*') ? 'active' : '' }}">
+                        <i class="bi bi-people"></i> Pegawai
+                    </a>
+                    <a href="{{ route('pengguna.index') }}" class="nav-link-custom nav-link-sub {{ request()->routeIs('pengguna.*') ? 'active' : '' }}">
+                        <i class="bi bi-person-gear"></i> Pengguna
+                    </a>
+                    <a href="{{ route('unit-kerja.index') }}" class="nav-link-custom nav-link-sub {{ request()->routeIs('unit-kerja.*') ? 'active' : '' }}">
+                        <i class="bi bi-diagram-3"></i> Unit Kerja
+                    </a>
+                    <a href="{{ route('jurusan.index') }}" class="nav-link-custom nav-link-sub {{ request()->routeIs('jurusan.*') ? 'active' : '' }}">
+                        <i class="bi bi-mortarboard"></i> Jurusan
+                    </a>
+                    <a href="{{ route('jabatan.index') }}" class="nav-link-custom nav-link-sub {{ request()->routeIs('jabatan.*') ? 'active' : '' }}">
+                        <i class="bi bi-briefcase"></i> Jabatan
+                    </a>
+                    <a href="{{ route('kategori-surat.index') }}" class="nav-link-custom nav-link-sub {{ request()->routeIs('kategori-surat.*') ? 'active' : '' }}">
+                        <i class="bi bi-tags"></i> Kategori Surat
+                    </a>
+                    <a href="{{ route('klasifikasi-arsip.index') }}" class="nav-link-custom nav-link-sub {{ request()->routeIs('klasifikasi-arsip.*') ? 'active' : '' }}">
+                        <i class="bi bi-folder2-open"></i> Klasifikasi Arsip
+                    </a>
+                    <a href="{{ route('template-surat.index') }}" class="nav-link-custom nav-link-sub {{ request()->routeIs('template-surat.*') ? 'active' : '' }}">
+                        <i class="bi bi-file-earmark-richtext"></i> Template Surat
+                    </a>
+                </div>
+            </div>
         @endif
 
         <p class="nav-section-label">Sistem</p>

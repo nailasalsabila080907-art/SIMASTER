@@ -4,11 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TemplateSurat extends Model
 {
+    use HasUuids;
     use HasFactory;
 
     protected $table = 'template_surat';
@@ -41,5 +43,14 @@ class TemplateSurat extends Model
     public function suratKeluar(): HasMany
     {
         return $this->hasMany(SuratKeluar::class, 'id_template', 'id_template');
+    }
+     public function uniqueIds(): array
+    {
+        return ['uuid'];
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'uuid';
     }
 }

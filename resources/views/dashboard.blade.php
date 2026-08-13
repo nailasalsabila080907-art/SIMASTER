@@ -79,18 +79,29 @@
             <div class="card-body p-0">
                 <div class="list-group list-group-flush">
                     @forelse($notifikasiTerbaru as $n)
-                        <a href="{{ route('notifikasi.tandai-dibaca',$n) }}"
-                           onclick="event.preventDefault();document.getElementById('notif-{{ $n->id_notifikasi }}').submit();"
-                           class="list-group-item list-group-item-action d-flex gap-3 py-3 px-3 border-0 border-bottom">
-                            <span class="d-inline-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
-                                  style="width:34px;height:34px;background:{{ $n->sudah_dibaca ? '#F1F2F4' : '#FDF1E2' }};color:#F7A02A;font-size:.6rem">
-                                <i class="bi bi-dot fs-4"></i>
-                            </span>
-                            <span class="min-w-0">
-                                <span class="d-block fw-semibold text-truncate" style="font-size:.85rem;color:var(--ink)">{{ $n->judul }}</span>
-                                <span class="d-block text-muted text-truncate" style="font-size:.76rem">{{ $n->pesan }}</span>
-                            </span>
-                        </a>
+                        <div class="list-group-item d-flex gap-3 py-3 px-3 border-0 border-bottom" style="min-width:0">
+                            <a href="{{ route('notifikasi.tandai-dibaca',$n) }}"
+                               onclick="event.preventDefault();document.getElementById('notif-{{ $n->id_notifikasi }}').submit();"
+                               class="d-flex gap-3 text-decoration-none flex-grow-1" style="min-width:0">
+                                <span class="d-inline-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
+                                      style="width:34px;height:34px;background:{{ $n->sudah_dibaca ? '#F1F2F4' : '#FDF1E2' }};color:#F7A02A;font-size:.6rem">
+                                    <i class="bi bi-dot fs-4"></i>
+                                </span>
+                                <span style="min-width:0;flex:1 1 auto">
+                                    <span class="d-block fw-semibold text-truncate" style="font-size:.85rem;color:var(--ink)">{{ $n->judul }}</span>
+                                    <span class="d-block text-muted notif-pesan" style="font-size:.76rem">{{ $n->pesan }}</span>
+                                    @if(strlen($n->pesan) > 60)
+                                        <a href="#" class="notif-toggle" style="font-size:.72rem;color:#178754"
+                                           onclick="event.preventDefault();event.stopPropagation();
+                                                    const p=this.previousElementSibling;
+                                                    p.classList.toggle('notif-expanded');
+                                                    this.textContent = p.classList.contains('notif-expanded') ? 'Sembunyikan' : 'Lihat selengkapnya';">
+                                            Lihat selengkapnya
+                                        </a>
+                                    @endif
+                                </span>
+                            </a>
+                        </div>
                         <form id="notif-{{ $n->id_notifikasi }}" method="POST" action="{{ route('notifikasi.tandai-dibaca',$n) }}" class="d-none">@csrf</form>
                     @empty
                         <div class="text-center text-muted py-5" style="font-size:.85rem">
@@ -173,6 +184,18 @@
 
 @push('head')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+    .notif-pesan {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .notif-pesan.notif-expanded {
+        -webkit-line-clamp: unset;
+        overflow: visible;
+    }
+</style>
 @endpush
 
 @push('scripts')

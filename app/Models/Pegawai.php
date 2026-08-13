@@ -6,10 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Pegawai extends Model
 {
+    use HasUuids;
     use HasFactory;
 
     protected $table = 'pegawai';
@@ -59,5 +61,14 @@ class Pegawai extends Model
     public function getNamaBergelarAttribute(): string
     {
         return trim("{$this->gelar_depan} {$this->nama_lengkap}, {$this->gelar_belakang}", ' ,');
+    }
+    public function uniqueIds(): array
+    {
+        return ['uuid'];
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'uuid';
     }
 }

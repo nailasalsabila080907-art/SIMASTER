@@ -4,11 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class KlasifikasiArsip extends Model
 {
+    use HasUuids;
     use HasFactory;
 
     protected $table = 'klasifikasi_arsip';
@@ -34,5 +36,14 @@ class KlasifikasiArsip extends Model
     public function suratMasuk(): HasMany
     {
         return $this->hasMany(SuratMasuk::class, 'id_klasifikasi', 'id_klasifikasi');
+    }
+     public function uniqueIds(): array
+    {
+        return ['uuid'];
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'uuid';
     }
 }

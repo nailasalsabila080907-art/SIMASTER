@@ -1,10 +1,88 @@
 @extends('layouts.app')
-@section('title','Unit Kerja')
+
+@section('title', 'Unit Kerja')
+
 @section('content')
-<div class="w-full">
-    @if(session('sukses'))<div class="mb-5 rounded-xl bg-green-50 border border-green-200 text-green-700 px-5 py-4 text-sm">{{session('sukses')}}</div>@endif
-    @if(session('gagal'))<div class="mb-5 rounded-xl bg-red-50 border border-red-200 text-red-700 px-5 py-4 text-sm">{{session('gagal')}}</div>@endif
-    <div class="flex justify-between items-center mb-5"><div><h2 class="font-display text-xl" style="color:var(--navy)">Unit Kerja</h2><p class="text-sm mt-1" style="color:var(--ink-muted)">Kelola unit yang digunakan pada penomoran dan data pegawai.</p></div><a href="{{route('unit-kerja.create')}}" class="px-5 py-2.5 rounded-xl text-white text-sm" style="background:var(--navy)">+ Tambah Unit</a></div>
-    <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-50"><tr class="text-left"><th class="px-5 py-4">Kode</th><th class="px-5 py-4">Nama Unit</th><th class="px-5 py-4">Status</th><th class="px-5 py-4 text-right">Aksi</th></tr></thead><tbody class="divide-y divide-gray-100">@forelse($unitKerja as $u)<tr><td class="px-5 py-4 font-mono">{{$u->kode_unit}}</td><td class="px-5 py-4">{{$u->nama_unit}}</td><td class="px-5 py-4">{{$u->status}}</td><td class="px-5 py-4 text-right"><a href="{{route('unit-kerja.edit',$u)}}" class="text-xs mr-3" style="color:var(--navy)">Ubah</a><form class="inline" method="POST" action="{{route('unit-kerja.destroy',$u)}}" onsubmit="return confirm('Hapus unit ini?')">@csrf @method('DELETE')<button class="text-xs text-red-600">Hapus</button></form></td></tr>@empty<tr><td colspan="4" class="px-5 py-10 text-center" style="color:var(--ink-muted)">Belum ada unit kerja.</td></tr>@endforelse</tbody></table></div></div><div class="mt-5">{{$unitKerja->links()}}</div>
-</div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h5 class="mb-0" style="color:var(--ink)">Unit Kerja</h5>
+            <p class="mb-0" style="color:var(--ink-muted);font-size:.83rem">
+                Kelola unit yang digunakan pada penomoran dan data pegawai.
+            </p>
+        </div>
+        <a href="{{ route('unit-kerja.create') }}" class="btn text-white" style="background:var(--bs-primary);border-radius:10px;font-weight:600;font-size:.87rem;padding:.6rem 1.4rem;">
+            <i class="bi bi-plus-lg"></i> Tambah Unit
+        </a>
+    </div>
+
+    @if(session('sukses'))
+        <div class="alert d-flex align-items-start gap-2 border-0 mb-4" style="background:#EAF7EE;color:#2E7D4F;border-radius:12px;font-size:.85rem;">
+            <i class="bi bi-check-circle-fill mt-1"></i>
+            <div>{{ session('sukses') }}</div>
+        </div>
+    @endif
+
+    @if(session('gagal'))
+        <div class="alert d-flex align-items-start gap-2 border-0 mb-4" style="background:#FCEBEA;color:#C4463F;border-radius:12px;font-size:.85rem;">
+            <i class="bi bi-exclamation-circle-fill mt-1"></i>
+            <div>{{ session('gagal') }}</div>
+        </div>
+    @endif
+
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0" style="font-size:.87rem;">
+                    <thead style="background:var(--bs-light,#f8f9fa);">
+                        <tr>
+                            <th class="ps-4 py-3" style="color:var(--ink-muted);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;">Kode</th>
+                            <th class="py-3" style="color:var(--ink-muted);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;">Nama Unit</th>
+                            <th class="py-3" style="color:var(--ink-muted);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;">Status</th>
+                            <th class="pe-4 py-3 text-end" style="color:var(--ink-muted);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($unitKerja as $u)
+                            <tr style="border-top:1px solid var(--border);">
+                                <td class="ps-4 py-3"><span class="font-monospace">{{ $u->kode_unit }}</span></td>
+                                <td class="py-3 fw-semibold" style="color:var(--ink)">{{ $u->nama_unit }}</td>
+                                <td class="py-3">
+                                    @if($u->status === 'aktif')
+                                        <span class="badge" style="background:#EAF7EE;color:#2E7D4F;font-weight:600;">Aktif</span>
+                                    @else
+                                        <span class="badge" style="background:#F1F1F3;color:#6B7280;font-weight:600;">Nonaktif</span>
+                                    @endif
+                                </td>
+                                <td class="pe-4 py-3 text-end">
+                                    <a href="{{ route('unit-kerja.edit', $u) }}" class="btn-icon-ghost me-2" title="Ubah">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                    <form class="d-inline" method="POST" action="{{ route('unit-kerja.destroy', $u) }}" onsubmit="return confirm('Hapus unit ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn-icon-ghost text-danger" title="Hapus">
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="text-center py-5" style="color:var(--ink-muted)">
+                                    <i class="bi bi-inbox" style="font-size:1.5rem;"></i>
+                                    <p class="mb-0 mt-2">Belum ada unit kerja.</p>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        {{ $unitKerja->links() }}
+    </div>
+
 @endsection
