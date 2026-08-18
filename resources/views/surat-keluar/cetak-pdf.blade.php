@@ -166,7 +166,7 @@
                     &nbsp;&nbsp;
                     Website: {{ $sekolah->website ?? '-' }}
                     &nbsp;&nbsp;
-                    Telp: {{ $sekolah->telepon ?? '-' }}
+                    Telp: {{ $sekolah->telepon ?? '54247,54248,7877579' }}
                 </p>
 
                 <p class="identitas">
