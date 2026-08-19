@@ -7,6 +7,7 @@ use App\Models\Jabatan;
 use App\Models\KategoriSurat;
 use App\Models\KlasifikasiArsip;
 use App\Models\LogAktivitas;
+use App\Models\LogAktivitasSurat;
 use App\Models\Notifikasi;
 use App\Models\Pegawai;
 use App\Models\SuratKeluar;
@@ -76,12 +77,18 @@ class SuratKeluarController extends Controller
         $surat = SuratKeluar::create(
             $this->dataSurat($request, $template)
         );
-
         LogAktivitas::catat(
-            'tambah_data',
-            'Surat Keluar',
-            "Membuat draft surat: {$surat->perihal}"
-        );
+        'tambah_data',
+        'Surat Keluar',
+        "Membuat draft surat: {$surat->perihal}"
+    );
+
+        LogAktivitasSurat::catat(
+        LogAktivitasSurat::TIPE_KELUAR,
+        $surat->id_surat_keluar,
+        LogAktivitasSurat::AKSI_DIBUAT,
+        "Draft surat dibuat: {$surat->perihal}"
+    );
 
         return redirect()
             ->route('surat-keluar.show', $surat)
@@ -121,6 +128,12 @@ class SuratKeluarController extends Controller
             'ubah_data',
             'Surat Keluar',
             "Memperbarui draft surat: {$suratKeluar->perihal}"
+        );
+        LogAktivitasSurat::catat(
+        LogAktivitasSurat::TIPE_KELUAR,
+        $suratKeluar->id_surat_keluar,
+        LogAktivitasSurat::AKSI_DIEDIT,
+        "Draft surat diperbarui: {$suratKeluar->perihal}"
         );
 
         return redirect()
@@ -222,6 +235,12 @@ class SuratKeluarController extends Controller
                 'Surat Keluar',
                 "Mengajukan surat: {$suratKeluar->perihal}"
             );
+            LogAktivitasSurat::catat(
+            LogAktivitasSurat::TIPE_KELUAR,
+            $suratKeluar->id_surat_keluar,
+            LogAktivitasSurat::AKSI_DIAJUKAN,
+            "Diajukan untuk persetujuan {$approverUsers->count()} approver"
+        );
         });
 
         return back()->with(
@@ -251,6 +270,12 @@ class SuratKeluarController extends Controller
         'surat-keluar.cetak-pdf',
         compact('suratKeluar', 'sekolah')
     )->setPaper('a4', 'portrait');
+    LogAktivitasSurat::catat(
+        LogAktivitasSurat::TIPE_KELUAR,
+        $suratKeluar->id_surat_keluar,
+        LogAktivitasSurat::AKSI_CETAK,
+        "Surat dicetak PDF"
+    );
 
     return $pdf->stream(
         'Surat-' .
