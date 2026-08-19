@@ -58,6 +58,26 @@ class DatabaseSeeder extends Seeder
             ['level_jabatan' => 2]
         );
 
+        $jabatanWakaKurikulum = Jabatan::firstOrCreate(
+            ['nama_jabatan' => 'Wakil Kepala Sekolah Bidang Kurikulum'],
+            ['level_jabatan' => 2]
+        );
+
+        $jabatanWakaKesiswaan = Jabatan::firstOrCreate(
+            ['nama_jabatan' => 'Wakil Kepala Sekolah Bidang Kesiswaan'],
+            ['level_jabatan' => 2]
+        );
+
+        $jabatanWakaHumas = Jabatan::firstOrCreate(
+            ['nama_jabatan' => 'Wakil Kepala Sekolah Bidang Humas'],
+            ['level_jabatan' => 2]
+        );
+        
+        $jabatanWakaSarpras = Jabatan::firstOrCreate(
+            ['nama_jabatan' => 'Wakil Kepala Sekolah Bidang Sarana dan Prasarana'],
+            ['level_jabatan' => 2]
+        );
+
         $jabatanKepala = Jabatan::firstOrCreate(
             ['nama_jabatan' => 'Kepala Sekolah'],
             ['level_jabatan' => 3]
@@ -94,9 +114,57 @@ class DatabaseSeeder extends Seeder
                 'id_unit' => $unitTu->id_unit,
                 'id_jabatan' => $jabatanKepala->id_jabatan,
                 'nama_lengkap' => 'Padmi Riana',
-                'gelar_belakang' => 'M.Pi, M.Pd',
+                'gelar_belakang' => 'S.Pi, M.Pd',
                 'jenis_kelamin' => 'P',
                 'pangkat_golongan' => 'Pembina Utama Muda/IV.c',
+                'status' => 'aktif',
+            ]
+        );
+
+        $kepalaKurikulumPegawai = Pegawai::firstOrCreate(
+            ['nip' => 'WKUR001'],
+            [
+                'id_sekolah' => $sekolah->id_sekolah,
+                'id_unit' => $unitTu->id_unit,
+                'id_jabatan' => $jabatanWakaKurikulum->id_jabatan,
+                'nama_lengkap' => 'Wakil Kepala Sekolah Bidang Kurikulum',
+                'jenis_kelamin' => 'P',
+                'status' => 'aktif',
+            ]
+        );
+
+        $kepalaKesiswaanPegawai = Pegawai::firstOrCreate(
+            ['nip' => 'WKES001'],
+            [
+                'id_sekolah' => $sekolah->id_sekolah,
+                'id_unit' => $unitTu->id_unit,
+                'id_jabatan' => $jabatanWakaKesiswaan->id_jabatan,
+                'nama_lengkap' => 'Wakil Kepala Sekolah Bidang Kesiswaan',
+                'jenis_kelamin' => 'P',
+                'status' => 'aktif',
+            ]
+        );
+
+        $kepalaHumasPegawai = Pegawai::firstOrCreate(
+            ['nip' => 'WHUM001'],
+            [
+                'id_sekolah' => $sekolah->id_sekolah,
+                'id_unit' => $unitTu->id_unit,
+                'id_jabatan' => $jabatanWakaHumas->id_jabatan,
+                'nama_lengkap' => 'Wakil Kepala Sekolah Bidang Humas',
+                'jenis_kelamin' => 'L',
+                'status' => 'aktif',
+            ]
+        );
+
+        $kepalaSarprasPegawai = Pegawai::firstOrCreate(
+            ['nip' => 'WSAR001'],
+            [
+                'id_sekolah' => $sekolah->id_sekolah,
+                'id_unit' => $unitTu->id_unit,
+                'id_jabatan' => $jabatanWakaSarpras->id_jabatan,
+                'nama_lengkap' => 'Wakil Kepala Sekolah Bidang Sarana dan Prasarana',
+                'jenis_kelamin' => 'P',
                 'status' => 'aktif',
             ]
         );
@@ -131,6 +199,46 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        User::firstOrCreate(
+            ['username' => 'wk_kurikulum'],
+            [
+                'id_pegawai' => $kepalaKurikulumPegawai->id_pegawai,
+                'password_hash' => Hash::make('kurikulum123'),
+                'role' => 'wakil_kepala_sekolah',
+                'status' => 'aktif',
+            ]
+        );
+
+        User::firstOrCreate(
+            ['username' => 'wk_kesiswaan'],
+            [
+                'id_pegawai' => $kepalaKesiswaanPegawai->id_pegawai,
+                'password_hash' => Hash::make('kesiswaan123'),
+                'role' => 'wakil_kepala_sekolah',
+                'status' => 'aktif',
+            ]
+        );
+
+        User::firstOrCreate(
+            ['username' => 'wk_humas'],
+            [
+                'id_pegawai' => $kepalaHumasPegawai->id_pegawai,
+                'password_hash' => Hash::make('humas123'),
+                'role' => 'wakil_kepala_sekolah',
+                'status' => 'aktif',
+            ]
+        );
+
+        User::firstOrCreate(
+            ['username' => 'wk_sarpras'],
+            [
+                'id_pegawai' => $kepalaSarprasPegawai->id_pegawai,
+                'password_hash' => Hash::make('sarpras123'),
+                'role' => 'wakil_kepala_sekolah',
+                'status' => 'aktif',
+            ]
+        );
+
         $this->call([
             DataAwalSeeder::class,
             UpdateIsiTemplateAsliSeeder::class,
@@ -140,5 +248,10 @@ class DatabaseSeeder extends Seeder
         $this->command->line('Admin TU : admin / admin123');
         $this->command->line('Kepala TU: kepalatu / kepalatu123');
         $this->command->line('Kepsek   : kepsek / kepsek123');
+        $this->command->line('Wakil Kepala Sekolah:');
+        $this->command->line('  - WK Kurikulum: wk_kurikulum / kurikulum123');
+        $this->command->line('  - WK Kesiswaan: wk_kesiswaan / kesiswaan123');
+        $this->command->line('  - WK Humas: wk_humas / humas123');
+        $this->command->line('  - WK Sarpras: wk_sarpras / sarpras123');
     }
 }
