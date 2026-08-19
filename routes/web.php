@@ -80,7 +80,7 @@ Route::middleware('auth')->group(function () {
     });
 
 
-Route::middleware(['auth', 'role:admin_tu,super_admin,kepala_sekolah'])->group(function () {
+Route::middleware(['auth', 'role:admin_tu,super_admin,kepala_sekolah,wakil_kepala_sekolah'])->group(function () {
 
     Route::get('/approval', [ApprovalSuratKeluarController::class, 'index'])
         ->name('approval.index');

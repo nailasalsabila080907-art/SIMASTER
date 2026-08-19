@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('username', 50)->unique();
             $table->string('password_hash');
             $table->enum('role', [
-                'super_admin', 'admin_tu', 'kepala_sekolah', 'staff', 'guru', 'operator',
+                'super_admin', 'admin_tu', 'kepala_sekolah', 'staff', 'guru', 'operator', 'wakil_kepala_sekolah', 
             ]);
             $table->timestamp('last_login')->nullable();
             $table->enum('status', ['aktif', 'nonaktif'])->default('aktif');
