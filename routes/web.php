@@ -10,6 +10,7 @@ use App\Http\Controllers\JurusanController;
 use App\Http\Controllers\KategoriSuratController;
 use App\Http\Controllers\KlasifikasiArsipController;
 use App\Http\Controllers\LogAktivitasController;
+use App\Http\Controllers\LogAktivitasSuratController;
 use App\Http\Controllers\NotifikasiController;
 use App\Http\Controllers\PegawaiController;
 use App\Http\Controllers\PenggunaController;
@@ -38,6 +39,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/profil', [ProfilController::class, 'update'])->name('profil.update');
     Route::put('/profil/keamanan', [ProfilController::class, 'updateKeamanan'])->name('profil.keamanan.update');
     Route::get('/log-aktivitas', [LogAktivitasController::class, 'index'])->name('log-aktivitas.index');
+    Route::get('/log-surat', [LogAktivitasSuratController::class, 'index'])->name('log-surat.index');  
 
     Route::get('/notifikasi', [NotifikasiController::class, 'index'])->name('notifikasi.index');
     Route::post('/notifikasi/{notifikasi}/tandai-dibaca', [NotifikasiController::class, 'tandaiDibaca'])->name('notifikasi.tandai-dibaca');

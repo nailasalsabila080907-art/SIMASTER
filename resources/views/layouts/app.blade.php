@@ -237,28 +237,32 @@
             </div>
         @endif
 
-        <p class="nav-section-label">Sistem</p>
-        <a href="{{ route('notifikasi.index') }}" class="nav-link-custom {{ request()->routeIs('notifikasi.*') ? 'active' : '' }}">
-            <i class="bi bi-bell"></i> Notifikasi
-            @php $jmlNotif=\App\Models\Notifikasi::where('id_user',auth()->id())->where('sudah_dibaca',false)->count(); @endphp
-            @if($jmlNotif>0)<span class="nav-badge">{{ $jmlNotif }}</span>@endif
+            <p class="nav-section-label">Sistem</p>
+    <a href="{{ route('notifikasi.index') }}" class="nav-link-custom {{ request()->routeIs('notifikasi.*') ? 'active' : '' }}">
+        <i class="bi bi-bell"></i> Notifikasi
+        @php $jmlNotif=\App\Models\Notifikasi::where('id_user',auth()->id())->where('sudah_dibaca',false)->count(); @endphp
+        @if($jmlNotif>0)<span class="nav-badge">{{ $jmlNotif }}</span>@endif
+    </a>
+    <a href="{{ route('log-aktivitas.index') }}" class="nav-link-custom {{ request()->routeIs('log-aktivitas.*') ? 'active' : '' }}">
+        <i class="bi bi-clock-history"></i> Log Aktivitas
+    </a>
+    <a href="{{ route('log-surat.index') }}" class="nav-link-custom {{ request()->routeIs('log-surat.*') ? 'active' : '' }}">
+        <i class="bi bi-file-earmark-text"></i> Riwayat Surat
+    </a>
+    @if(in_array(auth()->user()->role,['admin_tu','super_admin']))
+        <a href="{{ route('sekolah.edit') }}" class="nav-link-custom {{ request()->routeIs('sekolah.*') ? 'active' : '' }}">
+            <i class="bi bi-building"></i> Profil Sekolah
         </a>
-        <a href="{{ route('log-aktivitas.index') }}" class="nav-link-custom {{ request()->routeIs('log-aktivitas.*') ? 'active' : '' }}">
-            <i class="bi bi-clock-history"></i> Log Aktivitas
-        </a>
-        @if(in_array(auth()->user()->role,['admin_tu','super_admin']))
-            <a href="{{ route('sekolah.edit') }}" class="nav-link-custom {{ request()->routeIs('sekolah.*') ? 'active' : '' }}">
-                <i class="bi bi-building"></i> Profil Sekolah
-            </a>
-        @endif
-    </div>
+    @endif
 
     <div class="sidebar-footer">
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit" class="btn-logout"><i class="bi bi-box-arrow-right"></i> Keluar</button>
-        </form>
-    </div>
+    <form method="POST" action="{{ route('logout') }}" id="logoutForm">
+        @csrf
+        <button type="button" class="btn-logout" data-bs-toggle="modal" data-bs-target="#modalKonfirmasiKeluar">
+            <i class="bi bi-box-arrow-right"></i> Keluar
+        </button>
+    </form>
+</div>
 </aside>
 
 <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
@@ -296,6 +300,31 @@
             </a>
         </div>
     </header>
+    <div class="modal fade" id="modalKonfirmasiKeluar" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius:16px;border:none;">
+      <div class="modal-body text-center p-4">
+        <div class="mx-auto mb-3 d-flex align-items-center justify-content-center"
+             style="width:56px;height:56px;border-radius:50%;background:#FCEBEA;">
+          <i class="bi bi-box-arrow-right" style="font-size:1.5rem;color:#C4463F;"></i>
+        </div>
+        <h5 class="fw-bold mb-1">Keluar dari akun?</h5>
+        <p class="text-muted mb-4" style="font-size:.85rem;">
+          Apakah Anda yakin ingin keluar dari SIMASTER?
+        </p>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-light w-50" data-bs-dismiss="modal" style="border-radius:10px;">
+            Batal
+          </button>
+          <button type="submit" form="logoutForm" class="btn w-50"
+                  style="border-radius:10px;background:#C4463F;color:#fff;">
+            Ya, Keluar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
     <main class="content">
         @yield('content')
