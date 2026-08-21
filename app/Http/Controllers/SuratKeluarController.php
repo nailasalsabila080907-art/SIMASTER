@@ -240,27 +240,14 @@ class SuratKeluarController extends Controller
         'Surat belum terbit.'
     );
 
-    $suratKeluar->load([
-        'kategori',
-        'unitPembuat.sekolah',
-    ]);
+    $suratKeluar->load(['kategori', 'unitPembuat.sekolah']);
 
     $sekolah = \App\Models\Sekolah::first();
 
-    $pdf = Pdf::loadView(
-        'surat-keluar.cetak-pdf',
-        compact('suratKeluar', 'sekolah')
-    )->setPaper('a4', 'portrait');
+    $pdf = Pdf::loadView('surat-keluar.cetak-pdf', compact('suratKeluar', 'sekolah'))
+        ->setPaper('a4', 'portrait');
 
-    return $pdf->stream(
-        'Surat-' .
-        str_replace(
-            ['/', ' '],
-            '-',
-            $suratKeluar->nomor_surat
-        ) .
-        '.pdf'
-    );
+    return $pdf->stream('Surat-' . str_replace(['/', ' '], '-', $suratKeluar->nomor_surat) . '.pdf');
 }
     protected function form(
         Request $request,
