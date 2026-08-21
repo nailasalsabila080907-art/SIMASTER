@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DisposisiSuratMasuk;
 use App\Models\LogAktivitas;
+use App\Models\LogAktivitasSurat;
 use App\Models\Notifikasi;
 use App\Models\Pegawai;
 use App\Models\SuratMasuk;
@@ -61,16 +62,32 @@ class DisposisiSuratMasukController extends Controller
 
         LogAktivitas::catat('tambah_data', 'Disposisi Surat Masuk', "Membuat disposisi untuk surat: {$suratMasuk->perihal}");
 
+        $tujuanNama = $kePegawai ? $penerima->nama_lengkap : $unit->nama_unit;
+        LogAktivitasSurat::catat(
+        LogAktivitasSurat::TIPE_MASUK,
+        $suratMasuk->id_surat_masuk,
+        LogAktivitasSurat::AKSI_DISPOSISI,
+        "Didisposisikan ke {$tujuanNama}" .
+        ($data['instruksi'] ? ": {$data['instruksi']}" : '')
+        );
+
         return back()->with('sukses', 'Disposisi berhasil dibuat.');
     }
 
     public function tindaklanjuti(DisposisiSuratMasuk $disposisi)
-    {
-        $this->bolehKelola($disposisi);
-        $disposisi->update(['status' => 'ditindaklanjuti']);
-        return back()->with('sukses', 'Disposisi ditandai sedang ditindaklanjuti.');
-    }
+{
+    $this->bolehKelola($disposisi);
+    $disposisi->update(['status' => 'ditindaklanjuti']);
 
+    LogAktivitasSurat::catat(
+        LogAktivitasSurat::TIPE_MASUK,
+        $disposisi->id_surat_masuk,
+        LogAktivitasSurat::AKSI_TINDAK_LANJUT,
+        "Disposisi mulai ditindaklanjuti"
+    );
+
+    return back()->with('sukses', 'Disposisi ditandai sedang ditindaklanjuti.');
+    }
     public function selesaikan(DisposisiSuratMasuk $disposisi)
     {
         $this->bolehKelola($disposisi);
@@ -82,7 +99,24 @@ class DisposisiSuratMasukController extends Controller
         }
 
         LogAktivitas::catat('ubah_data', 'Disposisi Surat Masuk', "Menyelesaikan disposisi surat: {$suratMasuk->perihal}");
-        return back()->with('sukses', 'Disposisi ditandai selesai.');
+
+LogAktivitasSurat::catat(
+    LogAktivitasSurat::TIPE_MASUK,
+    $suratMasuk->id_surat_masuk,
+    'disposisi_selesai', // saran: tambahin const AKSI_DISPOSISI_SELESAI
+    "Disposisi selesai ditindaklanjuti"
+);
+
+if ($suratMasuk->status === 'selesai') {
+    LogAktivitasSurat::catat(
+        LogAktivitasSurat::TIPE_MASUK,
+        $suratMasuk->id_surat_masuk,
+        LogAktivitasSurat::AKSI_ARSIP, // atau const baru 'selesai' kalau mau beda dari arsip
+        "Semua disposisi selesai, surat ditandai selesai"
+    );
+}
+
+return back()->with('sukses', 'Disposisi ditandai selesai.');
     }
 
     private function bolehKelola(DisposisiSuratMasuk $disposisi): void

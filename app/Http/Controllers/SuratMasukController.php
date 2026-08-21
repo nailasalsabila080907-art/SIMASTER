@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\KategoriSurat;
 use App\Models\KlasifikasiArsip;
 use App\Models\LogAktivitas;
+use App\Models\LogAktivitasSurat;
 use App\Models\SuratMasuk;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -58,9 +59,16 @@ class SuratMasukController extends Controller
         ]);
 
         LogAktivitas::catat('tambah_data', 'Surat Masuk', "Mencatat surat masuk: {$suratMasuk->perihal}");
+        LogAktivitasSurat::catat(
+        LogAktivitasSurat::TIPE_MASUK,
+        $suratMasuk->id_surat_masuk,
+        LogAktivitasSurat::AKSI_DIBUAT,
+        "Surat masuk dicatat dengan nomor agenda {$nomorAgenda}: {$suratMasuk->perihal}"
+    );
 
         return redirect()->route('surat-masuk.show', $suratMasuk)->with('sukses', 'Surat masuk berhasil dicatat.');
     }
+    
 
     public function show(SuratMasuk $suratMasuk)
     {

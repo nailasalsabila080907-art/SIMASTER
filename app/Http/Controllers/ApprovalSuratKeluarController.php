@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ApprovalSuratKeluar;
 use App\Models\LogAktivitas;
+use App\Models\LogAktivitasSurat;
 use App\Models\Notifikasi;
 use App\Models\PenomoranSurat;
 use App\Models\SuratKeluar;
@@ -93,6 +94,13 @@ class ApprovalSuratKeluarController extends Controller
                 'Approval Surat Keluar',
                 "Menyetujui surat: {$suratKeluar->perihal}"
             );
+            LogAktivitasSurat::catat(
+            LogAktivitasSurat::TIPE_KELUAR,
+            $suratKeluar->id_surat_keluar,
+            LogAktivitasSurat::AKSI_APPROVE,
+            "Disetujui pada tahap urutan ke-{$approval->urutan}" .
+                ($request->input('catatan') ? ": {$request->input('catatan')}" : '')
+        );
 
             $approvalBerikutnya = $suratKeluar
                 ->approval()
@@ -163,11 +171,18 @@ class ApprovalSuratKeluarController extends Controller
                 'status' => 'ditolak',
             ]);
 
-            LogAktivitas::catat(
-                'ubah_data',
-                'Approval Surat Keluar',
-                "Menolak surat: {$suratKeluar->perihal}"
-            );
+        LogAktivitas::catat(
+        'ubah_data',
+        'Approval Surat Keluar',
+        "Menolak surat: {$suratKeluar->perihal}"
+    );
+
+        LogAktivitasSurat::catat(
+        LogAktivitasSurat::TIPE_KELUAR,
+        $suratKeluar->id_surat_keluar,
+        LogAktivitasSurat::AKSI_TOLAK,
+        "Ditolak pada tahap urutan ke-{$approval->urutan}: {$data['catatan']}"
+    );
 
             if ($suratKeluar->pembuat) {
                 Notifikasi::kirim(
@@ -402,11 +417,19 @@ class ApprovalSuratKeluarController extends Controller
             );
         }
 
-        LogAktivitas::catat(
+            LogAktivitas::catat(
             'ubah_data',
             'Surat Keluar',
             "Surat terbit dengan nomor {$nomorSurat}"
         );
+
+            LogAktivitasSurat::catat(
+            LogAktivitasSurat::TIPE_KELUAR,
+            $suratKeluar->id_surat_keluar,
+            LogAktivitasSurat::AKSI_TERBIT,
+            "Surat resmi terbit dengan nomor {$nomorSurat}"
+        );
+        
 
         if ($suratKeluar->pembuat) {
             Notifikasi::kirim(
