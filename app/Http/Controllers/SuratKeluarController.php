@@ -3,20 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\ApprovalSuratKeluar;
-use App\Models\Jabatan;
 use App\Models\KategoriSurat;
 use App\Models\KlasifikasiArsip;
 use App\Models\LogAktivitas;
 use App\Models\LogAktivitasSurat;
 use App\Models\Notifikasi;
-use App\Models\Pegawai;
 use App\Models\SuratKeluar;
 use App\Models\TemplateSurat;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-
 class SuratKeluarController extends Controller
 {
     public function index(Request $request)
