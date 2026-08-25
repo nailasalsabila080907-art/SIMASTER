@@ -29,6 +29,21 @@ class LogAktivitasController extends Controller
             $query->where('aktivitas', $request->aktivitas);
         }
 
+        if ($request->filled('cari')) {
+            $kataKunci = $request->cari;
+
+            $query->where(function ($q) use ($kataKunci) {
+                $q->where('deskripsi', 'like', "%{$kataKunci}%")
+                    ->orWhere('modul', 'like', "%{$kataKunci}%")
+                    ->orWhereHas('user', function ($q2) use ($kataKunci) {
+                        $q2->where('username', 'like', "%{$kataKunci}%")
+                            ->orWhereHas('pegawai', function ($q3) use ($kataKunci) {
+                                $q3->where('nama_lengkap', 'like', "%{$kataKunci}%");
+                            });
+                    });
+            });
+        }
+
         $logs = $query->paginate(20)->withQueryString();
 
         return view('log-aktivitas.index', [
@@ -37,6 +52,7 @@ class LogAktivitasController extends Controller
             'daftarUser' => $bolehLihatSemua ? User::with('pegawai')->get() : collect(),
             'filterUserId' => $request->user_id,
             'filterAktivitas' => $request->aktivitas,
+            'filterCari' => $request->cari,
         ]);
     }
 }

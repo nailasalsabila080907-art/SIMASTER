@@ -3,20 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\ApprovalSuratKeluar;
-use App\Models\Jabatan;
 use App\Models\KategoriSurat;
 use App\Models\KlasifikasiArsip;
 use App\Models\LogAktivitas;
 use App\Models\LogAktivitasSurat;
 use App\Models\Notifikasi;
-use App\Models\Pegawai;
 use App\Models\SuratKeluar;
 use App\Models\TemplateSurat;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-
 class SuratKeluarController extends Controller
 {
     public function index(Request $request)
@@ -259,17 +256,13 @@ class SuratKeluarController extends Controller
         'Surat belum terbit.'
     );
 
-    $suratKeluar->load([
-        'kategori',
-        'unitPembuat.sekolah',
-    ]);
+    $suratKeluar->load(['kategori', 'unitPembuat.sekolah']);
 
     $sekolah = \App\Models\Sekolah::first();
 
-    $pdf = Pdf::loadView(
-        'surat-keluar.cetak-pdf',
-        compact('suratKeluar', 'sekolah')
-    )->setPaper('a4', 'portrait');
+    $pdf = Pdf::loadView('surat-keluar.cetak-pdf', compact('suratKeluar', 'sekolah'))
+        ->setPaper('a4', 'portrait');
+
     LogAktivitasSurat::catat(
         LogAktivitasSurat::TIPE_KELUAR,
         $suratKeluar->id_surat_keluar,
@@ -277,16 +270,9 @@ class SuratKeluarController extends Controller
         "Surat dicetak PDF"
     );
 
-    return $pdf->stream(
-        'Surat-' .
-        str_replace(
-            ['/', ' '],
-            '-',
-            $suratKeluar->nomor_surat
-        ) .
-        '.pdf'
-    );
+    return $pdf->stream('Surat-' . str_replace(['/', ' '], '-', $suratKeluar->nomor_surat) . '.pdf');
 }
+
     protected function form(
         Request $request,
         ?SuratKeluar $suratKeluar = null
