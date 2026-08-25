@@ -150,7 +150,7 @@
 <body>
 
 @php
-    $masterDataRoutes = ['pegawai.*','pengguna.*','unit-kerja.*','jurusan.*','jabatan.*','kategori-surat.*','klasifikasi-arsip.*','template-surat.*'];
+    $masterDataRoutes = ['pegawai.*','pengguna.*','unit-kerja.*','jurusan.*','jabatan.*','kategori-surat.*','klasifikasi-arsip.*','template-surat.*','sekolah.*'];
     $masterDataAktif = request()->routeIs($masterDataRoutes);
 @endphp
 
@@ -233,6 +233,9 @@
                     <a href="{{ route('template-surat.index') }}" class="nav-link-custom nav-link-sub {{ request()->routeIs('template-surat.*') ? 'active' : '' }}">
                         <i class="bi bi-file-earmark-richtext"></i> Template Surat
                     </a>
+                    <a href="{{ route('sekolah.edit') }}" class="nav-link-custom nav-link-sub {{ request()->routeIs('sekolah.*') ? 'active' : '' }}">
+                        <i class="bi bi-building"></i> Profil Sekolah
+                    </a>
                 </div>
             </div>
         @endif
@@ -243,16 +246,13 @@
         @php $jmlNotif=\App\Models\Notifikasi::where('id_user',auth()->id())->where('sudah_dibaca',false)->count(); @endphp
         @if($jmlNotif>0)<span class="nav-badge">{{ $jmlNotif }}</span>@endif
     </a>
-    <a href="{{ route('log-aktivitas.index') }}" class="nav-link-custom {{ request()->routeIs('log-aktivitas.*') ? 'active' : '' }}">
-        <i class="bi bi-clock-history"></i> Log Aktivitas
-    </a>
     <a href="{{ route('log-surat.index') }}" class="nav-link-custom {{ request()->routeIs('log-surat.*') ? 'active' : '' }}">
         <i class="bi bi-file-earmark-text"></i> Riwayat Surat
     </a>
+    <a href="{{ route('log-aktivitas.index') }}" class="nav-link-custom {{ request()->routeIs('log-aktivitas.*') ? 'active' : '' }}">
+        <i class="bi bi-clock-history"></i> Log Aktivitas
+    </a>
     @if(in_array(auth()->user()->role,['admin_tu','super_admin']))
-        <a href="{{ route('sekolah.edit') }}" class="nav-link-custom {{ request()->routeIs('sekolah.*') ? 'active' : '' }}">
-            <i class="bi bi-building"></i> Profil Sekolah
-        </a>
     @endif
 
     <div class="sidebar-footer">
