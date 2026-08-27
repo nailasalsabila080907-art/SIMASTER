@@ -103,14 +103,14 @@
         </table>
     </div>
 
-    @if($suratKeluar->hasPages())
-        <div class="card-footer bg-transparent d-flex flex-wrap align-items-center justify-content-between gap-2">
-            <span class="text-muted" style="font-size:.78rem">
-                Menampilkan {{ $suratKeluar->firstItem() }}–{{ $suratKeluar->lastItem() }} dari {{ $suratKeluar->total() }} data
-            </span>
-            {{ $suratKeluar->links() }}
-        </div>
-    @endif
+        @if($suratKeluar->hasPages())
+         <div class="card-footer bg-transparent d-flex flex-wrap align-items-center justify-content-between gap-2">
+         <span class="text-muted" style="font-size:.78rem">
+             Menampilkan {{ $suratKeluar->firstItem() }}–{{ $suratKeluar->lastItem() }} dari {{ $suratKeluar->total() }} data
+         </span>
+        {{ $suratKeluar->links('pagination::bootstrap-5') }}
+    </div>
+@endif
 </div>
 
 @endsection
