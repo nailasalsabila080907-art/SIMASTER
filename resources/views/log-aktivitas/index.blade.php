@@ -82,7 +82,7 @@
                         <tr style="border-top:1px solid var(--border);">
                             {{-- Waktu --}}
                             <td class="px-4 py-3 text-nowrap" style="color:var(--ink-muted);font-size:.8rem;">
-                                {{ $log->created_at->diffForHumans() }}
+                                {{ $log->created_at->format('d/m/Y H:i:s') }}
                             </td>
 
                             @if($bolehLihatSemua)

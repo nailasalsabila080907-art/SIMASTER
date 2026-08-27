@@ -85,7 +85,7 @@
                                 </span>
                             </td>
                             <td class="px-4 py-3" style="color:var(--ink);">{{ $log->keterangan ?? '-' }}</td>
-                            <td class="px-4 py-3 text-nowrap" style="color:var(--ink-muted);font-size:.8rem;">{{ $log->created_at->diffForHumans() }}</td>
+                            <td class="px-4 py-3 text-nowrap" style="color:var(--ink-muted);font-size:.8rem;">{{ $log->created_at->format('d/m/Y H:i:s') }}</td>
                         </tr>
                     @empty
                         <tr>
