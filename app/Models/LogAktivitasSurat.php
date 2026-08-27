@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Auth;
 
 class LogAktivitasSurat extends Model
 {
@@ -58,7 +59,7 @@ public const AKSI_CETAK = 'cetak_pdf';
         return self::create([
             'tipe_surat' => $tipeSurat,
             'id_surat' => $idSurat,
-            'id_user' => auth()->id(),
+            'id_user' => Auth::id(),
             'aktivitas' => $aktivitas,
             'keterangan' => $keterangan,
             'ip_address' => request()?->ip(),
