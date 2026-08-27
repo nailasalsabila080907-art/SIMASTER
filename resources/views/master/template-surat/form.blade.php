@@ -116,10 +116,6 @@
                                    class="text-danger small">
                                     <i class="bi bi-trash3"></i> Hapus
                                 </a>
-                                <form id="hapus-var-{{ $v->id_variabel }}" method="POST" action="{{ route('template-surat.variabel.hapus', $v) }}" class="d-none">
-                                    @csrf
-                                    @method('DELETE')
-                                </form>
                             </div>
                         @empty
                             <p class="small mb-0" style="color:var(--ink-muted)">Belum ada field.</p>
@@ -146,6 +142,17 @@
                     </a>
                 </div>
             </form>
+
+            {{-- Form-form hapus field ditaruh DI LUAR form utama (bukan nested),
+                 supaya form utama tidak "kepotong" dan tombol Simpan berfungsi normal --}}
+            @if($template->exists)
+                @foreach($template->variabel as $v)
+                    <form id="hapus-var-{{ $v->id_variabel }}" method="POST" action="{{ route('template-surat.variabel.hapus', $v) }}" class="d-none">
+                        @csrf
+                        @method('DELETE')
+                    </form>
+                @endforeach
+            @endif
         </div>
     </div>
 
