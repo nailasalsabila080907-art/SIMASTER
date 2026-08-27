@@ -72,36 +72,6 @@
                         Lihat detail <i class="bi bi-arrow-up-right"></i>
                     </a>
                 </div>
-
-                <div class="d-flex gap-2 mt-3 pt-3" style="border-top:1px solid var(--border);">
-                    <button type="button" class="btn btn-sm text-white"
-                            style="background:var(--bs-primary);border-radius:8px;font-weight:600;"
-                            data-bs-toggle="modal" data-bs-target="#modalKonfirmasiSetujui"
-                            data-url="{{ route('approval.setujui', ['approval' => $a->id_approval]) }}"
-                            data-perihal="{{ $a->suratKeluar->perihal }}">
-                        <i class="bi bi-check2"></i> Setujui
-                    </button>
-
-                    <button type="button" class="btn btn-sm btn-outline-danger"
-                            style="border-radius:8px;font-weight:600;"
-                            data-bs-toggle="collapse" data-bs-target="#tolak-{{ $a->id_approval }}">
-                        <i class="bi bi-x-lg"></i> Tolak
-                    </button>
-                </div>
-
-                {{-- Form Tolak --}}
-                <div class="collapse mt-3" id="tolak-{{ $a->id_approval }}">
-                    <form method="POST" action="{{ route('approval.tolak', ['approval' => $a->id_approval]) }}">
-                        @csrf
-                        <textarea name="catatan" rows="3" required
-                                  class="form-control mb-2"
-                                  style="border-radius:10px;border-color:var(--border);font-size:.85rem;"
-                                  placeholder="Masukkan alasan penolakan..."></textarea>
-                        <button type="submit" class="btn btn-sm btn-danger" style="border-radius:8px;font-weight:600;">
-                            Konfirmasi Tolak
-                        </button>
-                    </form>
-                </div>
             </div>
         </div>
     @empty
@@ -123,38 +93,4 @@
             {{ $approvalSaya->links('pagination::bootstrap-5') }}
         </div>
     @endif
-
-    {{-- modal konfirmasi setujui, dipakai bareng sama yang satu code disini --}}
-    <div class="modal fade" id="modalKonfirmasiSetujui" tabindex="-1" aria-labelledby="modalKonfirmasiSetujuiLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalKonfirmasiSetujuiLabel">Konfirmasi Persetujuan</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Apakah Anda yakin ingin menyetujui surat <strong id="perihalSurat"></strong>?</p>
-                </div>
-                <div class="modal-footer">
-                    <form method="POST" id="formSetujui">
-                        @csrf
-                        <button type="submit" class="btn btn-primary">Ya, Setujui</button>
-                    </form>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
 @endsection
-
-@push('scripts')
-<script>
-    document.getElementById('modalKonfirmasiSetujui')?.addEventListener('show.bs.modal', function (event) {
-        const tombol = event.relatedTarget;
-        document.getElementById('formSetujui').setAttribute('action', tombol.getAttribute('data-url'));
-        document.getElementById('perihalSurat').textContent =
-            'Surat "' + tombol.getAttribute('data-perihal') + '" akan disetujui dan diteruskan ke tahap berikutnya.';
-    });
-</script>
-@endpush
