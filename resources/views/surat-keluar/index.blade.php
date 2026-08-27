@@ -8,10 +8,12 @@
         <h2 class="mb-1" style="font-size:1.5rem">Daftar Surat Keluar</h2>
         <p class="text-muted mb-0" style="font-size:.78rem">Kelola draft, pengajuan, approval, dan surat yang sudah terbit.</p>
     </div>
-    <a href="{{ route('surat-keluar.create') }}" class="btn d-inline-flex align-items-center gap-2 px-3 py-2 text-white"
-       style="background:linear-gradient(135deg,#178754,#0EA5A4);border:none">
-        <i class="bi bi-plus-lg"></i> Buat Surat
-    </a>
+   @if(Auth::user()->role !== 'kepala_sekolah')
+        <a href="{{ route('surat-keluar.create') }}" class="btn d-inline-flex align-items-center gap-2 px-3 py-2 text-white"
+           style="background:linear-gradient(135deg,#178754,#0EA5A4);border:none">
+            <i class="bi bi-plus-lg"></i> Buat Surat
+        </a>
+    @endif
 </div>
 
 @if(session('sukses'))
