@@ -25,6 +25,7 @@
         </div>
     </div>
 
+    {{-- 
     @if(session('sukses'))
         <div class="alert alert-success rounded-3 d-flex align-items-center gap-2 mb-3" style="font-size:.85rem" role="alert">
             <i class="bi bi-check-circle"></i>
@@ -37,6 +38,9 @@
             <div>{{ session('gagal') }}</div>
         </div>
     @endif
+
+    notif berhasil/gagal tampil otomatis pakai toast global
+    --}}
 
     <div class="card mb-3">
         <div class="card-body">
@@ -87,23 +91,83 @@
                 </div>
             @endif
 
-            @if($suratKeluar->status === 'terkirim')
+            @if(in_array($suratKeluar->status, ['terkirim', 'diarsipkan'], true))
                 <div class="d-flex flex-wrap gap-2 mt-4 pt-4 border-top">
                     <a href="{{ route('surat-keluar.cetak-pdf', $suratKeluar) }}" target="_blank"
                        class="btn d-inline-flex align-items-center gap-2 text-white"
                        style="background:linear-gradient(135deg,#D98C00,#F0A202);border:none">
                         <i class="bi bi-printer"></i> Cetak PDF
                     </a>
-                    <form method="POST" action="{{ route('arsip.surat-keluar', $suratKeluar) }}">
-                        @csrf
-                        <button type="submit" class="btn btn-light d-inline-flex align-items-center gap-2">
-                            <i class="bi bi-archive"></i> Arsipkan Surat
-                        </button>
-                    </form>
                 </div>
             @endif
         </div>
     </div>
+
+    {{-- perubahan saran pak zaki: button approve ada di detail surat juga --}}
+    @if($approvalSaya)
+        <div class="card mb-3" style="border:1px solid var(--bs-primary)">
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <i class="bi bi-patch-check" style="color:var(--bs-primary);font-size:1.1rem"></i>
+                    <h3 class="mb-0" style="font-size:1rem">Surat ini menunggu persetujuan Anda</h3>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="button" class="btn btn-sm text-white"
+                        style="background:var(--bs-primary);border-radius:8px;font-weight:600;"
+                        data-bs-toggle="modal" data-bs-target="#modalKonfirmasiSetujuiDetail">
+                        <i class="bi bi-check2"></i> Setujui
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger"
+                        style="border-radius:8px;font-weight:600;"
+                        data-bs-toggle="collapse" data-bs-target="#tolakDariDetail">
+                        <i class="bi bi-x-lg"></i> Tolak
+                    </button>
+                </div>
+                <div class="collapse mt-3" id="tolakDariDetail">
+                    <form method="POST" action="{{ route('approval.tolak', ['approval' => $approvalSaya->id_approval]) }}">
+                        @csrf
+                        <textarea name="catatan" rows="3" required
+                                    class="form-control mb-2"
+                                    style="border-radius:10px;border-color:var(--border);font-size:.85rem;"
+                                    placeholder="Masukkan alasan penolakan..."></textarea>
+                        <button type="submit" class="btn btn-sm btn-danger" style="border-radius:8px;font-weight:600;">
+                            Konfirmasi Tolak
+                        </button>
+                    </form> 
+                </div>
+            </div>
+        </div>
+
+        {{--  modal konfirmasi setujui --}}
+        <div class="modal fade" id="modalKonfirmasiSetujuiDetail" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content" style="border-radius:16px;border:none;">
+                    <div class="modal-body text-center p-4">
+                        <div class="mx-auto mb-3 d-flex align-items-center justify-content-center"
+                             style="width:56px;height:56px;border-radius:50%;background:var(--primary-light);">
+                            <i class="bi bi-patch-check" style="font-size:1.5rem;color:var(--bs-primary);"></i>
+                        </div>
+                        <h5 class="fw-bold mb-1">Setujui surat ini?</h5>
+                        <p class="text-muted mb-4" style="font-size:.85rem;">
+                            Surat "{{ $suratKeluar->perihal }}" akan disetujui dan diteruskan ke tahap berikutnya.
+                        </p>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-light w-50" data-bs-dismiss="modal" style="border-radius:10px;">
+                                Batal
+                            </button>
+                            <button type="submit" form="formSetujuiDetail" class="btn w-50"
+                                    style="border-radius:10px;background:var(--bs-primary);color:#fff;">
+                                Ya, Setujui
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <form id="formSetujuiDetail" method="POST" action="{{ route('approval.setujui', ['approval' => $approvalSaya->id_approval]) }}">
+            @csrf
+        </form>
+    @endif
 
     {{-- Riwayat approval --}}
     @if($suratKeluar->approval->isNotEmpty())

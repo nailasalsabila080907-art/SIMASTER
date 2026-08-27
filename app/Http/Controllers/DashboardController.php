@@ -36,18 +36,22 @@ class DashboardController extends Controller
             ['label' => 'Menunggu Approval', 'nilai' => $canSeeAll
                 ? SuratKeluar::where('status', 'diajukan')->count()
                 : SuratKeluar::where('dibuat_oleh', $user->id_user)->where('status', 'diajukan')->count(), 'icon' => '◷'],
-            ['label' => 'Sudah Terbit', 'nilai' => (clone $suratKeluar)->where('status', 'terkirim')->count(), 'icon' => '✓'],
+            ['label' => 'Sudah Terbit', 'nilai' => (clone $suratKeluar)->where('status', ['terkirim', 'diarsipkan'])->count(), 'icon' => '✓'],
             ['label' => 'Arsip Tahun Ini', 'nilai' => (clone $suratKeluar)->where('status', 'diarsipkan')->whereYear('tanggal_surat', now()->year)->count(), 'icon' => '▣'],
         ];
 
-        $bulan = collect(range(5, 0))->map(function ($i) {
-            $date = now()->startOfMonth()->subMonths($i);
-            return ['label' => $date->translatedFormat('M'), 'date' => $date];
+        $minggu = collect(range(5, 0))->map(function ($i) {
+            $awal = now()->startOfWeek()->subWeeks($i);
+            $akhir = (clone $awal)->endOfWeek();
+            $label = $awal->isSameMonth($akhir) 
+                ? $awal->format('d') . ' - ' . $akhir->format('d M') 
+                : $awal->format('d M') . ' - ' . $akhir->format('d M');
+            return ['label' => $label, 'awal' => $awal, 'akhir' => $akhir];
         });
 
-        $data['grafik'] = $bulan->map(function ($item) use ($canSeeAll, $user) {
-            $keluar = SuratKeluar::whereMonth('created_at', $item['date']->month)->whereYear('created_at', $item['date']->year);
-            $masuk = SuratMasuk::whereMonth('created_at', $item['date']->month)->whereYear('created_at', $item['date']->year);
+        $data['grafik'] = $minggu->map(function ($item) use ($canSeeAll, $user) {
+            $keluar = SuratKeluar::whereBetween('created_at', [$item['awal'], $item['akhir']]);
+            $masuk = SuratMasuk::whereBetween('created_at', [$item['awal'], $item['akhir']]);
             if (! $canSeeAll) {
                 $keluar->where('dibuat_oleh', $user->id_user);
                 $masuk->where('diterima_oleh', $user->id_user);

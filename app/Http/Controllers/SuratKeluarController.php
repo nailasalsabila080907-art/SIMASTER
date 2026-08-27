@@ -31,7 +31,9 @@ class SuratKeluarController extends Controller
             $query->where('dibuat_oleh', Auth::id());
         }
 
-        if ($request->filled('status')) {
+        if ($request->status == 'terkirim') {
+            $query->whereIn('status', ['terkirim', 'diarsipkan']);
+        } elseif ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
@@ -149,9 +151,25 @@ class SuratKeluarController extends Controller
             'approval.pegawaiPemberiApproval',
         ]);
 
+        $idPegawai = Auth::user()->id_pegawai;
+
+        $approvalSaya = $suratKeluar->approval()
+            ->where('id_pegawai_pemberi_approval', $idPegawai)
+            ->first();
+
+        if ($approvalSaya) {
+            $tahapSebelumnyaSelesai = ! $suratKeluar->approval
+                ->where('urutan', '<', $approvalSaya->urutan)
+                ->contains(fn ($a) => $a->status !== 'disetujui');
+
+            if (! $tahapSebelumnyaSelesai) {
+                $approvalSaya = null;
+            }
+        }
+
         return view(
             'surat-keluar.show',
-            compact('suratKeluar')
+            compact('suratKeluar', 'approvalSaya')
         );
     }
 
@@ -171,8 +189,7 @@ class SuratKeluarController extends Controller
 
         $approverUsers = \App\Models\User::with('pegawai.jabatan')
             ->where('status', 'aktif')
-            ->where('role', 'kepala_sekolah')
-
+            ->whereIn('role', ['kepala_tu', 'kepala_sekolah'])
             ->whereHas('pegawai', function ($query) use ($pembuatPegawaiId) {
               $query->where('status', 'aktif')
               ->where('id_pegawai', '!=', $pembuatPegawaiId);

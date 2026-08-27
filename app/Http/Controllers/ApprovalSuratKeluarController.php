@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\ApprovalSuratKeluar;
+use App\Models\ArsipSurat;
 use App\Models\LogAktivitas;
 use App\Models\LogAktivitasSurat;
 use App\Models\Notifikasi;
 use App\Models\PenomoranSurat;
 use App\Models\SuratKeluar;
+use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
@@ -204,18 +207,18 @@ class ApprovalSuratKeluarController extends Controller
     protected function pastikanApproverSah(
         ApprovalSuratKeluar $approval
     ): void {
-        abort_unless(
-            $approval->id_pegawai_pemberi_approval ===
-                Auth::user()->pegawai?->id_pegawai,
-            403,
-            'Anda bukan approver untuk surat ini.'
-        );
-
-        abort_if(
-            $approval->status !== 'menunggu',
-            422,
-            'Approval ini sudah diproses.'
-        );
+        if ($approval->id_pegawai_pemberi_approval !== Auth::user()->pegawai?->id_pegawai) {
+            throw new HttpResponseException(
+                back()->with('gagal', 'Anda bukan approver untuk surat ini.'
+                )
+            );
+        }
+        if ($approval->status !== 'menunggu') {
+            throw new HttpResponseException(
+                back()->with('gagal', 'Surat ini sudah diproses sebelumnya.'
+                )
+            );
+        }
     }
 
     protected function pastikanTahapBerjalan(
@@ -237,11 +240,11 @@ class ApprovalSuratKeluarController extends Controller
             )
             ->exists();
 
-        abort_if(
-            $adaSebelumnya,
-            422,
-            'Tahap approval sebelumnya belum selesai.'
-        );
+        if($adaSebelumnya) {
+            throw new HttpResponseException(
+                back()->with('gagal', 'Tahap approval sebelumnya belum disetujui.')
+            );
+        }
     }
 
     protected function terbitkanSurat(
@@ -269,47 +272,46 @@ class ApprovalSuratKeluarController extends Controller
             $tahun
         );
 
-        $sekolah = $suratKeluar
-            ->unitPembuat
-            ?->sekolah;
-
         $formatNomor =
             $suratKeluar->template->format_nomor;
 
-        $nomorSurat = str_replace(
-            [
-                '{kode_klasifikasi}',
-                '{kode_sekolah}',
-                '{kode_unit}',
-                '{tahun}',
-                '{no_urut}',
-            ],
-            [
-                $suratKeluar
-                    ->klasifikasi
-                    ?->kode_klasifikasi
-                    ?? '420.5',
+        $bangunNomorSurat = function (int $noUrut) use ($suratKeluar, $formatNomor) {
+            return str_replace(
+                [
+                    '{kode_klasifikasi}',
+                    '{kode_sekolah}',
+                    '{kode_unit}',
+                    '{tahun}',
+                    '{no_urut}',
+                ],
+                [
+                    $suratKeluar->klasifikasi?->kode_klasifikasi ?? '420.5',
+                    $suratKeluar->unitPembuat?->sekolah?->kode_surat ?? 'SMKN-07',
+                    $suratKeluar->unitPembuat?->kode_unit ?? '-',
+                    (int) ($suratKeluar->tanggal_surat?->format('Y') ?? now()->format('Y')),
+                    str_pad((string) $noUrut, 3, '0', STR_PAD_LEFT),
+                ],
+                $formatNomor
+            );
+        };
 
-                $sekolah
-                    ?->kode_surat
-                    ?? 'SMKN-07',
+        $nomorSurat = $bangunNomorSurat($noUrut);
 
-                $suratKeluar
-                    ->unitPembuat
-                    ?->kode_unit
-                    ?? '-',
-
-                $tahun,
-
-                str_pad(
-                    (string) $noUrut,
-                    3,
-                    '0',
-                    STR_PAD_LEFT
-                ),
-            ],
-            $formatNomor
-        );
+        $percobaan = 0;
+        while (
+            SuratKeluar::where('nomor_surat', $nomorSurat)
+                ->where('id_surat_keluar', '!=', $suratKeluar->id_surat_keluar)
+                ->exists()
+            && $percobaan < 20
+        ) {
+            $noUrut = PenomoranSurat::nomorUrutBerikutnya(
+                $suratKeluar->id_unit_pembuat,
+                $suratKeluar->id_kategori,
+                $tahun
+            );
+            $nomorSurat = $bangunNomorSurat($noUrut);
+            $percobaan++;
+        }
 
         $isiSurat =
             $suratKeluar
@@ -437,7 +439,40 @@ class ApprovalSuratKeluarController extends Controller
                 'keluar',
                 $suratKeluar->id_surat_keluar,
                 'Surat terbit',
-                "Surat \"{$suratKeluar->perihal}\" sudah terbit dengan nomor {$nomorSurat}."
+                "Surat \"{$suratKeluar->perihal}\" sudah terbit dan masuk catatan tahunan dengan nomor {$nomorSurat}."
+            );
+        }
+
+        ArsipSurat::firstOrCreate(
+            ['tipe_surat' => 'keluar', 'id_surat' => $suratKeluar->id_surat_keluar],
+            [ 
+                'tahun_arsip' => (int) ($suratKeluar->tanggal_surat?->format('Y') ?? now()->format('Y')),
+                'tanggal_diarsipkan' => now(),
+                'diarsipkan_oleh' => $suratKeluar->dibuat_oleh,
+            ]
+        );
+
+        $suratKeluar->update([
+            'status' => 'diarsipkan',
+        ]);
+
+        LogAktivitas::catat(
+            'ubah_data',
+            'Arsip Surat',
+            "Surat keluar otomatis masuk catatan tahunan: {$suratKeluar->perihal} (Nomor: {$nomorSurat})"
+        );
+
+        $userTU = User::where('status', 'aktif')
+            ->whereIn('role', ['admin_tu', 'super_admin'])
+            ->get();
+
+        foreach ($userTU as $user) {
+            Notifikasi::kirim(
+                $user->id_user,
+                'keluar',
+                $suratKeluar->id_surat_keluar,
+                'Surat Terbit',
+                "Surat \"{$suratKeluar->perihal}\" sudah terbit dan masuk catatan tahunan dengan nomor {$nomorSurat}."
             );
         }
     }

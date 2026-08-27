@@ -44,6 +44,18 @@ class NotifikasiController extends Controller
                 $notifikasi->id_surat
             )->firstOrFail();
 
+            $idPegawai = Auth::user()->pegawai->id_pegawai;
+
+            $masihMenungguApproval = $idPegawai && $suratKeluar
+                ->approval()
+                ->where('id_pegawai_pemberi_approval', $idPegawai)
+                ->where('status', 'menunggu')
+                ->exists();
+            
+            if ($masihMenungguApproval) {
+                return redirect()->route('approval.index');
+            }
+            
             return redirect()->route(
                 'surat-keluar.show',
                 $suratKeluar

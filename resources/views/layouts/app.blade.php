@@ -252,8 +252,8 @@
     <a href="{{ route('log-aktivitas.index') }}" class="nav-link-custom {{ request()->routeIs('log-aktivitas.*') ? 'active' : '' }}">
         <i class="bi bi-clock-history"></i> Log Aktivitas
     </a>
-    @if(in_array(auth()->user()->role,['admin_tu','super_admin']))
-    @endif
+    
+    </div>
 
     <div class="sidebar-footer">
     <form method="POST" action="{{ route('logout') }}" id="logoutForm">
@@ -297,16 +297,16 @@
                     <p class="u-name">{{ auth()->user()->pegawai->nama_lengkap ?? auth()->user()->username }}</p>
                     <p class="u-role">{{ ucwords(str_replace('_',' ',auth()->user()->role)) }}</p>
                 </div>
-            </a>
-        </div>
-    </header>
+                 </a>
+            </div>
+        </header>
     <div class="modal fade" id="modalKonfirmasiKeluar" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
+<div class="modal-dialog modal-dialog-centered">
     <div class="modal-content" style="border-radius:16px;border:none;">
       <div class="modal-body text-center p-4">
         <div class="mx-auto mb-3 d-flex align-items-center justify-content-center"
              style="width:56px;height:56px;border-radius:50%;background:#FCEBEA;">
-          <i class="bi bi-box-arrow-right" style="font-size:1.5rem;color:#C4463F;"></i>
+            <i class="bi bi-box-arrow-right" style="font-size:1.5rem;color:#C4463F;"></i>
         </div>
         <h5 class="fw-bold mb-1">Keluar dari akun?</h5>
         <p class="text-muted mb-4" style="font-size:.85rem;">
@@ -325,11 +325,44 @@
     </div>
   </div>
 </div>
-
     <main class="content">
         @yield('content')
     </main>
 </div>
+{{-- notif popup yang bisa hilang sendiri itu, kek toast apa gitu --}}
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
+    @if(session('sukses'))
+        <div class="toast align-items-center text-bg-success border-0 show" role="alert" data-bs-delay="2000" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    {{ session('sukses') }}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    @endif
+    @if(session('gagal'))
+        <div class="toast align-items-center text-bg-danger border-0 show" role="alert" data-bs-delay="2000" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    {{ session('gagal') }}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    @endif
+    @if($errors->any())
+        <div class="toast align-items-center text-bg-danger border-0 show" role="alert" data-bs-delay="2000" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    {{ $errors->first() }}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    @endif
+</div>
+
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
@@ -342,6 +375,9 @@
         backdrop.classList.toggle('show');
     });
     backdrop?.addEventListener('click', closeSidebar);
+    document.querySelectorAll('.toast').forEach(function (el) {
+    new bootstrap.Toast(el).show();
+});
 </script>
 @stack('scripts')
 

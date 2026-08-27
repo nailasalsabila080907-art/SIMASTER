@@ -17,7 +17,7 @@
         </span>
     </div>
 
-    {{-- Alerts --}}
+    {{-- Alerts 
     @if(session('sukses'))
         <div class="alert d-flex align-items-center gap-2 border-0 mb-4" style="background:var(--primary-light);color:var(--primary-dark);border-radius:12px;">
             <i class="bi bi-check-circle-fill"></i>
@@ -37,7 +37,10 @@
             <i class="bi bi-exclamation-circle-fill"></i>
             <div>{{ $errors->first() }}</div>
         </div>
-    @endif
+    @endif}
+    --}}
+    
+    {{-- notif berhasil/gagal tampil otomatis pakai toast global --}}
 
     {{-- List --}}
     @forelse($approvalSaya as $a)
@@ -71,13 +74,13 @@
                 </div>
 
                 <div class="d-flex gap-2 mt-3 pt-3" style="border-top:1px solid var(--border);">
-                    <form method="POST" action="{{ route('approval.setujui', ['approval' => $a->id_approval]) }}">
-                        @csrf
-                        <button type="submit" class="btn btn-sm text-white"
-                                style="background:var(--bs-primary);border-radius:8px;font-weight:600;">
-                            <i class="bi bi-check2"></i> Setujui
-                        </button>
-                    </form>
+                    <button type="button" class="btn btn-sm text-white"
+                            style="background:var(--bs-primary);border-radius:8px;font-weight:600;"
+                            data-bs-toggle="modal" data-bs-target="#modalKonfirmasiSetujui"
+                            data-url="{{ route('approval.setujui', ['approval' => $a->id_approval]) }}"
+                            data-perihal="{{ $a->suratKeluar->perihal }}">
+                        <i class="bi bi-check2"></i> Setujui
+                    </button>
 
                     <button type="button" class="btn btn-sm btn-outline-danger"
                             style="border-radius:8px;font-weight:600;"
@@ -121,4 +124,37 @@
         </div>
     @endif
 
+    {{-- modal konfirmasi setujui, dipakai bareng sama yang satu code disini --}}
+    <div class="modal fade" id="modalKonfirmasiSetujui" tabindex="-1" aria-labelledby="modalKonfirmasiSetujuiLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalKonfirmasiSetujuiLabel">Konfirmasi Persetujuan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Apakah Anda yakin ingin menyetujui surat <strong id="perihalSurat"></strong>?</p>
+                </div>
+                <div class="modal-footer">
+                    <form method="POST" id="formSetujui">
+                        @csrf
+                        <button type="submit" class="btn btn-primary">Ya, Setujui</button>
+                    </form>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 @endsection
+
+@push('scripts')
+<script>
+    document.getElementById('modalKonfirmasiSetujui')?.addEventListener('show.bs.modal', function (event) {
+        const tombol = event.relatedTarget;
+        document.getElementById('formSetujui').setAttribute('action', tombol.getAttribute('data-url'));
+        document.getElementById('perihalSurat').textContent =
+            'Surat "' + tombol.getAttribute('data-perihal') + '" akan disetujui dan diteruskan ke tahap berikutnya.';
+    });
+</script>
+@endpush
