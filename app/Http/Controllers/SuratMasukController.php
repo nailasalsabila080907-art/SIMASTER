@@ -44,7 +44,7 @@ class SuratMasukController extends Controller
             'tanggal_surat' => 'nullable|date',
             'tanggal_diterima' => 'required|date',
             'sifat_surat' => 'required|in:biasa,penting,segera,rahasia',
-            'file_scan' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'file_scan' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
         $filePath = $request->hasFile('file_scan') ? $request->file('file_scan')->store('surat-masuk', 'public') : null;

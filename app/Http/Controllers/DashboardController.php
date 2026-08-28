@@ -30,33 +30,42 @@ class DashboardController extends Controller
         $suratKeluar = $canSeeAll ? SuratKeluar::query() : SuratKeluar::where('dibuat_oleh', $user->id_user);
         $suratMasuk = $canSeeAll ? SuratMasuk::query() : SuratMasuk::where('diterima_oleh', $user->id_user);
 
-        $data['statistik'] = [
+                $data['statistik'] = [
             ['label' => $canSeeAll ? 'Surat Masuk' : 'Surat Masuk Saya', 'nilai' => (clone $suratMasuk)->count(), 'icon' => '↓'],
             ['label' => $canSeeAll ? 'Surat Keluar' : 'Surat Keluar Saya', 'nilai' => (clone $suratKeluar)->count(), 'icon' => '↑'],
             ['label' => 'Menunggu Approval', 'nilai' => $canSeeAll
                 ? SuratKeluar::where('status', 'diajukan')->count()
                 : SuratKeluar::where('dibuat_oleh', $user->id_user)->where('status', 'diajukan')->count(), 'icon' => '◷'],
-            ['label' => 'Sudah Terbit', 'nilai' => (clone $suratKeluar)->where('status', ['terkirim', 'diarsipkan'])->count(), 'icon' => '✓'],
+            ['label' => 'Sudah Terbit', 'nilai' => (clone $suratKeluar)->whereIn('status', ['terkirim', 'diarsipkan'])->count(), 'icon' => '✓'],
             ['label' => 'Arsip Tahun Ini', 'nilai' => (clone $suratKeluar)->where('status', 'diarsipkan')->whereYear('tanggal_surat', now()->year)->count(), 'icon' => '▣'],
         ];
 
-        $minggu = collect(range(5, 0))->map(function ($i) {
-            $awal = now()->startOfWeek()->subWeeks($i);
-            $akhir = (clone $awal)->endOfWeek();
-            $label = $awal->isSameMonth($akhir) 
-                ? $awal->format('d') . ' - ' . $akhir->format('d M') 
-                : $awal->format('d M') . ' - ' . $akhir->format('d M');
-            return ['label' => $label, 'awal' => $awal, 'akhir' => $akhir];
-        });
+        // Ambil 5 hari KERJA terakhir (Senin-Jumat), lewatin Sabtu & Minggu
+        $hariKerja = collect();
+        $kursor = now()->startOfDay();
+        while ($hariKerja->count() < 5) {
+            if (! $kursor->isWeekend()) {
+                $hariKerja->push($kursor->copy());
+            }
+            $kursor->subDay();
+        }
+        $hariKerja = $hariKerja->reverse()->values();
 
-        $data['grafik'] = $minggu->map(function ($item) use ($canSeeAll, $user) {
-            $keluar = SuratKeluar::whereBetween('created_at', [$item['awal'], $item['akhir']]);
-            $masuk = SuratMasuk::whereBetween('created_at', [$item['awal'], $item['akhir']]);
+        $data['grafik'] = $hariKerja->map(function ($tanggal) use ($canSeeAll, $user) {
+            $awal = $tanggal->copy()->startOfDay();
+
+            if ($tanggal->isMonday()) {
+                $awal = $tanggal->copy()->subDays(2)->startOfDay();
+            }
+
+            $akhir = $tanggal->copy()->endOfDay();
+            $keluar = SuratKeluar::whereBetween('created_at', [$awal, $akhir]);
+            $masuk = SuratMasuk::whereBetween('created_at', [$awal, $akhir]);
             if (! $canSeeAll) {
                 $keluar->where('dibuat_oleh', $user->id_user);
                 $masuk->where('diterima_oleh', $user->id_user);
             }
-            return ['label' => $item['label'], 'masuk' => $masuk->count(), 'keluar' => $keluar->count()];
+            return ['label' => $tanggal->translatedFormat('d M'), 'masuk' => $masuk->count(), 'keluar' => $keluar->count()];
         });
 
             $kategoriQuery = KategoriSurat::where('jenis', 'keluar')

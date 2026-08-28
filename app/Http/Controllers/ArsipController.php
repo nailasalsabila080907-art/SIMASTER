@@ -29,7 +29,7 @@ class ArsipController extends Controller
     $query = ArsipSurat::with('pengarsip')
         ->latest('tanggal_diarsipkan');
 
-    // Hak akses pengguna
+    // User yang tidak punya akses semua arsip
     if (!$bolehLihatSemua) {
         $query->where('diarsipkan_oleh', Auth::id());
     }
@@ -44,29 +44,52 @@ class ArsipController extends Controller
         $query->where('tipe_surat', $filterTipeSurat);
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | PENCARIAN
+    |--------------------------------------------------------------------------
+    */
 
     if ($filterCari !== '') {
 
         $query->where(function ($q) use ($filterCari) {
 
-            // Cari berdasarkan ID surat
-            $q->where('id_surat', 'like', "%{$filterCari}%");
+            /*
+             * 1. Cari berdasarkan ID surat di arsip
+             */
+            $q->where(
+                'id_surat',
+                'like',
+                "%{$filterCari}%"
+            );
 
-            // Cari berdasarkan pengarsip
+            /*
+             * 2. Cari berdasarkan pengarsip
+             */
             $q->orWhereHas('pengarsip', function ($userQuery) use ($filterCari) {
 
-                $userQuery->where('username', 'like', "%{$filterCari}%")
-                    ->orWhereHas('pegawai', function ($pegawaiQuery) use ($filterCari) {
-                        $pegawaiQuery->where(
-                            'nama_lengkap',
-                            'like',
-                            "%{$filterCari}%"
-                        );
-                    });
+                $userQuery->where(
+                    'username',
+                    'like',
+                    "%{$filterCari}%"
+                );
+
+                $userQuery->orWhereHas('pegawai', function ($pegawaiQuery) use ($filterCari) {
+
+                    $pegawaiQuery->where(
+                        'nama_lengkap',
+                        'like',
+                        "%{$filterCari}%"
+                    );
+
+                });
 
             });
 
-            // Cari surat keluar
+            /*
+             * 3. Cari SURAT KELUAR
+             * berdasarkan nomor surat atau perihal
+             */
             $q->orWhere(function ($suratQuery) use ($filterCari) {
 
                 $suratQuery
@@ -86,8 +109,15 @@ class ArsipController extends Controller
                                     'like',
                                     "%{$filterCari}%"
                                 )
+
                                 ->orWhere(
                                     'surat_keluar.perihal',
+                                    'like',
+                                    "%{$filterCari}%"
+                                )
+
+                                ->orWhere(
+                                    'surat_keluar.tujuan',
                                     'like',
                                     "%{$filterCari}%"
                                 );
@@ -98,7 +128,9 @@ class ArsipController extends Controller
 
             });
 
-            // Cari surat masuk
+            /*
+             * 4. Cari SURAT MASUK
+             */
             $q->orWhere(function ($suratQuery) use ($filterCari) {
 
                 $suratQuery
@@ -118,6 +150,7 @@ class ArsipController extends Controller
                                     'like',
                                     "%{$filterCari}%"
                                 )
+
                                 ->orWhere(
                                     'surat_masuk.perihal',
                                     'like',
@@ -133,6 +166,7 @@ class ArsipController extends Controller
         });
     }
 
+    // Pagination
     $arsip = $query
         ->paginate(20)
         ->withQueryString();
@@ -159,7 +193,7 @@ class ArsipController extends Controller
         DB::transaction(function () use ($suratKeluar) {
             ArsipSurat::firstOrCreate(
                 ['tipe_surat' => 'keluar', 'id_surat' => $suratKeluar->id_surat_keluar],
-                ['tahun_arsip' => (int) ($suratKeluar->tanggal_surat?->format('Y') ?? now()->year), 'diarsipkan_oleh' => auth::id()]
+                ['tahun_arsip' => (int) ($suratKeluar->tanggal_surat?->format('Y') ?? now()->year), 'diarsipkan_oleh' => Auth::id()]
             );
             $suratKeluar->update(['status' => 'diarsipkan']);
             LogAktivitas::catat('ubah_data', 'Arsip', "Mengarsipkan surat keluar: {$suratKeluar->perihal}");
@@ -173,7 +207,7 @@ class ArsipController extends Controller
         DB::transaction(function () use ($suratMasuk) {
             ArsipSurat::firstOrCreate(
                 ['tipe_surat' => 'masuk', 'id_surat' => $suratMasuk->id_surat_masuk],
-                ['tahun_arsip' => (int) ($suratMasuk->tanggal_diterima?->format('Y') ?? now()->year), 'diarsipkan_oleh' => auth::id()]
+                ['tahun_arsip' => (int) ($suratMasuk->tanggal_diterima?->format('Y') ?? now()->year), 'diarsipkan_oleh' => Auth::id()]
             );
             $suratMasuk->update(['status' => 'diarsipkan']);
             LogAktivitas::catat('ubah_data', 'Arsip', "Mengarsipkan surat masuk: {$suratMasuk->perihal}");

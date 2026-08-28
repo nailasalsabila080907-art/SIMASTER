@@ -53,7 +53,7 @@
             <div class="card-header d-flex align-items-center justify-content-between">
                 <div>
                     <h3 class="mb-1" style="font-size:1.05rem">Aktivitas Surat</h3>
-                    <p class="text-muted mb-0" style="font-size:.78rem">Perbandingan surat masuk dan surat keluar 6 minggu terakhir</p>
+                    <p class="text-muted mb-0" style="font-size:.78rem">Perbandingan surat masuk dan surat keluar seminggu terakhir</p>
                 </div>
                 <div class="d-flex gap-3" style="font-size:.75rem">
                     <span class="text-muted"><i class="bi bi-square-fill" style="color:#178754"></i> Surat Masuk</span>
