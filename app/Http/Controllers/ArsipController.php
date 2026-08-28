@@ -8,6 +8,7 @@ use App\Models\SuratKeluar;
 use App\Models\SuratMasuk;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class ArsipController extends Controller
 {
@@ -23,7 +24,7 @@ class ArsipController extends Controller
         DB::transaction(function () use ($suratKeluar) {
             ArsipSurat::firstOrCreate(
                 ['tipe_surat' => 'keluar', 'id_surat' => $suratKeluar->id_surat_keluar],
-                ['tahun_arsip' => (int) ($suratKeluar->tanggal_surat?->format('Y') ?? now()->year), 'diarsipkan_oleh' => auth()->id()]
+                ['tahun_arsip' => (int) ($suratKeluar->tanggal_surat?->format('Y') ?? now()->year), 'diarsipkan_oleh' => Auth::id()]
             );
             $suratKeluar->update(['status' => 'diarsipkan']);
             LogAktivitas::catat('ubah_data', 'Arsip', "Mengarsipkan surat keluar: {$suratKeluar->perihal}");
@@ -37,7 +38,7 @@ class ArsipController extends Controller
         DB::transaction(function () use ($suratMasuk) {
             ArsipSurat::firstOrCreate(
                 ['tipe_surat' => 'masuk', 'id_surat' => $suratMasuk->id_surat_masuk],
-                ['tahun_arsip' => (int) ($suratMasuk->tanggal_diterima?->format('Y') ?? now()->year), 'diarsipkan_oleh' => auth()->id()]
+                ['tahun_arsip' => (int) ($suratMasuk->tanggal_diterima?->format('Y') ?? now()->year), 'diarsipkan_oleh' => Auth::id()]
             );
             $suratMasuk->update(['status' => 'diarsipkan']);
             LogAktivitas::catat('ubah_data', 'Arsip', "Mengarsipkan surat masuk: {$suratMasuk->perihal}");

@@ -21,7 +21,7 @@ class DatabaseSeeder extends Seeder
                 'nama_sekolah' => 'SMK Negeri 7 Pekanbaru',
                 'kota' => 'Pekanbaru',
                 'provinsi' => 'Riau',
-                'nama_kepala_sekolah' => 'Padmi Riana, M.Pi, M.Pd',
+                'nama_kepala_sekolah' => 'Padmi Riana, S.Pi, M.Pd',
                 'nip_kepala_sekolah' => '19750316 200501 2 008',
             ]
         );
@@ -123,7 +123,7 @@ class DatabaseSeeder extends Seeder
 
         $kepalaKurikulumPegawai = Pegawai::firstOrCreate(
             ['nip' => 'WKUR001'],
-            [
+            [   
                 'id_sekolah' => $sekolah->id_sekolah,
                 'id_unit' => $unitTu->id_unit,
                 'id_jabatan' => $jabatanWakaKurikulum->id_jabatan,
