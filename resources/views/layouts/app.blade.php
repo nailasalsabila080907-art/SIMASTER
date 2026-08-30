@@ -274,7 +274,7 @@
                 <i class="bi bi-list fs-5"></i>
             </button>
             <div>
-                <p class="page-eyebrow">Sistem Informasi Manajemen</p>
+                <p class="page-eyebrow">Sistem Informasi Manajemen Surat Terintegrasi</p>
                 <h1 class="page-title">@yield('title','Dashboard')</h1>
             </div>
         </div>

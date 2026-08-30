@@ -14,6 +14,74 @@
         </div>
     </div>
 
+    {{-- Filter --}}
+    <form method="GET" action="{{ route('arsip.index') }}" class="d-flex flex-wrap align-items-center gap-2 mb-3">
+
+    {{-- Pencarian --}}
+    <div class="position-relative" style="width:260px;">
+        <i
+            class="bi bi-search position-absolute"
+            style="left:12px;top:50%;transform:translateY(-50%);color:var(--ink-muted);font-size:.85rem;"
+        ></i>
+
+        <input
+            type="text"
+            name="cari"
+            value="{{ $filterCari }}"
+            placeholder="Cari nomor atau perihal surat..."
+            class="form-control form-control-sm"
+            style="border-radius:10px;border-color:var(--border);font-size:.85rem;padding-left:32px;"
+        >
+    </div>
+
+    {{-- Filter Pengguna --}}
+    @if($bolehLihatSemua)
+        <select name="user_id" onchange="this.form.submit()" class="form-select form-select-sm w-auto" style="border-radius:10px;border-color:var(--border);font-size:.85rem;"
+        >
+            <option value="">Semua pengguna</option>
+
+            @foreach($daftarUser as $u)
+                <option
+                    value="{{ $u->id_user }}"
+                    {{ (string) $filterUserId === (string) $u->id_user ? 'selected' : '' }}
+                >
+                    {{ $u->pegawai->nama_lengkap ?? $u->username }}
+                </option>
+            @endforeach
+        </select>
+    @endif
+
+    {{-- Filter Jenis Surat --}}
+    <select name="tipe_surat" onchange="this.form.submit()" class="form-select form-select-sm w-auto" style="border-radius:10px;border-color:var(--border);font-size:.85rem;"
+    >
+        <option value="">Semua jenis surat</option>
+
+        <option
+            value="masuk"
+            {{ $filterTipeSurat === 'masuk' ? 'selected' : '' }}
+        >
+            Surat Masuk
+        </option>
+
+        <option value="keluar" {{ $filterTipeSurat === 'keluar' ? 'selected' : '' }}>Surat Keluar</option> </select>
+
+    {{-- Tombol Cari --}}
+    <button type="submit" class="btn btn-sm" style="border-radius:10px;background:var(--bs-primary);color:#fff;font-size:.85rem;" >
+        <i class="bi bi-search me-1"></i>
+        Cari
+    </button>
+
+    {{-- Reset Filter --}}
+    @if($filterCari || $filterUserId || $filterTipeSurat)
+        <a
+            href="{{ route('arsip.index') }}" class="d-inline-flex align-items-center gap-1" style="color:var(--ink-muted);font-size:.83rem;">
+            <i class="bi bi-x-circle"></i>
+            Reset filter
+        </a>
+    @endif
+
+</form>
+
     {{-- Alert --}}
     @if(session('sukses'))
         <div class="alert d-flex align-items-center gap-2 border-0 mb-4" style="background:var(--primary-light);color:var(--primary-dark);border-radius:12px;">
