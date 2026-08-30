@@ -1,37 +1,34 @@
 @extends('layouts.app')
 
-@section('title', 'Master Jabatan')
+@section('title', 'Sampah Jabatan')
 
 @section('content')
 
     {{-- Header --}}
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
         <div>
-            <h5 class="mb-1" style="color:var(--ink)">Master Jabatan</h5>
+            <h5 class="mb-1" style="color:var(--ink)">Sampah Jabatan</h5>
             <p class="mb-0" style="color:var(--ink-muted);font-size:.85rem">
-                Kelola daftar jabatan dan level approval berjenjang.
+                Jabatan yang sudah dihapus. Bisa dipulihkan atau dihapus permanen.
             </p>
         </div>
-        <a href="{{ route('jabatan.create') }}" class="btn btn-sm text-white d-inline-flex align-items-center gap-1"
-           style="background:var(--bs-primary);border-radius:8px;font-weight:600;padding:.55rem 1rem;">
-            <i class="bi bi-plus-lg"></i> Tambah Jabatan
-        </a>
-        {{-- Tab navigasi --}}
-<ul class="nav mb-4" style="border-bottom:1px solid var(--border);">
-    <li class="nav-item">
-        <a class="nav-link active px-3 py-2" href="{{ route('jabatan.index') }}"
-           style="color:var(--bs-primary);font-weight:600;border-bottom:2px solid var(--bs-primary);">
-            Data Aktif
-        </a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link px-3 py-2" href="{{ route('jabatan.trashed') }}"
-           style="color:var(--ink-muted);font-weight:600;">
-            Sampah
-        </a>
-    </li>
-</ul>
     </div>
+
+    {{-- Tab navigasi --}}
+    <ul class="nav mb-4" style="border-bottom:1px solid var(--border);">
+        <li class="nav-item">
+            <a class="nav-link px-3 py-2" href="{{ route('jabatan.index') }}"
+               style="color:var(--ink-muted);font-weight:600;">
+                Data Aktif
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active px-3 py-2" href="{{ route('jabatan.trashed') }}"
+               style="color:var(--bs-primary);font-weight:600;border-bottom:2px solid var(--bs-primary);">
+                Sampah
+            </a>
+        </li>
+    </ul>
 
     {{-- Alerts --}}
     @if(session('sukses'))
@@ -48,7 +45,6 @@
         </div>
     @endif
 
-
     {{-- Table --}}
     <div class="card">
         <div class="table-responsive">
@@ -57,7 +53,7 @@
                     <tr style="background:var(--surface);">
                         <th class="px-4 py-3 border-0" style="color:var(--ink-muted);font-weight:700;text-transform:uppercase;font-size:.7rem;letter-spacing:.05em;">Nama Jabatan</th>
                         <th class="px-4 py-3 border-0" style="color:var(--ink-muted);font-weight:700;text-transform:uppercase;font-size:.7rem;letter-spacing:.05em;">Level</th>
-                        <th class="px-4 py-3 border-0" style="color:var(--ink-muted);font-weight:700;text-transform:uppercase;font-size:.7rem;letter-spacing:.05em;">Keterangan</th>
+                        <th class="px-4 py-3 border-0" style="color:var(--ink-muted);font-weight:700;text-transform:uppercase;font-size:.7rem;letter-spacing:.05em;">Dihapus pada</th>
                         <th class="px-4 py-3 border-0 text-end" style="color:var(--ink-muted);font-weight:700;text-transform:uppercase;font-size:.7rem;letter-spacing:.05em;">Aksi</th>
                     </tr>
                 </thead>
@@ -70,17 +66,23 @@
                                     Level {{ $j->level_jabatan }}
                                 </span>
                             </td>
-                            <td class="px-4 py-3" style="color:var(--ink-muted);">{{ $j->keterangan ?? '-' }}</td>
+                            <td class="px-4 py-3" style="color:var(--ink-muted);">
+                                {{ $j->deleted_at->translatedFormat('d M Y, H:i') }}
+                            </td>
                             <td class="px-4 py-3 text-end">
                                 <div class="d-inline-flex gap-2">
-                                    <a href="{{ route('jabatan.edit', $j) }}"
-                                       class="btn btn-sm" style="border:1px solid var(--border);border-radius:8px;color:var(--bs-primary);font-weight:600;background:#fff;">
-                                        <i class="bi bi-pencil"></i> Ubah
-                                    </a>
-                                    <form action="{{ route('jabatan.destroy', $j) }}" method="POST" onsubmit="return confirm('Yakin hapus jabatan ini?')">
+                                    <form action="{{ route('jabatan.restore', $j->uuid) }}" method="POST"
+                                          onsubmit="return confirm('Pulihkan jabatan ini?')">
+                                        @csrf @method('PUT')
+                                        <button type="submit" class="btn btn-sm" style="border:1px solid var(--border);border-radius:8px;color:#1B8A5A;font-weight:600;background:#fff;">
+                                            <i class="bi bi-arrow-counterclockwise"></i> Pulihkan
+                                        </button>
+                                    </form>
+                                    <form action="{{ route('jabatan.forceDelete', $j->uuid) }}" method="POST"
+                                          onsubmit="return confirm('Hapus PERMANEN jabatan ini? Data tidak bisa dikembalikan lagi.')">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-outline-danger" style="border-radius:8px;font-weight:600;">
-                                            <i class="bi bi-trash3"></i> Hapus
+                                            <i class="bi bi-trash3-fill"></i> Hapus Permanen
                                         </button>
                                     </form>
                                 </div>
@@ -91,9 +93,9 @@
                             <td colspan="4" class="text-center py-5" style="color:var(--ink-muted);">
                                 <div class="d-inline-flex align-items-center justify-content-center mb-3"
                                      style="width:56px;height:56px;border-radius:14px;background:var(--primary-light);color:var(--bs-primary);">
-                                    <i class="bi bi-person-badge fs-4"></i>
+                                    <i class="bi bi-trash3 fs-4"></i>
                                 </div>
-                                <p class="mb-0">Belum ada data jabatan.</p>
+                                <p class="mb-0">Sampah kosong.</p>
                             </td>
                         </tr>
                     @endforelse

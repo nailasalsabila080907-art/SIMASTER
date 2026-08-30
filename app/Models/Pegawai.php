@@ -7,11 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Pegawai extends Model
 {
     use HasUuids;
+    use SoftDeletes;
     use HasFactory;
 
     protected $table = 'pegawai';
@@ -27,30 +29,30 @@ class Pegawai extends Model
         'tanggal_lahir' => 'date',
     ];
 
-    public function sekolah(): BelongsTo
-    {
-        return $this->belongsTo(Sekolah::class, 'id_sekolah', 'id_sekolah');
-    }
+       public function sekolah(): BelongsTo
+{
+    return $this->belongsTo(Sekolah::class, 'id_sekolah', 'id_sekolah');
+}
 
-    public function unitKerja(): BelongsTo
-    {
-        return $this->belongsTo(UnitKerja::class, 'id_unit', 'id_unit');
-    }
+public function unitKerja(): BelongsTo
+{
+    return $this->belongsTo(UnitKerja::class, 'id_unit', 'id_unit');
+}
 
-    public function jabatan(): BelongsTo
-    {
-        return $this->belongsTo(Jabatan::class, 'id_jabatan', 'id_jabatan');
-    }
+public function jabatan(): BelongsTo
+{
+    return $this->belongsTo(Jabatan::class, 'id_jabatan', 'id_jabatan')->withTrashed();
+}
 
-    public function jurusan(): BelongsTo
-    {
-        return $this->belongsTo(Jurusan::class, 'id_jurusan', 'id_jurusan');
-    }
+public function jurusan(): BelongsTo
+{
+    return $this->belongsTo(Jurusan::class, 'id_jurusan', 'id_jurusan');
+}
 
-    public function user(): HasOne
-    {
-        return $this->hasOne(User::class, 'id_pegawai', 'id_pegawai');
-    }
+public function user(): HasOne
+{
+    return $this->hasOne(User::class, 'id_pegawai', 'id_pegawai');
+}
 
     public function approvalSuratKeluar(): HasMany
     {

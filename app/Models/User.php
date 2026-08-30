@@ -7,11 +7,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
     use HasUuids;
+    use SoftDeletes;
     use HasFactory, Notifiable;
 
     protected $table = 'users';
@@ -29,9 +31,9 @@ class User extends Authenticatable
         'last_login' => 'datetime',
     ];
 
-    public function pegawai(): BelongsTo
+        public function pegawai(): BelongsTo
     {
-        return $this->belongsTo(Pegawai::class, 'id_pegawai', 'id_pegawai');
+        return $this->belongsTo(Pegawai::class, 'id_pegawai', 'id_pegawai')->withTrashed();
     }
 
     public function suratKeluarDibuat(): HasMany

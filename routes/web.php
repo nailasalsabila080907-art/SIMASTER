@@ -54,7 +54,15 @@ Route::middleware('auth')->group(function () {
         Route::put('/sekolah', [SekolahController::class, 'update'])->name('sekolah.update');
 
         Route::resource('jabatan', JabatanController::class)->except(['show']);
+        Route::get('/jabatan-sampah', [JabatanController::class, 'trashed'])->name('jabatan.trashed');
+        Route::put('/jabatan/{uuid}/restore', [JabatanController::class, 'restore'])->name('jabatan.restore');
+        Route::delete('/jabatan/{uuid}/force', [JabatanController::class, 'forceDelete'])->name('jabatan.forceDelete');
+
         Route::resource('pegawai', PegawaiController::class)->except(['show']);
+         Route::get('/pegawai-sampah', [PegawaiController::class, 'trashed'])->name('pegawai.trashed');
+    Route::put('/pegawai/{uuid}/restore', [PegawaiController::class, 'restore'])->name('pegawai.restore');
+    Route::delete('/pegawai/{uuid}/force', [PegawaiController::class, 'forceDelete'])->name('pegawai.forceDelete');
+
         Route::resource('kategori-surat', KategoriSuratController::class)->parameters(['kategori-surat' => 'kategoriSurat'])->except(['show']);
         Route::resource('template-surat', TemplateSuratController::class)->parameters(['template-surat' => 'templateSurat'])->except(['show']);
         Route::delete('/template-surat/variabel/{variabel}', [TemplateSuratController::class, 'hapusVariabel'])->name('template-surat.variabel.hapus');
@@ -65,6 +73,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/pengguna/{pengguna}/edit', [PenggunaController::class, 'edit'])->name('pengguna.edit');
         Route::put('/pengguna/{pengguna}', [PenggunaController::class, 'update'])->name('pengguna.update');
         Route::delete('/pengguna/{pengguna}', [PenggunaController::class, 'destroy'])->name('pengguna.destroy');
+        Route::get('/pengguna-sampah', [PenggunaController::class, 'trashed'])->name('pengguna.trashed');
+    Route::put('/pengguna/{uuid}/restore', [PenggunaController::class, 'restore'])->name('pengguna.restore');
+    Route::delete('/pengguna/{uuid}/force', [PenggunaController::class, 'forceDelete'])->name('pengguna.forceDelete');
+
     });
 
     Route::controller(SuratKeluarController::class)->prefix('surat-keluar')->name('surat-keluar.')->group(function () {

@@ -1,36 +1,34 @@
 @extends('layouts.app')
 
-@section('title', 'Master Pegawai')
+@section('title', 'Sampah Pegawai')
 
 @section('content')
 
     {{-- Header --}}
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
         <div>
-            <h5 class="mb-1" style="color:var(--ink)">Master Pegawai</h5>
+            <h5 class="mb-1" style="color:var(--ink)">Sampah Pegawai</h5>
             <p class="mb-0" style="color:var(--ink-muted);font-size:.85rem">
-                Kelola data pegawai dan akun login.
+                Pegawai yang sudah dihapus. Bisa dipulihkan atau dihapus permanen.
             </p>
         </div>
-        <a href="{{ route('pegawai.create') }}" class="btn btn-sm text-white d-inline-flex align-items-center gap-1"
-           style="background:var(--bs-primary);border-radius:8px;font-weight:600;padding:.55rem 1rem;">
-            <i class="bi bi-plus-lg"></i> Tambah Pegawai
-        </a>
-        <ul class="nav mb-4" style="border-bottom:1px solid var(--border);">
-    <li class="nav-item">
-        <a class="nav-link active px-3 py-2" href="{{ route('pegawai.index') }}"
-           style="color:var(--bs-primary);font-weight:600;border-bottom:2px solid var(--bs-primary);">
-            Data Aktif
-        </a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link px-3 py-2" href="{{ route('pegawai.trashed') }}"
-           style="color:var(--ink-muted);font-weight:600;">
-            Sampah
-        </a>
-    </li>
-</ul>
     </div>
+
+    {{-- Tab navigasi --}}
+    <ul class="nav mb-4" style="border-bottom:1px solid var(--border);">
+        <li class="nav-item">
+            <a class="nav-link px-3 py-2" href="{{ route('pegawai.index') }}"
+               style="color:var(--ink-muted);font-weight:600;">
+                Data Aktif
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active px-3 py-2" href="{{ route('pegawai.trashed') }}"
+               style="color:var(--bs-primary);font-weight:600;border-bottom:2px solid var(--bs-primary);">
+                Sampah
+            </a>
+        </li>
+    </ul>
 
     {{-- Alerts --}}
     @if(session('sukses'))
@@ -57,7 +55,7 @@
                         <th class="px-4 py-3 border-0" style="color:var(--ink-muted);font-weight:700;text-transform:uppercase;font-size:.7rem;letter-spacing:.05em;">NIP</th>
                         <th class="px-4 py-3 border-0" style="color:var(--ink-muted);font-weight:700;text-transform:uppercase;font-size:.7rem;letter-spacing:.05em;">Jabatan</th>
                         <th class="px-4 py-3 border-0" style="color:var(--ink-muted);font-weight:700;text-transform:uppercase;font-size:.7rem;letter-spacing:.05em;">Unit</th>
-                        <th class="px-4 py-3 border-0" style="color:var(--ink-muted);font-weight:700;text-transform:uppercase;font-size:.7rem;letter-spacing:.05em;">Akun</th>
+                        <th class="px-4 py-3 border-0" style="color:var(--ink-muted);font-weight:700;text-transform:uppercase;font-size:.7rem;letter-spacing:.05em;">Dihapus pada</th>
                         <th class="px-4 py-3 border-0 text-end" style="color:var(--ink-muted);font-weight:700;text-transform:uppercase;font-size:.7rem;letter-spacing:.05em;">Aksi</th>
                     </tr>
                 </thead>
@@ -68,25 +66,23 @@
                             <td class="px-4 py-3 font-monospace" style="font-size:.8rem;color:var(--ink-muted);">{{ $p->nip }}</td>
                             <td class="px-4 py-3">{{ $p->jabatan->nama_jabatan ?? '-' }}</td>
                             <td class="px-4 py-3">{{ $p->unitKerja->nama_unit ?? '-' }}</td>
-                            <td class="px-4 py-3">
-                                @if($p->user)
-                                    <span class="badge" style="background:var(--primary-light);color:var(--bs-primary);font-weight:600;">
-                                        {{ $p->user->username }}
-                                    </span>
-                                @else
-                                    <span style="color:var(--ink-muted);font-size:.78rem;">Belum ada</span>
-                                @endif
+                            <td class="px-4 py-3" style="color:var(--ink-muted);">
+                                {{ $p->deleted_at->translatedFormat('d M Y, H:i') }}
                             </td>
                             <td class="px-4 py-3 text-end">
                                 <div class="d-inline-flex gap-2">
-                                    <a href="{{ route('pegawai.edit', $p) }}"
-                                       class="btn btn-sm" style="border:1px solid var(--border);border-radius:8px;color:var(--bs-primary);font-weight:600;background:#fff;">
-                                        <i class="bi bi-pencil"></i> Ubah
-                                    </a>
-                                    <form action="{{ route('pegawai.destroy', $p) }}" method="POST" onsubmit="return confirm('Yakin hapus pegawai ini?')">
+                                    <form action="{{ route('pegawai.restore', $p->uuid) }}" method="POST"
+                                          onsubmit="return confirm('Pulihkan pegawai ini?')">
+                                        @csrf @method('PUT')
+                                        <button type="submit" class="btn btn-sm" style="border:1px solid var(--border);border-radius:8px;color:#1B8A5A;font-weight:600;background:#fff;">
+                                            <i class="bi bi-arrow-counterclockwise"></i> Pulihkan
+                                        </button>
+                                    </form>
+                                    <form action="{{ route('pegawai.forceDelete', $p->uuid) }}" method="POST"
+                                          onsubmit="return confirm('Hapus PERMANEN pegawai ini? Data tidak bisa dikembalikan lagi.')">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-outline-danger" style="border-radius:8px;font-weight:600;">
-                                            <i class="bi bi-trash3"></i> Hapus
+                                            <i class="bi bi-trash3-fill"></i> Hapus Permanen
                                         </button>
                                     </form>
                                 </div>
@@ -97,9 +93,9 @@
                             <td colspan="6" class="text-center py-5" style="color:var(--ink-muted);">
                                 <div class="d-inline-flex align-items-center justify-content-center mb-3"
                                      style="width:56px;height:56px;border-radius:14px;background:var(--primary-light);color:var(--bs-primary);">
-                                    <i class="bi bi-people fs-4"></i>
+                                    <i class="bi bi-trash3 fs-4"></i>
                                 </div>
-                                <p class="mb-0">Belum ada data pegawai.</p>
+                                <p class="mb-0">Sampah kosong.</p>
                             </td>
                         </tr>
                     @endforelse
