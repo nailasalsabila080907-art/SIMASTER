@@ -93,6 +93,20 @@ class PegawaiController extends Controller
     protected function validasi(Request $request, ?int $idPegawai = null): array
     {
         return $request->validate([
+            // CATATAN: rule unique di bawah ini tetap menganggap NIP milik
+            // pegawai yang sudah di-soft-delete sebagai "sudah dipakai".
+            // Kalau kamu MAU NIP bisa dipakai ulang setelah pegawai lama
+            // dihapus (soft delete), ganti baris nip menjadi:
+            //
+            // 'nip' => [
+            //     'required', 'string', 'max:30',
+            //     Rule::unique('pegawai', 'nip')
+            //         ->ignore($idPegawai, 'id_pegawai')
+            //         ->whereNull('deleted_at'),
+            // ],
+            //
+            // Kalau kamu TIDAK mau NIP dipakai ulang (lebih aman untuk
+            // jejak audit kepegawaian), biarkan seperti sekarang.
             'nip' => 'required|string|max:30|unique:pegawai,nip,'.$idPegawai.',id_pegawai',
             'nama_lengkap' => 'required|string|max:100',
             'gelar_depan' => 'nullable|string|max:20',
@@ -105,5 +119,44 @@ class PegawaiController extends Controller
             'no_hp' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:100',
         ]);
+    }
+
+    // =====================================================
+    // TAMBAHAN: Soft delete - halaman sampah, restore, dan
+    // hapus permanen.
+    // =====================================================
+
+    public function trashed()
+    {
+        $pegawai = Pegawai::onlyTrashed()
+            ->with(['jabatan', 'unitKerja'])
+            ->orderBy('nama_lengkap')
+            ->paginate(15);
+
+        return view('master.pegawai.trashed', compact('pegawai'));
+    }
+
+    public function restore($uuid)
+    {
+        $pegawai = Pegawai::onlyTrashed()->where('uuid', $uuid)->firstOrFail();
+        $pegawai->restore();
+
+        return back()->with('sukses', 'Pegawai berhasil dipulihkan.');
+    }
+
+    public function forceDelete($uuid)
+    {
+        $pegawai = Pegawai::onlyTrashed()->where('uuid', $uuid)->firstOrFail();
+
+        // withTrashed() penting: kalau pegawai ini masih punya akun user
+        // (walau akunnya sudah di-soft-delete juga), jangan izinkan hapus
+        // permanen dulu - suruh hapus permanen akunnya lebih dulu.
+        if ($pegawai->user()->withTrashed()->exists()) {
+            return back()->with('gagal', 'Pegawai ini masih punya akun pengguna (termasuk yang ada di sampah), hapus permanen akunnya terlebih dahulu.');
+        }
+
+        $pegawai->forceDelete();
+
+        return back()->with('sukses', 'Pegawai berhasil dihapus permanen.');
     }
 }

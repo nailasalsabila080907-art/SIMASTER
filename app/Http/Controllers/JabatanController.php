@@ -59,4 +59,40 @@ class JabatanController extends Controller
 
         return redirect()->route('jabatan.index')->with('sukses', 'Jabatan berhasil dihapus.');
     }
+
+    // =====================================================
+    // TAMBAHAN: Soft delete - halaman sampah, restore, dan
+    // hapus permanen.
+    // =====================================================
+
+    public function trashed()
+    {
+        $jabatan = Jabatan::onlyTrashed()->orderBy('level_jabatan', 'desc')->paginate(15);
+        return view('master.jabatan.trashed', compact('jabatan'));
+    }
+
+    public function restore($uuid)
+    {
+        $jabatan = Jabatan::onlyTrashed()->where('uuid', $uuid)->firstOrFail();
+        $jabatan->restore();
+
+        return back()->with('sukses', 'Jabatan berhasil dipulihkan.');
+    }
+
+    public function forceDelete($uuid)
+    {
+        $jabatan = Jabatan::onlyTrashed()->where('uuid', $uuid)->firstOrFail();
+
+        // withTrashed() di sini penting: kita tidak mau jabatan dihapus
+        // permanen kalau masih ada pegawai (termasuk yang sudah di-soft-delete)
+        // yang id_jabatan-nya menunjuk ke sini. Kalau pegawai itu suatu saat
+        // di-restore, dia akan menunjuk ke jabatan yang sudah tidak ada.
+        if ($jabatan->pegawai()->withTrashed()->exists()) {
+            return back()->with('gagal', 'Jabatan ini masih tercatat dipakai pegawai (termasuk yang ada di sampah), tidak bisa dihapus permanen.');
+        }
+
+        $jabatan->forceDelete();
+
+        return back()->with('sukses', 'Jabatan berhasil dihapus permanen.');
+    }
 }
