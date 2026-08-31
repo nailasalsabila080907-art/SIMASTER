@@ -1,29 +1,30 @@
 @extends('layouts.app')
 
-@section('title', 'Pengguna Sistem')
+@section('title', 'Sampah Pengguna')
 
 @section('content')
 
     <div class="mb-4">
-        <h5 class="mb-0" style="color:var(--ink)">Pengguna Sistem</h5>
+        <h5 class="mb-0" style="color:var(--ink)">Sampah Pengguna</h5>
         <p class="mb-0" style="color:var(--ink-muted);font-size:.83rem">
-            Kelola username, role, status, dan password akun pegawai.
+            Akun pengguna yang sudah dihapus. Bisa dipulihkan atau dihapus permanen.
         </p>
-        <ul class="nav mb-4" style="border-bottom:1px solid var(--border);">
-    <li class="nav-item">
-        <a class="nav-link active px-3 py-2" href="{{ route('pengguna.index') }}"
-           style="color:var(--bs-primary);font-weight:600;border-bottom:2px solid var(--bs-primary);">
-            Data Aktif
-        </a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link px-3 py-2" href="{{ route('pengguna.trashed') }}"
-           style="color:var(--ink-muted);font-weight:600;">
-            Sampah
-        </a>
-    </li>
-</ul>
     </div>
+
+    <ul class="nav mb-4" style="border-bottom:1px solid var(--border);">
+        <li class="nav-item">
+            <a class="nav-link px-3 py-2" href="{{ route('pengguna.index') }}"
+               style="color:var(--ink-muted);font-weight:600;">
+                Data Aktif
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active px-3 py-2" href="{{ route('pengguna.trashed') }}"
+               style="color:var(--bs-primary);font-weight:600;border-bottom:2px solid var(--bs-primary);">
+                Sampah
+            </a>
+        </li>
+    </ul>
 
     @if(session('sukses'))
         <div class="alert d-flex align-items-start gap-2 border-0 mb-4" style="background:#EAF7EE;color:#2E7D4F;border-radius:12px;font-size:.85rem;">
@@ -48,7 +49,7 @@
                             <th class="ps-4 py-3" style="color:var(--ink-muted);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;">Pengguna</th>
                             <th class="py-3" style="color:var(--ink-muted);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;">Jabatan</th>
                             <th class="py-3" style="color:var(--ink-muted);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;">Role</th>
-                            <th class="py-3" style="color:var(--ink-muted);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;">Status</th>
+                            <th class="py-3" style="color:var(--ink-muted);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;">Dihapus pada</th>
                             <th class="pe-4 py-3 text-end" style="color:var(--ink-muted);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;">Aksi</th>
                         </tr>
                     </thead>
@@ -73,33 +74,33 @@
                                         {{ ucwords(str_replace('_', ' ', $u->role)) }}
                                     </span>
                                 </td>
-                                <td class="py-3">
-                                    @if($u->status === 'aktif')
-                                        <span class="badge" style="background:#EAF7EE;color:#2E7D4F;font-weight:600;">Aktif</span>
-                                    @else
-                                        <span class="badge" style="background:#F1F1F3;color:#6B7280;font-weight:600;">Nonaktif</span>
-                                    @endif
+                                <td class="py-3" style="color:var(--ink-muted);">
+                                    {{ $u->deleted_at->translatedFormat('d M Y, H:i') }}
                                 </td>
                                 <td class="pe-4 py-3 text-end">
-                                    <a href="{{ route('pengguna.edit', $u) }}" class="btn-icon-ghost me-2" title="Ubah">
-                                        <i class="bi bi-pencil-square"></i>
-                                    </a>
-                                    @if($u->id_user !== auth()->id())
-                                        <form class="d-inline" method="POST" action="{{ route('pengguna.destroy', $u) }}" onsubmit="return confirm('Hapus akun ini?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn-icon-ghost text-danger" title="Hapus">
-                                                <i class="bi bi-trash3"></i>
+                                    <div class="d-inline-flex gap-2">
+                                        <form action="{{ route('pengguna.restore', $u->uuid) }}" method="POST"
+                                              onsubmit="return confirm('Pulihkan akun ini?')">
+                                            @csrf @method('PUT')
+                                            <button type="submit" class="btn-icon-ghost" style="color:#1B8A5A;" title="Pulihkan">
+                                                <i class="bi bi-arrow-counterclockwise"></i>
                                             </button>
                                         </form>
-                                    @endif
+                                        <form action="{{ route('pengguna.forceDelete', $u->uuid) }}" method="POST"
+                                              onsubmit="return confirm('Hapus PERMANEN akun ini? Data tidak bisa dikembalikan lagi.')">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="btn-icon-ghost text-danger" title="Hapus Permanen">
+                                                <i class="bi bi-trash3-fill"></i>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
                                 <td colspan="5" class="text-center py-5" style="color:var(--ink-muted)">
                                     <i class="bi bi-inbox" style="font-size:1.5rem;"></i>
-                                    <p class="mb-0 mt-2">Belum ada akun.</p>
+                                    <p class="mb-0 mt-2">Sampah kosong.</p>
                                 </td>
                             </tr>
                         @endforelse
