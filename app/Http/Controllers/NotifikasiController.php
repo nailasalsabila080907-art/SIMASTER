@@ -62,6 +62,20 @@ class NotifikasiController extends Controller
             );
         }
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | NOTIFIKASI DISPOSISI SURAT MASUK
+        |--------------------------------------------------------------------------
+        */
+
+        if ($notifikasi->id_disposisi) {
+            return redirect()->route(
+                'disposisi.show',
+                $notifikasi->id_disposisi
+            );
+        }
+
         /*
         |--------------------------------------------------------------------------
         | NOTIFIKASI SURAT MASUK

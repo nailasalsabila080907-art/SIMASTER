@@ -16,7 +16,7 @@ class Notifikasi extends Model
     protected $primaryKey = 'id_notifikasi';
 
     protected $fillable = [
-        'id_user', 'tipe_surat', 'id_surat', 'judul', 'pesan', 'sudah_dibaca', 'created_at',
+        'id_user', 'tipe_surat', 'id_surat', 'id_disposisi', 'judul', 'pesan', 'sudah_dibaca', 'created_at',
     ];
 
     protected $casts = [
@@ -34,6 +34,7 @@ class Notifikasi extends Model
     int $idUser,
     string $tipeSurat,
     string $idSurat,
+    ? int $idDisposisi = null,
     string $judul,
     string $pesan
 ): self {
@@ -41,6 +42,7 @@ class Notifikasi extends Model
         'id_user' => $idUser,
         'tipe_surat' => $tipeSurat,
         'id_surat' => $idSurat,
+        'id_disposisi' => $idDisposisi,
         'judul' => $judul,
         'pesan' => $pesan,
         'sudah_dibaca' => false,

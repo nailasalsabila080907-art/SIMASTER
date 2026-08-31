@@ -112,6 +112,9 @@ Route::middleware(['auth', 'role:admin_tu,super_admin,kepala_sekolah,wakil_kepal
     });
 
     Route::post('/surat-masuk/{suratMasuk}/disposisi', [DisposisiSuratMasukController::class, 'store'])->name('surat-masuk.disposisi.store');
-    Route::post('/disposisi/{disposisi}/tindaklanjuti', [DisposisiSuratMasukController::class, 'tindaklanjuti'])->name('disposisi.tindaklanjuti');
-    Route::post('/disposisi/{disposisi}/selesaikan', [DisposisiSuratMasukController::class, 'selesaikan'])->name('disposisi.selesaikan');
+    Route::controller(DisposisiSuratMasukController::class)->prefix('disposisi')->name('disposisi.')->group(function () {
+        Route::get('/{disposisi}', 'show')->name('show');
+        Route::post('/{disposisi}/tindaklanjuti', 'tindaklanjuti')->name('tindaklanjuti');
+        Route::post('/{disposisi}/selesaikan', 'selesaikan')->name('selesaikan');
+    });
 });

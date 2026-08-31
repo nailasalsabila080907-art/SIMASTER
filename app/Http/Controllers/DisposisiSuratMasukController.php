@@ -55,10 +55,30 @@ class DisposisiSuratMasukController extends Controller
                 $penerima->user->id_user,
                 'masuk',
                 $suratMasuk->id_surat_masuk,
+                $disposisi->id_disposisi,
                 'Disposisi surat baru',
                 "Surat \"{$suratMasuk->perihal}\" didisposisikan kepada Anda."
             );
+
+        } elseif ($keUnit) {
+            $pegawaiUnit = Pegawai::where('id_unit', $keUnit)
+                ->where('status', 'aktif')
+                ->with('user')
+                ->get();
+
+        foreach ($pegawaiUnit as $pegawai) {
+        if ($pegawai->user) {
+            Notifikasi::kirim(
+                $pegawai->user->id_user,
+                'Disposisi',
+                $suratMasuk->id_surat_masuk,
+                $disposisi->id_disposisi,
+                'Disposisi surat baru',
+                "Surat \"{$suratMasuk->perihal}\" didisposisikan ke {$unit->nama_unit}."
+            );
         }
+    }
+}
 
         LogAktivitas::catat('tambah_data', 'Disposisi Surat Masuk', "Membuat disposisi untuk surat: {$suratMasuk->perihal}");
 
@@ -118,6 +138,45 @@ if ($suratMasuk->status === 'selesai') {
 
 return back()->with('sukses', 'Disposisi ditandai selesai.');
     }
+
+        public function show(DisposisiSuratMasuk $disposisi)
+    {
+        $pegawaiId = Auth::user()->pegawai?->id_pegawai;
+
+        $bolehLihat =
+            in_array(
+                Auth::user()->role,
+                ['admin_tu', 'super_admin', 'kepala_sekolah'],
+                true
+            )
+            || $disposisi->ke_pegawai === $pegawaiId
+            || (
+                $disposisi->ke_unit
+                && Auth::user()->pegawai?->id_unit === $disposisi->ke_unit
+            );
+
+        abort_unless(
+            $bolehLihat,
+            403,
+            'Anda tidak memiliki akses ke lembar disposisi ini.'
+        );
+
+        $disposisi->load([
+            'suratMasuk.kategori',
+            'suratMasuk.klasifikasi',
+            'pemberiDisposisi',
+            'penerimaPegawai',
+            'penerimaUnit',
+        ]);
+
+        $sekolah = \App\Models\Sekolah::first();
+
+        return view('disposisi.show', compact(
+            'disposisi',
+            'sekolah'
+        ));
+    }
+
 
     private function bolehKelola(DisposisiSuratMasuk $disposisi): void
     {

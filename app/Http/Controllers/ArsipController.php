@@ -10,7 +10,6 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-
 class ArsipController extends Controller
 {
    public function index(Request $request)
@@ -68,23 +67,15 @@ class ArsipController extends Controller
              */
             $q->orWhereHas('pengarsip', function ($userQuery) use ($filterCari) {
 
-                $userQuery->where(
-                    'username',
-                    'like',
-                    "%{$filterCari}%"
-                );
-
-                $userQuery->orWhereHas('pegawai', function ($pegawaiQuery) use ($filterCari) {
-
-                    $pegawaiQuery->where(
-                        'nama_lengkap',
-                        'like',
-                        "%{$filterCari}%"
-                    );
-
+                $userQuery->where('username', 'like', "%{$filterCari}%")
+                    ->orWhereHas('pegawai', function ($pegawaiQuery) use ($filterCari) {
+                        $pegawaiQuery->where(
+                            'nama_lengkap',
+                            'like',
+                            "%{$filterCari}%"
+                        );
+                    });
                 });
-
-            });
 
             /*
              * 3. Cari SURAT KELUAR
@@ -121,12 +112,9 @@ class ArsipController extends Controller
                                     'like',
                                     "%{$filterCari}%"
                                 );
-
                             });
-
-                    });
-
-            });
+                        });
+                     });
 
             /*
              * 4. Cari SURAT MASUK
@@ -156,15 +144,11 @@ class ArsipController extends Controller
                                     'like',
                                     "%{$filterCari}%"
                                 );
-
                             });
-
+                        });
                     });
-
-            });
-
-        });
-    }
+                });
+            }
 
     // Pagination
     $arsip = $query
