@@ -30,6 +30,24 @@
     </div>
 @endif
 
+{{-- Tab navigasi --}}
+<ul class="nav mb-4" style="border-bottom:1px solid var(--border);">
+    <li class="nav-item">
+        <a class="nav-link active px-3 py-2" href="{{ route('surat-keluar.index') }}"
+           style="color:var(--bs-primary);font-weight:600;border-bottom:2px solid var(--bs-primary);">
+            Data Aktif
+        </a>
+    </li>
+    @if(in_array(Auth::user()->role, ['admin_tu', 'super_admin', 'kepala_sekolah'], true))
+        <li class="nav-item">
+            <a class="nav-link px-3 py-2" href="{{ route('surat-keluar.trashed') }}"
+               style="color:var(--ink-muted);font-weight:600;">
+                Sampah
+            </a>
+        </li>
+    @endif
+</ul>
+
 <div class="card">
     <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-3">
         <div class="d-flex align-items-center gap-2 flex-wrap">
@@ -86,9 +104,20 @@
                             <span class="badge rounded-pill {{ $badge }}" style="font-size:.72rem">{{ ucfirst($s->status) }}</span>
                         </td>
                         <td class="pe-3 text-end">
-                            <a href="{{ route('surat-keluar.show', $s) }}" class="btn btn-sm btn-light rounded-circle" title="Lihat detail">
-                                <i class="bi bi-eye"></i>
-                            </a>
+                            <div class="d-inline-flex gap-1">
+                                <a href="{{ route('surat-keluar.show', $s) }}" class="btn btn-sm btn-light rounded-circle" title="Lihat detail">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                @if(in_array($s->status, ['draft', 'ditolak'], true) && ($s->dibuat_oleh === Auth::id() || in_array(Auth::user()->role, ['admin_tu', 'super_admin'], true)))
+                                    <form action="{{ route('surat-keluar.destroy', $s) }}" method="POST"
+                                          onsubmit="return confirm('Hapus surat ini? Surat akan dipindahkan ke sampah.')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-light rounded-circle text-danger" title="Hapus">
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                 @empty

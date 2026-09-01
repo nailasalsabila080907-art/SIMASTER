@@ -8,10 +8,12 @@
         <h2 class="mb-1" style="font-size:1.5rem">Daftar Surat Masuk</h2>
         <p class="text-muted mb-0" style="font-size:.78rem">Pencatatan surat, disposisi, tindak lanjut, dan arsip.</p>
     </div>
+     @if(Auth::user()->role !== 'kepala_sekolah')
     <a href="{{ route('surat-masuk.create') }}" class="btn d-inline-flex align-items-center gap-2 px-3 py-2 text-white"
        style="background:linear-gradient(135deg,#178754,#0EA5A4);border:none">
         <i class="bi bi-plus-lg"></i> Catat Surat Masuk
     </a>
+    @endif
 </div>
 
 @if(session('sukses'))
@@ -20,6 +22,31 @@
         <div>{{ session('sukses') }}</div>
     </div>
 @endif
+
+@if(session('gagal'))
+    <div class="alert alert-danger rounded-3 d-flex align-items-center gap-2" style="font-size:.85rem" role="alert">
+        <i class="bi bi-x-circle"></i>
+        <div>{{ session('gagal') }}</div>
+    </div>
+@endif
+
+{{-- Tab navigasi --}}
+<ul class="nav mb-4" style="border-bottom:1px solid var(--border);">
+    <li class="nav-item">
+        <a class="nav-link active px-3 py-2" href="{{ route('surat-masuk.index') }}"
+           style="color:var(--bs-primary);font-weight:600;border-bottom:2px solid var(--bs-primary);">
+            Data Aktif
+        </a>
+    </li>
+    @if(in_array(Auth::user()->role, ['admin_tu', 'super_admin', 'kepala_sekolah'], true))
+        <li class="nav-item">
+            <a class="nav-link px-3 py-2" href="{{ route('surat-masuk.trashed') }}"
+               style="color:var(--ink-muted);font-weight:600;">
+                Sampah
+            </a>
+        </li>
+    @endif
+</ul>
 
 <div class="card">
     <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-3">
@@ -93,9 +120,20 @@
                             <span class="badge rounded-pill {{ $badge }}" style="font-size:.72rem">{{ ucfirst($s->status) }}</span>
                         </td>
                         <td class="pe-3 text-end">
-                            <a href="{{ route('surat-masuk.show', $s) }}" class="btn btn-sm btn-light rounded-circle" title="Lihat detail">
-                                <i class="bi bi-eye"></i>
-                            </a>
+                            <div class="d-inline-flex gap-1">
+                                <a href="{{ route('surat-masuk.show', $s) }}" class="btn btn-sm btn-light rounded-circle" title="Lihat detail">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                @if($s->diterima_oleh === Auth::id() || in_array(Auth::user()->role, ['admin_tu', 'super_admin'], true))
+                                    <form action="{{ route('surat-masuk.destroy', $s) }}" method="POST"
+                                          onsubmit="return confirm('Hapus surat masuk ini? Surat akan dipindahkan ke sampah.')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-light rounded-circle text-danger" title="Hapus">
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                 @empty

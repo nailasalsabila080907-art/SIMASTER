@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ApprovalSuratKeluar;
+use App\Models\ArsipSurat;
 use App\Models\KategoriSurat;
 use App\Models\KlasifikasiArsip;
 use App\Models\LogAktivitas;
@@ -167,9 +168,11 @@ class SuratKeluarController extends Controller
             }
         }
 
+        $sekolah = \App\Models\Sekolah::first();
+
         return view(
             'surat-keluar.show',
-            compact('suratKeluar', 'approvalSaya')
+            compact('suratKeluar', 'approvalSaya', 'sekolah')
         );
     }
 
@@ -234,6 +237,7 @@ class SuratKeluarController extends Controller
                         $user->id_user,
                         'keluar',
                         $suratKeluar->id_surat_keluar,
+                        null,
                         'Surat menunggu persetujuan Anda',
                         "Surat \"{$suratKeluar->perihal}\" perlu Anda setujui."
                     );
@@ -289,6 +293,124 @@ class SuratKeluarController extends Controller
 
     return $pdf->stream('Surat-' . str_replace(['/', ' '], '-', $suratKeluar->nomor_surat) . '.pdf');
 }
+
+    // =====================================================
+    // Soft delete - hapus (arsipkan ke sampah), lihat sampah,
+    // pulihkan, dan hapus permanen. Setiap aksi dicatat ke
+    // LogAktivitas (log umum) dan LogAktivitasSurat (log khusus surat).
+    // =====================================================
+
+    public function destroy(SuratKeluar $suratKeluar)
+    {
+        $this->pastikanPemilikAtauAdmin($suratKeluar);
+
+        $bolehDihapusPemilik = in_array($suratKeluar->status, ['draft', 'ditolak'], true);
+        $bolehDihapusAdmin = $suratKeluar->status === 'diarsipkan'
+            && in_array(Auth::user()->role, ['admin_tu', 'super_admin'], true);
+
+        abort_unless(
+            $bolehDihapusPemilik || $bolehDihapusAdmin,
+            422,
+            'Surat yang sudah diajukan/terbit tidak bisa dihapus. Batalkan pengajuannya terlebih dahulu.'
+        );
+
+        $perihal = $suratKeluar->perihal;
+        $idSurat = $suratKeluar->id_surat_keluar;
+
+        // Hapus juga catatan arsipnya (kalau ada), biar tidak nyangkut jadi baris kosong di halaman Arsip Surat
+        ArsipSurat::where('tipe_surat', 'keluar')->where('id_surat', $idSurat)->delete();
+
+        $suratKeluar->delete();
+
+        LogAktivitas::catat(
+            'hapus_data',
+            'Surat Keluar',
+            "Menghapus surat: {$perihal}"
+        );
+        LogAktivitasSurat::catat(
+            LogAktivitasSurat::TIPE_KELUAR,
+            $idSurat,
+            LogAktivitasSurat::AKSI_HAPUS,
+            "Surat dipindahkan ke sampah: {$perihal}"
+        );
+
+        return redirect()
+            ->route('surat-keluar.index')
+            ->with('sukses', 'Surat berhasil dihapus.');
+    }
+
+    public function trashed()
+    {
+        $query = SuratKeluar::onlyTrashed()
+            ->with(['kategori', 'pembuat.pegawai'])
+            ->latest('deleted_at');
+
+        if (! in_array(
+            Auth::user()->role,
+            ['admin_tu', 'super_admin', 'kepala_sekolah'],
+            true
+        )) {
+            $query->where('dibuat_oleh', Auth::id());
+        }
+
+        return view('surat-keluar.trashed', [
+            'suratKeluar' => $query->paginate(15)->withQueryString(),
+        ]);
+    }
+
+    public function restore(string $uuid)
+    {
+        $suratKeluar = SuratKeluar::onlyTrashed()->where('uuid', $uuid)->firstOrFail();
+        $this->pastikanPemilikAtauAdmin($suratKeluar);
+
+        $suratKeluar->restore();
+
+        LogAktivitas::catat(
+            'ubah_data',
+            'Surat Keluar',
+            "Memulihkan surat dari sampah: {$suratKeluar->perihal}"
+        );
+        LogAktivitasSurat::catat(
+            LogAktivitasSurat::TIPE_KELUAR,
+            $suratKeluar->id_surat_keluar,
+            LogAktivitasSurat::AKSI_DIPULIHKAN,
+            "Surat dipulihkan dari sampah: {$suratKeluar->perihal}"
+        );
+
+        return back()->with('sukses', 'Surat berhasil dipulihkan.');
+    }
+
+    public function forceDelete(string $uuid)
+    {
+        $suratKeluar = SuratKeluar::onlyTrashed()->where('uuid', $uuid)->firstOrFail();
+
+        abort_unless(
+            in_array(Auth::user()->role, ['admin_tu', 'super_admin'], true),
+            403,
+            'Hanya admin yang bisa menghapus surat secara permanen.'
+        );
+
+        $perihal = $suratKeluar->perihal;
+        $idSurat = $suratKeluar->id_surat_keluar;
+
+        // Catat log DULU sebelum forceDelete, karena setelah dihapus permanen
+        // baris suratnya sudah tidak ada lagi di database untuk direferensikan.
+        LogAktivitas::catat(
+            'hapus_data',
+            'Surat Keluar',
+            "Menghapus permanen surat: {$perihal}"
+        );
+        LogAktivitasSurat::catat(
+            LogAktivitasSurat::TIPE_KELUAR,
+            $idSurat,
+            LogAktivitasSurat::AKSI_HAPUS_PERMANEN,
+            "Surat dihapus permanen: {$perihal}"
+        );
+
+        $suratKeluar->forceDelete();
+
+        return back()->with('sukses', 'Surat berhasil dihapus permanen.');
+    }
 
     protected function form(
         Request $request,

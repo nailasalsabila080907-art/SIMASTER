@@ -28,7 +28,6 @@ class LogAktivitasSurat extends Model
    
 public const TIPE_MASUK = 'masuk';
 public const TIPE_KELUAR = 'keluar';
-
 public const AKSI_DIBUAT = 'dibuat';
 public const AKSI_DIEDIT = 'diedit';
 public const AKSI_DIAJUKAN = 'diajukan';
@@ -41,6 +40,8 @@ public const AKSI_TOLAK = 'tolak';
 public const AKSI_TERBIT = 'terbit';
 public const AKSI_ARSIP = 'arsip';
 public const AKSI_HAPUS = 'dihapus';
+public const AKSI_DIPULIHKAN = 'dipulihkan';
+public const AKSI_HAPUS_PERMANEN = 'dihapus_permanen';
 public const AKSI_CETAK = 'cetak_pdf';
 
     public function user(): BelongsTo

@@ -88,7 +88,17 @@ Route::middleware('auth')->group(function () {
         Route::get('/{suratKeluar}', 'show')->name('show');
         Route::post('/{suratKeluar}/ajukan', 'ajukan')->name('ajukan');
         Route::get('/{suratKeluar}/cetak-pdf', 'cetakPdf')->name('cetak-pdf');
+        Route::delete('/{suratKeluar}', 'destroy')->name('destroy');
         Route::get('/surat-keluar/{suratKeluar}/cetak-pdf', [SuratKeluarController::class, 'cetakPdf'])->name('surat-keluar.cetak-pdf');
+    });
+
+    Route::middleware('role:admin_tu,super_admin,kepala_sekolah')->group(function () {
+        Route::get('/surat-keluar-sampah', [SuratKeluarController::class, 'trashed'])->name('surat-keluar.trashed');
+        Route::put('/surat-keluar/{uuid}/restore', [SuratKeluarController::class, 'restore'])->name('surat-keluar.restore');
+    });
+
+    Route::middleware('role:admin_tu,super_admin')->group(function () {
+        Route::delete('/surat-keluar/{uuid}/force', [SuratKeluarController::class, 'forceDelete'])->name('surat-keluar.forceDelete');
     });
 
 
@@ -109,6 +119,16 @@ Route::middleware(['auth', 'role:admin_tu,super_admin,kepala_sekolah,wakil_kepal
         Route::get('/create', 'create')->name('create');
         Route::post('/', 'store')->name('store');
         Route::get('/{suratMasuk}', 'show')->name('show');
+        Route::delete('/{suratMasuk}', 'destroy')->name('destroy');
+    });
+
+    Route::middleware('role:admin_tu,super_admin,kepala_sekolah')->group(function () {
+        Route::get('/surat-masuk-sampah', [SuratMasukController::class, 'trashed'])->name('surat-masuk.trashed');
+        Route::put('/surat-masuk/{uuid}/restore', [SuratMasukController::class, 'restore'])->name('surat-masuk.restore');
+    });
+
+    Route::middleware('role:admin_tu,super_admin')->group(function () {
+        Route::delete('/surat-masuk/{uuid}/force', [SuratMasukController::class, 'forceDelete'])->name('surat-masuk.forceDelete');
     });
 
     Route::post('/surat-masuk/{suratMasuk}/disposisi', [DisposisiSuratMasukController::class, 'store'])->name('surat-masuk.disposisi.store');

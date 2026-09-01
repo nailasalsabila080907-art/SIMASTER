@@ -143,6 +143,17 @@
                                                 <i class="bi bi-file-earmark-pdf"></i> PDF
                                             </a>
                                         @endif
+                                        @if(in_array(Auth::user()->role, ['admin_tu', 'super_admin'], true))
+                                            <form action="{{ $a->tipe_surat === 'keluar' ? route('surat-keluar.destroy', $surat) : route('surat-masuk.destroy', $surat) }}"
+                                                  method="POST"
+                                                  onsubmit="return confirm('Hapus surat ini dari arsip? Surat akan dipindahkan ke sampah dan bisa dipulihkan nanti.')">
+                                                @csrf @method('DELETE')
+                                                <button type="submit" class="btn btn-sm"
+                                                        style="border:1px solid var(--border);border-radius:8px;color:#C4463F;font-weight:600;background:#fff;">
+                                                    <i class="bi bi-trash3"></i> Hapus
+                                                </button>
+                                            </form>
+                                        @endif
                                     </div>
                                 @endif
                             </td>

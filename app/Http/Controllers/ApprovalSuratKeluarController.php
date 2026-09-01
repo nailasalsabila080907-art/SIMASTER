@@ -122,6 +122,7 @@ class ApprovalSuratKeluarController extends Controller
                         $userBerikutnya->id_user,
                         'keluar',
                         $suratKeluar->id_surat_keluar,
+                        null,
                         'Surat menunggu persetujuan Anda',
                         "Surat \"{$suratKeluar->perihal}\" perlu Anda setujui."
                     );
@@ -192,6 +193,7 @@ class ApprovalSuratKeluarController extends Controller
                     $suratKeluar->dibuat_oleh,
                     'keluar',
                     $suratKeluar->id_surat_keluar,
+                    null,
                     'Surat ditolak',
                     "Surat \"{$suratKeluar->perihal}\" ditolak: {$data['catatan']}"
                 );
@@ -438,6 +440,7 @@ class ApprovalSuratKeluarController extends Controller
                 $suratKeluar->dibuat_oleh,
                 'keluar',
                 $suratKeluar->id_surat_keluar,
+                null,
                 'Surat terbit',
                 "Surat \"{$suratKeluar->perihal}\" sudah terbit dan masuk catatan tahunan dengan nomor {$nomorSurat}."
             );
@@ -471,6 +474,7 @@ class ApprovalSuratKeluarController extends Controller
                 $user->id_user,
                 'keluar',
                 $suratKeluar->id_surat_keluar,
+                null,
                 'Surat Terbit',
                 "Surat \"{$suratKeluar->perihal}\" sudah terbit dan masuk catatan tahunan dengan nomor {$nomorSurat}."
             );

@@ -44,6 +44,41 @@
 
     <div class="card mb-3">
         <div class="card-body">
+
+            @if(! $suratKeluar->isDraft())
+                {{-- Kop Surat, disamakan dengan tampilan cetak-pdf.blade.php --}}
+                @php
+                    $logoKiri = $sekolah?->logo_path
+                        ? asset('storage/' . $sekolah->logo_path)
+                        : null;
+                    $logoKanan = asset('images/logo-tut-wuri.png.jpg');
+                @endphp
+                <div class="d-flex align-items-center gap-3 pb-3 mb-4" style="border-bottom:3px double #000;">
+                    <div class="flex-shrink-0" style="width:68px;text-align:center;">
+                        @if($logoKiri)
+                            <img src="{{ $logoKiri }}" alt="Logo Sekolah" style="width:72px;height:100px;object-fit:contain;transform:translateX(+20px);">
+                        @endif
+                    </div>
+                    <div class="flex-grow-1 text-center" style="font-family:'Times New Roman', Times, serif; color:#000;">
+                        <p class="mb-0 fw-bold" style="font-size:1.05rem;>PEMERINTAH PROVINSI RIAU</p>
+                        <p class="mb-0 fw-bold" style="font-size:1rem;">DINAS PENDIDIKAN</p>
+                        <p class="mb-1 fw-bold" style="font-size:.88rem;">SEKOLAH MENENGAH KEJURUAN (SMK) NEGERI 7 PEKANBARU</p>
+                        <p class="mb-1" style="font-size:.68rem;">
+                            {{ $sekolah->alamat ?? '-' }} {{ $sekolah->kota ?? 'Pekanbaru' }} {{ $sekolah->provinsi ?? 'Riau' }} {{ $sekolah->kode_pos ?? '' }}
+                        </p>
+                        <p class="mb-1" style="font-size:.68rem;">
+                            E-mail: {{ $sekolah->email ?? '-' }} &nbsp;&nbsp; Website: {{ $sekolah->website ?? '-' }} &nbsp;&nbsp; Telp: {{ $sekolah->telepon ?? '-' }}
+                        </p>
+                        <p class="mb-0" style="font-size:.68rem;">
+                            NPSN: {{ $sekolah->npsn ?? '-' }} &nbsp;&nbsp; NSS: {{ $sekolah->nss ?? '16120632160' }}
+                        </p>
+                    </div>
+                    <div class="flex-shrink-0" style="width:75px;text-align:center;">
+                        <img src="{{ $logoKanan }}" alt="Tut Wuri Handayani" style="width:100px;height:100px;object-fit:contain;transform:translateX(-27px);">
+                    </div>
+                </div>
+            @endif
+
             <div class="d-flex align-items-start justify-content-between gap-3">
                 <div>
                     <h3 class="mb-1" style="font-size:1.15rem">{{ $suratKeluar->perihal }}</h3>
