@@ -132,6 +132,10 @@ Route::middleware(['auth', 'role:admin_tu,super_admin,kepala_sekolah,wakil_kepal
     });
 
     Route::post('/surat-masuk/{suratMasuk}/disposisi', [DisposisiSuratMasukController::class, 'store'])->name('surat-masuk.disposisi.store');
+    Route::post('/surat-masuk/{suratMasuk}/ajukan-kepsek', [DisposisiSuratMasukController::class, 'ajukanKeKepsek'])->name('surat-masuk.ajukan-kepsek');
+    Route::post('/surat-masuk/{suratMasuk}/setujui-kepsek', [DisposisiSuratMasukController::class, 'setujuiKepsek'])->name('surat-masuk.setujui-kepsek');
+    Route::post('/surat-masuk/{suratMasuk}/tolak-kepsek', [DisposisiSuratMasukController::class, 'tolakKepsek'])->name('surat-masuk.tolak-kepsek');
+    Route::post('/surat-masuk/{suratMasuk}/kirim-disposisi', [DisposisiSuratMasukController::class, 'kirim'])->name('surat-masuk.kirim-disposisi');
     Route::controller(DisposisiSuratMasukController::class)->prefix('disposisi')->name('disposisi.')->group(function () {
         Route::get('/{disposisi}', 'show')->name('show');
         Route::post('/{disposisi}/tindaklanjuti', 'tindaklanjuti')->name('tindaklanjuti');
