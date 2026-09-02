@@ -21,7 +21,7 @@ class SuratMasuk extends Model
     protected $fillable = [
         'nomor_surat_masuk', 'nomor_surat_asal', 'asal_instansi', 'id_kategori',
         'id_klasifikasi', 'perihal', 'tanggal_surat', 'tanggal_diterima',
-        'sifat_surat', 'file_scan_path', 'status', 'diterima_oleh',
+        'sifat_surat', 'file_scan_path', 'status', 'catatan_kepsek', 'diterima_oleh',
     ];
 
     protected $casts = [
