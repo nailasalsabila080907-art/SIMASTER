@@ -70,12 +70,14 @@ Route::middleware('auth')->group(function () {
         Route::resource('jurusan', JurusanController::class)->except(['show']);
         Route::resource('klasifikasi-arsip', KlasifikasiArsipController::class)->parameters(['klasifikasi-arsip' => 'klasifikasiArsip'])->except(['show']);
         Route::get('/pengguna', [PenggunaController::class, 'index'])->name('pengguna.index');
+        Route::get('/pengguna/create', [PenggunaController::class, 'create'])->name('pengguna.create');
+        Route::post('/pengguna', [PenggunaController::class, 'store'])->name('pengguna.store');
         Route::get('/pengguna/{pengguna}/edit', [PenggunaController::class, 'edit'])->name('pengguna.edit');
         Route::put('/pengguna/{pengguna}', [PenggunaController::class, 'update'])->name('pengguna.update');
         Route::delete('/pengguna/{pengguna}', [PenggunaController::class, 'destroy'])->name('pengguna.destroy');
         Route::get('/pengguna-sampah', [PenggunaController::class, 'trashed'])->name('pengguna.trashed');
-    Route::put('/pengguna/{uuid}/restore', [PenggunaController::class, 'restore'])->name('pengguna.restore');
-    Route::delete('/pengguna/{uuid}/force', [PenggunaController::class, 'forceDelete'])->name('pengguna.forceDelete');
+        Route::put('/pengguna/{uuid}/restore', [PenggunaController::class, 'restore'])->name('pengguna.restore');
+        Route::delete('/pengguna/{uuid}/force', [PenggunaController::class, 'forceDelete'])->name('pengguna.forceDelete');
 
     });
 

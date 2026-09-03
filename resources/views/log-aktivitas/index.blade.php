@@ -113,7 +113,7 @@
                                     $aksiLabel = match($log->aktivitas) {
                                         'login' => 'Login',
                                         'logout' => 'Logout',
-                                        'lihat_halaman' => 'View',
+                                        'lihat_halaman' => 'Detail',
                                         'tambah_data' => 'Create',
                                         'ubah_data' => 'Update',
                                         'hapus_data' => 'Delete',
@@ -122,7 +122,7 @@
                                     $aksiColors = [
                                         'Login' => 'background:#dcfce7;color:#166534;',
                                         'Logout' => 'background:#f1f5f9;color:#475569;',
-                                        'View' => 'background:#e2d1f9;color:#5a3791;',
+                                        'Detail' => 'background:#e2d1f9;color:#5a3791;',
                                         'Create' => 'background:#dbeafe;color:#1d4ed8;',
                                         'Update' => 'background:#fef3c7;color:#92400e;',
                                         'Delete' => 'background:#fde2e2;color:#9c1c1c;',
