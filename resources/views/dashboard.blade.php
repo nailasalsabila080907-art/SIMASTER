@@ -61,7 +61,9 @@
                 </div>
             </div>
             <div class="card-body">
-                <canvas id="chartAktivitasSurat" height="230"></canvas>
+                <div style="position:relative;height:330px">
+                    <canvas id="chartAktivitasSurat" height="330"></canvas>
+                </div>
             </div>
         </div>
     </div>
