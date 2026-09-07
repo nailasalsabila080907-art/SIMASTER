@@ -42,7 +42,7 @@
 
         <select name="aktivitas" onchange="this.form.submit()" class="form-select form-select-sm w-auto" style="border-radius:10px;border-color:var(--border);font-size:.85rem;">
             <option value="">Semua aktivitas</option>
-            @foreach(['login', 'logout', 'lihat_halaman', 'tambah_data', 'ubah_data', 'hapus_data'] as $opsi)
+            @foreach($daftarAktivitas as $opsi)
                 <option value="{{ $opsi }}" {{ $filterAktivitas === $opsi ? 'selected' : '' }}>
                     {{ ucwords(str_replace('_', ' ', $opsi)) }}
                 </option>
@@ -114,18 +114,31 @@
                                         'login' => 'Login',
                                         'logout' => 'Logout',
                                         'lihat_halaman' => 'Detail',
+                                        'index' => 'Index',
+                                        'show' => 'Show',
+                                        'create' => 'Create',
+                                        'edit' => 'Edit',
+                                        'trash' => 'Sampah',
                                         'tambah_data' => 'Create',
                                         'ubah_data' => 'Update',
                                         'hapus_data' => 'Delete',
+                                        'forceDelete' => 'Delete Permanen',
                                         default => ucwords(str_replace('_', ' ', $log->aktivitas)),
                                     };
                                     $aksiColors = [
                                         'Login' => 'background:#dcfce7;color:#166534;',
                                         'Logout' => 'background:#f1f5f9;color:#475569;',
                                         'Detail' => 'background:#e2d1f9;color:#5a3791;',
+                                        'Index' => 'background:#e2e8f0;color:#334155;',
+                                        'Show' => 'background:#e2d1f9;color:#5a3791;',
+                                        'Create' => 'background:#dbeafe;color:#1d4ed8;',
+                                        'Edit' => 'background:#fef3c7;color:#92400e;',
+                                        'Sampah' => 'background:#fde2e2;color:#9c1c1c;',
                                         'Create' => 'background:#dbeafe;color:#1d4ed8;',
                                         'Update' => 'background:#fef3c7;color:#92400e;',
                                         'Delete' => 'background:#fde2e2;color:#9c1c1c;',
+                                        'Restore' => 'background:#dcfce7;color:#166534;',
+                                        'Hapus Permanen' => 'background:#fde2e2;color:#9c1c1c;',
                                     ];
                                     $aksiStyle = $aksiColors[$aksiLabel] ?? 'background:var(--primary-light);color:var(--primary-dark);';
                                 @endphp

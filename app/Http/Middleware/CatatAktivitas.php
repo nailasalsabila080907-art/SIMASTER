@@ -28,7 +28,7 @@ class CatatAktivitas
             LogAktivitas::create([
                 'id_user' => Auth::id(),
                 'role' => Auth::user()?->role,
-                'aktivitas' => 'lihat_halaman',
+                'aktivitas' => $this->tentukanAksi($request),
                 'modul' => $this->tebakModul($request),
                 'deskripsi' => $this->deskripsiHalaman($request),
                 'url' => $request->fullUrl(),
@@ -40,6 +40,17 @@ class CatatAktivitas
         }
 
         return $response;
+    }
+
+    protected function tentukanAksi(Request $request): string
+    {
+        $routeName = $request->route()?->getName();
+
+        if (! $routeName) {
+        return 'Membuka halaman';
+        }
+        $bagian = explode('.', $routeName);
+        return end($bagian);
     }
 
     protected function dikecualikan(Request $request): bool

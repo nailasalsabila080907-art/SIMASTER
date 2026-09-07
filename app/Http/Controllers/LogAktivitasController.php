@@ -50,6 +50,7 @@ class LogAktivitasController extends Controller
             'logs' => $logs,
             'bolehLihatSemua' => $bolehLihatSemua,
             'daftarUser' => $bolehLihatSemua ? User::with('pegawai')->get() : collect(),
+            'daftarAktivitas' => LogAktivitas::distinct()->orderBy('aktivitas')->pluck('aktivitas'),
             'filterUserId' => $request->user_id,
             'filterAktivitas' => $request->aktivitas,
             'filterCari' => $request->cari,
