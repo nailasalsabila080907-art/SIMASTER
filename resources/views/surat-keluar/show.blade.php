@@ -16,7 +16,9 @@
 <div style="max-width:760px">
 
     <div class="d-flex align-items-start gap-3 mb-4">
-        <a href="{{ route('surat-keluar.index') }}" class="btn btn-light rounded-circle d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:38px;height:38px" title="Kembali">
+        <a href="javascript:void(0)"
+   onclick="(document.referrer.includes(window.location.origin)) ? history.back() : window.location='{{ route('surat-keluar.index') }}'"
+   class="btn btn-light rounded-circle ..." title="Kembali">
             <i class="bi bi-arrow-left"></i>
         </a>
         <div>
@@ -60,7 +62,7 @@
                         @endif
                     </div>
                     <div class="flex-grow-1 text-center" style="font-family:'Times New Roman', Times, serif; color:#000;">
-                        <p class="mb-0 fw-bold" style="font-size:1.05rem;>PEMERINTAH PROVINSI RIAU</p>
+                        <p class="mb-0 fw-bold" style="font-size:1.05rem;">PEMERINTAH PROVINSI RIAU</p>
                         <p class="mb-0 fw-bold" style="font-size:1rem;">DINAS PENDIDIKAN</p>
                         <p class="mb-1 fw-bold" style="font-size:.88rem;">SEKOLAH MENENGAH KEJURUAN (SMK) NEGERI 7 PEKANBARU</p>
                         <p class="mb-1" style="font-size:.68rem;">
