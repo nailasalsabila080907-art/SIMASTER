@@ -375,6 +375,21 @@
         backdrop.classList.toggle('show');
     });
     backdrop?.addEventListener('click', closeSidebar);
+    const sidebarScroll = document.querySelector('.sidebar-scroll');
+if (sidebarScroll) {
+    const savedScroll = sessionStorage.getItem('sidebarScrollPos');
+    if (savedScroll !== null) {
+        sidebarScroll.scrollTop = parseInt(savedScroll, 10);
+    }
+    sidebarScroll.addEventListener('scroll', () => {
+        sessionStorage.setItem('sidebarScrollPos', sidebarScroll.scrollTop);
+    });
+    sidebarScroll.querySelectorAll('a, button').forEach((el) => {
+        el.addEventListener('click', () => {
+            sessionStorage.setItem('sidebarScrollPos', sidebarScroll.scrollTop);
+        });
+    });
+}
     document.querySelectorAll('.toast').forEach(function (el) {
     new bootstrap.Toast(el).show();
 });

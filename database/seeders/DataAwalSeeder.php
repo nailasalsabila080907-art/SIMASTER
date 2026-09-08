@@ -27,6 +27,7 @@ class DataAwalSeeder extends Seeder
         $kategoriList = [
             ['nama' => 'Undangan', 'jenis' => 'keluar', 'kode_unit' => 'KP', 'kode' => 'TPL-UNDANGAN-01'],
             ['nama' => 'Surat Tugas', 'jenis' => 'keluar', 'kode_unit' => 'KP', 'kode' => 'TPL-TUGAS-01'],
+            ['nama' => 'Surat Tugas Siswa', 'jenis' => 'keluar', 'kode_unit' => 'KS', 'kode' => 'TPL-TUGAS-SISWA-01'],
             ['nama' => 'Surat Keterangan Pegawai', 'jenis' => 'keluar', 'kode_unit' => 'KP', 'kode' => 'TPL-KET-PEGAWAI-01'],
             ['nama' => 'Surat Pengantar', 'jenis' => 'keluar', 'kode_unit' => 'KP', 'kode' => 'TPL-PENGANTAR-01'],
             ['nama' => 'Surat Izin Riset', 'jenis' => 'keluar', 'kode_unit' => 'KM', 'kode' => 'TPL-IZIN-RISET-01'],
@@ -51,6 +52,17 @@ class DataAwalSeeder extends Seeder
                 ['nama_kegiatan', 'Nama kegiatan', 'text'],
                 ['tanggal_kegiatan', 'Tanggal pelaksanaan', 'date'],
                 ['lokasi_kegiatan', 'Tempat kegiatan', 'text'],
+            ],
+            'TPL-TUGAS-SISWA-01' => [
+                ['nama_siswa', 'Nama siswa', 'text'],
+                ['nis', 'NIS/NISN', 'text'],
+                ['kelas', 'Kelas', 'text'],
+                ['program_keahlian', 'Program keahlian/jurusan', 'text'],
+                ['nama_kegiatan', 'Nama kegiatan', 'text'],
+                ['penyelenggara', 'Penyelenggara kegiatan', 'text'],
+                ['tanggal_kegiatan', 'Tanggal pelaksanaan', 'date'],
+                ['lokasi_kegiatan', 'Tempat kegiatan', 'text'],
+                ['guru_pendamping', 'Guru pendamping/pembimbing', 'text'],
             ],
             'TPL-KET-PEGAWAI-01' => [
                 ['nama_pegawai', 'Nama pegawai', 'text'],

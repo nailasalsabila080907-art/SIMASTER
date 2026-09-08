@@ -29,7 +29,14 @@ class UpdateIsiTemplateAsliSeeder extends Seeder
                 <p>Yang bersangkutan diberikan tugas untuk menghadiri kegiatan <strong>&quot;{{nama_kegiatan}}&quot;</strong> yang dilaksanakan pada {{tanggal_kegiatan}}, bertempat di {{lokasi_kegiatan}}.</p>
                 <p>Demikian Surat Tugas ini diberikan untuk dilaksanakan dengan sebaik-baiknya dan penuh tanggung jawab.</p>
             '.$ttdKepala,
-
+            'TPL-TUGAS-SISWA-01' => '
+                <p style="text-align:center"><u><strong>SURAT TUGAS</strong></u></p>
+                <p>Yang bertanda tangan di bawah ini Kepala Sekolah Menengah Kejuruan (SMK) Negeri 7 Kota Pekanbaru, dengan ini menugaskan siswa:</p>
+                <p>Nama&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{nama_siswa}}<br>NIS/NISN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{nis}}<br>Kelas&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{kelas}}<br>Program Keahlian&nbsp;: {{program_keahlian}}</p>
+                <p>Untuk mewakili sekolah dalam mengikuti kegiatan <strong>&quot;{{nama_kegiatan}}&quot;</strong> yang diselenggarakan oleh {{penyelenggara}}, dilaksanakan pada {{tanggal_kegiatan}}, bertempat di {{lokasi_kegiatan}}.</p>
+                <p>Selama pelaksanaan kegiatan, siswa yang bersangkutan didampingi oleh {{guru_pendamping}}.</p>
+                <p>Demikian Surat Tugas ini diberikan untuk dilaksanakan dengan penuh tanggung jawab, dan agar pihak-pihak terkait dapat memberikan bantuan sebagaimana mestinya.</p>
+            '.$ttdKepala,
             'TPL-KET-PEGAWAI-01' => '
                 <p style="text-align:center"><u><strong>SURAT KETERANGAN</strong></u></p>
                 <p>Yang bertanda tangan di bawah ini, Kepala SMK Negeri 7 Kota Pekanbaru dengan ini menerangkan bahwa:</p>
