@@ -12,7 +12,7 @@ class ProfilController extends Controller
 {
     public function index()
     {
-        $user = Auth::user();
+        $user = Auth::user();   
 
         $user->load(
             'pegawai.jabatan',

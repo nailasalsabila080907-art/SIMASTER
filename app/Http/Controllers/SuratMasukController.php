@@ -22,7 +22,7 @@ class SuratMasukController extends Controller
 
         return view('surat-masuk.index', [
             'suratMasuk' => $query->paginate(15)->withQueryString(),
-            'filterStatus' => $request->status,
+            'filterSuratMasuk' => $request->status,
         ]);
     }
 
