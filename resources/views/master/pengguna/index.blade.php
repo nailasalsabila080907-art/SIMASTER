@@ -77,7 +77,7 @@
                                     @if($u->status === 'aktif')
                                         <span class="badge" style="background:#EAF7EE;color:#2E7D4F;font-weight:600;">Aktif</span>
                                     @else
-                                        <span class="badge" style="background:#F1F1F3;color:#6B7280;font-weight:600;">Nonaktif</span>
+                                       setlass="badge" style="background:#F1F1F3;color:#6B7280;font-weight:600;">Nonaktif</span>
                                     @endif
                                 </td>
                                 <td class="pe-4 py-3 text-end">

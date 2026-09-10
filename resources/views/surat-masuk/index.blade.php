@@ -48,16 +48,13 @@
 
 <div class="card">
     <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-3">
-        <div class="d-flex align-items-center gap-2 flex-wrap">
-            @php
-                $statusOptions = ['' => 'Semua', 'baru' => 'Baru', 'didisposisi' => 'Didisposisi', 'diproses' => 'Diproses', 'selesai' => 'Selesai', 'diarsipkan' => 'Diarsipkan'];
-            @endphp
-            @foreach($statusOptions as $v => $l)
-                @php $isActive = ($filterStatus === $v) || (!$filterStatus && !$v); @endphp
-                <a href="{{ route('surat-masuk.index', $v ? ['status' => $v] : []) }}"
+        <div class="d-flex align-items-center gap-2 flex-wrap">        
+            @foreach(['' => 'Semua', 'baru' => 'Baru', 'didisposisi' => 'Didisposisi', 'diproses' => 'Diproses', 'selesai' => 'Selesai', 'diarsipkan' => 'Diarsipkan'] as $val => $label)
+                @php $isActive = ($filterSuratMasuk === $val) || (!$filterSuratMasuk && !$val); @endphp
+                <a href="{{ route('surat-masuk.index', $val ? ['status' => $val] : []) }}"
                    class="badge rounded-pill text-decoration-none {{ $isActive ? 'text-white' : 'text-bg-light text-muted' }}"
                    style="font-size:.78rem;padding:.5rem .9rem;{{ $isActive ? 'background:linear-gradient(135deg,#178754,#0EA5A4)' : '' }}">
-                    {{ $l }}
+                    {{ $label }}
                 </a>
             @endforeach
         </div>

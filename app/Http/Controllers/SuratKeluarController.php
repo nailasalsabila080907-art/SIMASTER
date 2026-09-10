@@ -267,7 +267,7 @@ class SuratKeluarController extends Controller
         );
     }
 
-    public function cetakPdf(SuratKeluar $suratKeluar)
+    public function cetaksuratkeluar(SuratKeluar $suratKeluar)
 {
     $this->pastikanBolehLihat($suratKeluar);
 
@@ -281,7 +281,7 @@ class SuratKeluarController extends Controller
 
     $sekolah = \App\Models\Sekolah::first();
 
-    $pdf = Pdf::loadView('surat-keluar.cetak-pdf', compact('suratKeluar', 'sekolah'))
+    $pdf = Pdf::loadView('surat-keluar.cetak-surat.pdf', compact('suratKeluar', 'sekolah'))
         ->setPaper('a4', 'portrait');
 
     LogAktivitasSurat::catat(
