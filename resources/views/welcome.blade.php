@@ -507,13 +507,15 @@
                     <span class="feat-ref mono">01</span>
                     <div class="feat-icon"><i class="bi bi-envelope-arrow-down"></i></div>
                     <h3>Surat Masuk</h3>
-                    <p>Catat surat masuk dan teruskan langsung ke unit kerja yang berwenang menindaklanjuti.</p>
+                    <p>Catat surat masuk, ajukan ke Kepala Sekolah untuk ditentukan tujuannya, lalu kirim ke unit kerja untuk ditindaklanjuti.</p>
                     <div class="feat-flow">
                         <span class="fpill on"><i class="bi bi-circle-fill" style="font-size:.4rem"></i>Diterima</span>
                         <i class="bi bi-arrow-right"></i>
-                        <span class="fpill">Didisposisikan</span>
+                        <span class="fpill">Disetujui Kepsek</span>
                         <i class="bi bi-arrow-right"></i>
-                        <span class="fpill">Ditindaklanjuti</span>
+                        <span class="fpill">Dikirim ke Unit</span>
+                        <i class="bi bi-arrow-right"></i>
+                        <span class="fpill">Selesai</span>
                     </div>
                 </div>
             </div>
@@ -525,6 +527,8 @@
                     <p>Susun surat dari template resmi sekolah, ajukan, dan cetak dalam format PDF siap tanda tangan.</p>
                     <div class="feat-flow">
                         <span class="fpill">Draf</span>
+                        <i class="bi bi-arrow-right"></i>
+                        <span class="fpill">Diajukan</span>
                         <i class="bi bi-arrow-right"></i>
                         <span class="fpill">Disetujui</span>
                         <i class="bi bi-arrow-right"></i>
@@ -546,7 +550,7 @@
                     <span class="feat-ref mono">04</span>
                     <div class="feat-icon"><i class="bi bi-diagram-3"></i></div>
                     <h3>Disposisi</h3>
-                    <p>Delegasikan tindak lanjut surat masuk ke staf terkait, lalu pantau sampai tuntas.</p>
+                    <p>Kepala Sekolah menentukan unit tujuan, Admin TU mengirimkannya, dan staf terkait menindaklanjuti hingga tuntas.</p>
                 </div>
             </div>
             <div class="col-sm-6 col-lg-3 reveal reveal-delay-2">
@@ -580,7 +584,7 @@
                 <div class="role-card">
                     <div class="role-ring"><div class="role-ring-inner"><i class="bi bi-person-badge"></i></div></div>
                     <h4>Admin TU</h4>
-                    <p>Mencatat surat masuk &amp; keluar, mengelola arsip dan master data.</p>
+                    <p>Mencatat surat masuk &amp; keluar, mengajukan persetujuan, dan mengirim disposisi ke unit.</p>
                     <span class="role-tag">Akses Penuh</span>
                 </div>
             </div>
@@ -588,7 +592,7 @@
                 <div class="role-card">
                     <div class="role-ring"><div class="role-ring-inner"><i class="bi bi-award"></i></div></div>
                     <h4>Kepala Sekolah</h4>
-                    <p>Meninjau dan menyetujui surat keluar sebelum diterbitkan.</p>
+                    <p>Menyetujui surat keluar sebelum terbit, serta menentukan tujuan disposisi surat masuk.</p>
                     <span class="role-tag">Approval</span>
                 </div>
             </div>
