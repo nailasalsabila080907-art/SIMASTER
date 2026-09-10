@@ -356,12 +356,23 @@ class ApprovalSuratKeluarController extends Controller
             }
         }
 
+        $variabelRichtext = $suratKeluar
+            ->template
+            ->variabel
+            ->where('tipe_input', 'richtext')
+            ->pluck('nama_variabel')
+            ->all();
+ 
         foreach (
             $dataUntukRender as $key => $value
         ) {
+            $nilaiAman = in_array($key, $variabelRichtext, true)
+                ? (string) $value
+                : e((string) $value);
+ 
             $isiSurat = str_replace(
                 '{{' . $key . '}}',
-                e((string) $value),
+                $nilaiAman,
                 $isiSurat
             );
         }

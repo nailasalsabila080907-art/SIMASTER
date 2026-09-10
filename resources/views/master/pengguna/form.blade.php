@@ -59,7 +59,7 @@
                     <div class="col-md-6">
                         <label class="form-label small fw-semibold">Role</label>
                         <select name="role" class="form-select" style="border-radius:10px;border-color:var(--border);font-size:.87rem;">
-                            @foreach(['super_admin', 'admin_tu', 'kepala_sekolah', 'staff', 'guru', 'operator'] as $r)
+                            @foreach(['super_admin', 'admin_tu', 'kepala_sekolah', 'wakil_kepala_sekolah', 'staff', 'guru', 'operator'] as $r)
                                 <option value="{{ $r }}" {{ old('role', $pengguna->role) === $r ? 'selected' : '' }}>
                                     {{ ucwords(str_replace('_', ' ', $r)) }}
                                 </option>

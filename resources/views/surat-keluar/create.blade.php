@@ -141,8 +141,8 @@
                                     </label>
                                     @if($var->tipe_input === 'textarea')
                                         <textarea name="variabel_{{ $var->id_variabel }}" rows="4" class="form-control" {{ $var->wajib ? 'required' : '' }}>{{ $nilai }}</textarea>
-                                    @elseif($var->tipe_input === 'date')
-                                        <input type="date" name="variabel_{{ $var->id_variabel }}" value="{{ $nilai instanceof \Carbon\CarbonInterface ? $nilai->format('Y-m-d') : $nilai }}" class="form-control" {{ $var->wajib ? 'required' : '' }}>
+                                    @elseif($var->tipe_input === 'richtext')
+                                        <textarea name="variabel_{{ $var->id_variabel }}" rows="6" class="form-control trumbowyg-editor" {{ $var->wajib ? 'required' : '' }}>{{ $nilai }}</textarea>
                                     @elseif($var->tipe_input === 'number')
                                         <input type="number" name="variabel_{{ $var->id_variabel }}" value="{{ $nilai }}" class="form-control" {{ $var->wajib ? 'required' : '' }}>
                                     @elseif($var->tipe_input === 'select' && $var->nama_variabel === 'jenis_kelamin')
@@ -201,4 +201,36 @@ function pilihTemplate(id) {
     window.location = url.toString();
 }
 </script>
+@php
+    $adaRichtext = $template?->variabel->contains(fn ($v) => $v->tipe_input === 'richtext');
+@endphp
+
+@if($adaRichtext)
+@push('head')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.30.0/ui/trumbowyg.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.30.0/plugins/table/ui/trumbowyg.table.min.css">
+<style>
+    .trumbowyg-editor table { border-collapse: collapse; width: 100%; }
+    .trumbowyg-editor table th, .trumbowyg-editor table td { border: 1px solid #ccc; padding: 6px 8px; }
+</style>
+@endpush
+
+@push('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.30.0/trumbowyg.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.30.0/plugins/table/trumbowyg.table.min.js"></script>
+<script>
+    $(function () {
+        $('.trumbowyg-editor').trumbowyg({
+            btns: [
+                ['viewHTML'], ['undo', 'redo'], ['formatting'],
+                ['strong', 'em', 'underline'], ['unorderedList', 'orderedList'],
+                ['table'], ['link'], ['removeformat'], ['fullscreen']
+            ],
+            plugins: { table: {} }
+        });
+    });
+</script>
+@endpush
+@endif
 @endsection

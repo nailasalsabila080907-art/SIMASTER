@@ -186,9 +186,9 @@
                 <label class="form-label" style="font-size:.85rem">Alasan penolakan (kalau surat ini mau ditolak)</label>
                 <div class="d-flex gap-2">
                     <input type="text" name="catatan_penolakan" class="form-control" placeholder="Wajib diisi kalau menolak">
-                    <button type="submit" class="btn btn-outline-danger flex-shrink-0" style="font-size:.85rem">
+                    <!-- <button type="submit" class="btn btn-outline-danger flex-shrink-0" style="font-size:.85rem">
                         <i class="bi bi-x-lg"></i> Tolak
-                    </button>
+                    </button> -->
                 </div>
             </form>
         </div>
@@ -302,13 +302,46 @@
                             </div>
                         </div>
                         <div class="d-flex align-items-center gap-2 flex-shrink-0">
-                            <span class="badge rounded-pill {{ $d->status === 'selesai' ? 'text-bg-success' : 'text-bg-light text-muted' }}" style="font-size:.72rem">
-                                {{ ucfirst($d->status) }}
-                            </span>
+                            <span class="badge rounded-pill {{ $d->status === 'selesai' ? 'text-bg-success' : ($d->status === 'ditolak' ? 'text-bg-danger' : 'text-bg-light text-muted') }}" style="font-size:.72rem">
+    {{ ucfirst($d->status) }}
+</span>
+@if(in_array($d->status, ['menunggu', 'ditindaklanjuti']))
+    <form method="POST" action="{{ route('disposisi.selesaikan', $d) }}">
+        @csrf
+        <button type="submit" class="btn btn-sm btn-light" style="font-size:.78rem">Tandai Selesai</button>
+    </form>
+    <button type="button" class="btn btn-sm btn-outline-danger" style="font-size:.78rem" data-bs-toggle="modal" data-bs-target="#modalTolakDisposisi{{ $d->id_disposisi }}">Tolak</button>
+
+    <div class="modal fade" id="modalTolakDisposisi{{ $d->id_disposisi }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST" action="{{ route('disposisi.tolak', $d) }}">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title" style="font-size:1rem">Tolak Disposisi</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label class="form-label" style="font-size:.85rem">Alasan penolakan <span class="text-danger">*</span></label>
+                        <textarea name="alasan_tolak" class="form-control" rows="3" required maxlength="500" placeholder="Jelaskan alasan disposisi ini ditolak..."></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-danger btn-sm">Tolak Disposisi</button>
+                    </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+            @elseif($d->status === 'ditolak' && $d->alasan_tolak)
+                <span class="text-danger" style="font-size:.76rem" title="{{ $d->alasan_tolak }}">
+                    <i class="bi bi-info-circle"></i> Alasan
+                        </span>
+                            @endif
                             @if($d->status !== 'selesai')
                                 <form method="POST" action="{{ route('disposisi.selesaikan', $d) }}">
                                     @csrf
-                                    <button type="submit" class="btn btn-sm btn-light" style="font-size:.78rem">Tandai Selesai</button>
+                                    <!-- <button type="submit" class="btn btn-sm btn-light" style="font-size:.78rem">Tandai Selesai</button> -->
                                 </form>
                             @endif
                         </div>

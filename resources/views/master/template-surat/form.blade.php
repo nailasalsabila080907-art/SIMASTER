@@ -175,6 +175,7 @@
                         <option value="date">Tanggal</option>
                         <option value="number">Angka</option>
                         <option value="select">Pilihan</option>
+                        <option value="richtext">Richtext (editor bebas, bisa tabel)</option>
                     </select>
                 </div>
             `;

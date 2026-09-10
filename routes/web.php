@@ -139,6 +139,7 @@ Route::middleware(['auth', 'role:admin_tu,super_admin,kepala_sekolah,wakil_kepal
     Route::controller(DisposisiSuratMasukController::class)->prefix('disposisi')->name('disposisi.')->group(function () {
         Route::get('/{disposisi}', 'show')->name('show');
         Route::post('/{disposisi}/tindaklanjuti', 'tindaklanjuti')->name('tindaklanjuti');
+        Route::post('/{disposisi}/tolak', 'tolak')->name('tolak');
         Route::post('/{disposisi}/selesaikan', 'selesaikan')->name('selesaikan');
     });
 });

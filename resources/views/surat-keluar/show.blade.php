@@ -105,10 +105,14 @@
                 <div class="mt-4 pt-4 border-top">
                     <div class="row g-3">
                         @foreach($suratKeluar->data_variabel ?? [] as $key => $value)
-                            @php $labelVar = $suratKeluar->template->variabel->firstWhere('nama_variabel', $key)?->label ?? $key; @endphp
+                            @php $varDef = $suratKeluar->template->variabel->firstWhere('nama_variabel', $key); @endphp
                             <div class="col-md-6">
-                                <p class="text-muted mb-1" style="font-size:.72rem;text-transform:uppercase;letter-spacing:.04em">{{ $labelVar }}</p>
-                                <p class="fw-semibold mb-0" style="font-size:.88rem">{{ $value }}</p>
+                                <p class="text-muted mb-1" style="font-size:.72rem;text-transform:uppercase;letter-spacing:.04em">{{ $varDef?->label ?? $key }}</p>
+                                @if($varDef?->tipe_input === 'richtext')
+                                    <div class="fw-semibold mb-0" style="font-size:.88rem">{!! $value !!}</div>
+                                @else
+                                    <p class="fw-semibold mb-0" style="font-size:.88rem">{{ $value }}</p>
+                                @endif
                             </div>
                         @endforeach
                     </div>

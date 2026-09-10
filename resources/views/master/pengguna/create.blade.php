@@ -94,6 +94,7 @@
                             'super_admin',
                             'admin_tu',
                             'kepala_sekolah',
+                            'wakil_kepala_sekolah',
                             'staff',
                             'guru',
                             'operator'

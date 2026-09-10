@@ -51,6 +51,7 @@ class PenomoranSurat extends Model
             $tahun
         ) {
             $counter = self::where('id_unit', $idUnit)
+                ->where('id_kategori', $idKategori)
                 ->where('tahun', $tahun)
                 ->orderByDesc('nomor_urut_terakhir')
                 ->lockForUpdate()

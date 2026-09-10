@@ -16,7 +16,7 @@ class DisposisiSuratMasuk extends Model
 
     protected $fillable = [
         'id_surat_masuk', 'id_disposisi_asal', 'dari_pegawai', 'ke_pegawai',
-        'ke_unit', 'ke_jurusan', 'instruksi', 'catatan', 'status',
+        'ke_unit', 'ke_jurusan', 'instruksi', 'catatan', 'alasan_tolak', 'status',
         'tanggal_disposisi', 'tanggal_selesai',
     ];
 

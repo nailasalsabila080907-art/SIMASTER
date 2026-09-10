@@ -34,6 +34,7 @@ class DataAwalSeeder extends Seeder
             ['nama' => 'Surat Keterangan Riset', 'jenis' => 'keluar', 'kode_unit' => 'KM', 'kode' => 'TPL-KET-RISET-01'],
             ['nama' => 'Surat Dinas Masuk', 'jenis' => 'masuk', 'kode_unit' => 'KP', 'kode' => null],
             ['nama' => 'Surat Umum', 'jenis' => 'umum', 'kode_unit' => 'KP', 'kode' => null],
+            ['nama' => 'Surat Bebas', 'jenis' => 'keluar', 'kode_unit' => 'KP', 'kode' => 'TPL-BEBAS-01']
         ];
 
         $fields = [
@@ -89,6 +90,10 @@ class DataAwalSeeder extends Seeder
                 ['prodi', 'Program studi', 'text'],
                 ['judul_penelitian', 'Judul penelitian', 'textarea'],
                 ['periode_riset', 'Periode riset', 'text'],
+            ],
+            'TPL-BEBAS-01' => [
+                ['tujuan_surat', 'Ditujukan kepada (Yth.)', 'text'],
+                ['isi_surat_lengkap', 'Isi surat', 'richtext'],
             ],
         ];
 

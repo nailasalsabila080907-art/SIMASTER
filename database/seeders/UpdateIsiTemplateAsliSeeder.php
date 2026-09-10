@@ -70,6 +70,13 @@ class UpdateIsiTemplateAsliSeeder extends Seeder
                 <p>Nama di atas benar telah melaksanakan Riset/Pra Riset pada periode {{periode_riset}} di SMK Negeri 7 Pekanbaru.</p>
                 <p>Demikian surat keterangan ini dibuat untuk dapat dipergunakan sebagaimana mestinya, atas perhatian diucapkan terima kasih.</p>
             '.$ttdKepala,
+
+            'TPL-BEBAS-01' => '
+                <p>Kepada Yth,<br>{{tujuan_surat}}</p>
+                <p>Di Tempat</p>
+                {{isi_surat_lengkap}}
+                <p>Demikian surat keterangan ini dibuat untuk dapat dipergunakan sebagaimana mestinya, atas perhatian diucapkan terima kasih.</p>
+            '.$ttdKepala,
         ];
 
         foreach ($isi as $kodeTemplate => $html) {
