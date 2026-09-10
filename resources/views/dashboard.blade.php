@@ -61,8 +61,8 @@
                 </div>
             </div>
             <div class="card-body">
-                <div style="position:relative;height:470px">
-                    <canvas id="chartAktivitasSurat" height="470"></canvas>
+                <div style="position:relative;height:220px">
+                    <canvas id="chartAktivitasSurat"></canvas>
                 </div>
             </div>
         </div>
@@ -78,7 +78,7 @@
                 </div>
                 <a href="{{ route('notifikasi.index') }}" class="text-primary" style="font-size:.78rem">Lihat semua</a>
             </div>
-            <div class="card-body p-0">
+            <div class="card-body p-0" style="max-height:340px;overflow-y:auto">
                 <div class="list-group list-group-flush">
                     @forelse($notifikasiTerbaru as $n)
                         <div class="list-group-item d-flex gap-3 py-3 px-3 border-0 border-bottom" style="min-width:0">
@@ -230,7 +230,7 @@
             plugins: { legend: { display: false } },
             scales: {
                 x: { grid: { display: false } },
-                y: { beginAtZero: true, grid: { color: '#F0F0F5' }, ticks: { precision: 0 } }
+                y: { beginAtZero: true, suggestedMax: 5, grid: { color: '#F0F0F5' }, ticks: { precision: 0 } }
             }
         }
     });
