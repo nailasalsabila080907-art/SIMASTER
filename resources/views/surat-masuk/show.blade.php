@@ -264,7 +264,7 @@
     </div>
 @endif
 
-@if($suratMasuk->status === 'selesai' && auth()->user()->role !== 'guru')
+@if($suratMasuk->status === 'selesai' && in_array(auth()->user()->role, ['admin_tu', 'super_admin'], true))
     <form method="POST" action="{{ route('arsip.surat-masuk', $suratMasuk) }}">
         @csrf
         <button type="submit" class="btn d-inline-flex align-items-center gap-2 text-white"

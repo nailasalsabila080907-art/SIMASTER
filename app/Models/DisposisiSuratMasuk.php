@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class DisposisiSuratMasuk extends Model
 {
     use HasFactory;
+    use HasUuids;
 
     protected $table = 'disposisi_surat_masuk';
     protected $primaryKey = 'id_disposisi';
@@ -24,6 +26,16 @@ class DisposisiSuratMasuk extends Model
         'tanggal_disposisi' => 'datetime',
         'tanggal_selesai' => 'datetime',
     ];
+
+    public function uniqueIds(): array
+    {
+        return ['uuid'];
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'uuid';
+    }
 
     public function suratMasuk(): BelongsTo
     {

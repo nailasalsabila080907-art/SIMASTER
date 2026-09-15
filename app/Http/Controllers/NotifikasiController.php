@@ -70,9 +70,11 @@ class NotifikasiController extends Controller
         */
 
         if ($notifikasi->id_disposisi) {
+            $disposisi = \App\Models\DisposisiSuratMasuk::findOrFail($notifikasi->id_disposisi);
+
             return redirect()->route(
                 'disposisi.show',
-                $notifikasi->id_disposisi
+                $disposisi
             );
         }
 
