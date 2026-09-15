@@ -27,7 +27,7 @@ class UnitKerjaAdmin extends Model
         return $this->belongsTo(User::class, 'id_user', 'id_user');
     }
 
-    public function scopeAktif($query)
+    public function scopeAktif(\Illuminate\Database\Eloquent\Builder $query)
     {
         return $query->where('status', 'aktif');
     }
