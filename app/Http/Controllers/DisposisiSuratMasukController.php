@@ -222,9 +222,6 @@ class DisposisiSuratMasukController extends Controller
         $disposisi->update(['status' => 'selesai', 'tanggal_selesai' => now()]);
 
         $suratMasuk = $disposisi->suratMasuk;
-<<<<<<< HEAD
-        if ($suratMasuk->disposisi()->whereNotIn('status', ['selesai', 'ditolak'])->doesntExist()) {
-=======
 
         // Surat ditandai selesai kalau SEMUA disposisinya sudah selesai
         // (disposisi yang ditolak tidak dihitung menghalangi, karena memang tidak akan dikerjakan)
@@ -233,7 +230,6 @@ class DisposisiSuratMasukController extends Controller
             ->exists();
 
         if (! $belumSelesai) {
->>>>>>> 052f9767c2558736bfccb07d1bc34b808a9fcbc2
             $suratMasuk->update(['status' => 'selesai']);
         }
 
@@ -273,66 +269,6 @@ class DisposisiSuratMasukController extends Controller
     }
 
     public function tolak(Request $request, DisposisiSuratMasuk $disposisi)
-<<<<<<< HEAD
-{
-    $this->bolehKelola($disposisi);
-
-    abort_unless(
-        in_array($disposisi->status, ['menunggu', 'ditindaklanjuti'], true),
-        422,
-        'Disposisi ini sudah diproses/tidak bisa ditolak lagi.'
-    );
-
-    $data = $request->validate([
-        'alasan_tolak' => 'required|string|max:500',
-    ]);
-
-    $disposisi->update([
-        'status' => 'ditolak',
-        'alasan_tolak' => $data['alasan_tolak'],
-        'tanggal_selesai' => now(),
-    ]);
-
-    $suratMasuk = $disposisi->suratMasuk;
-
-    $pemberi = $disposisi->pemberiDisposisi?->user;
-    if ($pemberi) {
-        Notifikasi::kirim(
-            $pemberi->id_user,
-            'masuk',
-            $suratMasuk->id_surat_masuk,
-            $disposisi->id_disposisi,
-            'Disposisi ditolak',
-            "Disposisi surat \"{$suratMasuk->perihal}\" ke {$disposisi->tujuan_label} ditolak: {$data['alasan_tolak']}"
-        );
-    }
-
-    if ($suratMasuk->disposisi()->whereNotIn('status', ['selesai', 'ditolak'])->doesntExist()) {
-        $suratMasuk->update(['status' => 'selesai']);
-    }
-
-    LogAktivitas::catat('ubah_data', 'Disposisi Surat Masuk', "Menolak disposisi surat: {$suratMasuk->perihal}");
-
-    LogAktivitasSurat::catat(
-        LogAktivitasSurat::TIPE_MASUK,
-        $suratMasuk->id_surat_masuk,
-        LogAktivitasSurat::AKSI_TOLAK,
-        "Disposisi ke {$disposisi->tujuan_label} ditolak: {$data['alasan_tolak']}"
-    );
-
-    if ($suratMasuk->status === 'selesai') {
-        LogAktivitasSurat::catat(
-            LogAktivitasSurat::TIPE_MASUK,
-            $suratMasuk->id_surat_masuk,
-            LogAktivitasSurat::AKSI_SELESAI,
-            "Semua disposisi final (selesai/ditolak), surat ditandai selesai"
-        );
-    }
-
-    return back()->with('sukses', 'Disposisi berhasil ditolak.');
-}
-
-=======
     {
         $this->bolehKelola($disposisi);
 
@@ -370,7 +306,6 @@ class DisposisiSuratMasukController extends Controller
         return back()->with('sukses', 'Disposisi ditolak.');
     }
 
->>>>>>> 052f9767c2558736bfccb07d1bc34b808a9fcbc2
     public function show(DisposisiSuratMasuk $disposisi)
     {
         $user = Auth::user();
