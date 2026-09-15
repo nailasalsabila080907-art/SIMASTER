@@ -65,23 +65,11 @@ class NotifikasiController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | NOTIFIKASI DISPOSISI SURAT MASUK
+        | NOTIFIKASI SURAT MASUK (termasuk yang terkait disposisi)
         |--------------------------------------------------------------------------
-        */
-
-        if ($notifikasi->id_disposisi) {
-            $disposisi = \App\Models\DisposisiSuratMasuk::findOrFail($notifikasi->id_disposisi);
-
-            return redirect()->route(
-                'disposisi.show',
-                $disposisi
-            );
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | NOTIFIKASI SURAT MASUK
-        |--------------------------------------------------------------------------
+        | Notifikasi cuma pemberitahuan - aksi (terima/tolak/dst) semua
+        | dilakukan di halaman detail Surat Masuk, bukan di halaman
+        | cetak lembar disposisi.
         */
 
         if ($notifikasi->tipe_surat === 'masuk') {

@@ -136,6 +136,7 @@ Route::middleware(['auth', 'role:admin_tu,super_admin,kepala_sekolah,wakil_kepal
     Route::post('/surat-masuk/{suratMasuk}/disposisi', [DisposisiSuratMasukController::class, 'disposisikan'])->name('surat-masuk.disposisikan');
     Route::controller(DisposisiSuratMasukController::class)->prefix('disposisi')->name('disposisi.')->group(function () {
         Route::get('/{disposisi}', 'show')->name('show');
+        Route::post('/{disposisi}/terima', 'terima')->name('terima');
         Route::post('/{disposisi}/tindaklanjuti', 'tindaklanjuti')->name('tindaklanjuti');
         Route::post('/{disposisi}/selesaikan', 'selesaikan')->name('selesaikan');
         Route::post('/{disposisi}/tolak', 'tolak')->name('tolak');

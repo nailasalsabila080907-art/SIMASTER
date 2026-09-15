@@ -144,6 +144,63 @@ class DisposisiSuratMasukController extends Controller
         return back()->with('sukses', 'Disposisi berhasil dibuat dan dikirim ke tujuan.');
     }
 
+    public function terima(DisposisiSuratMasuk $disposisi)
+    {
+        $this->bolehKelola($disposisi);
+
+        abort_unless($disposisi->status === 'menunggu', 422, 'Disposisi ini sudah diproses sebelumnya.');
+
+        // Tujuan UNIT: "Terima" langsung dianggap selesai (satu langkah, cepat).
+        // Tujuan PEGAWAI perorangan: "Terima" cuma menandai diterima,
+        // masih perlu ditindaklanjuti & diselesaikan terpisah.
+        if ($disposisi->ke_unit) {
+            $disposisi->update(['status' => 'selesai', 'tanggal_selesai' => now()]);
+        } else {
+            $disposisi->update(['status' => 'diterima']);
+        }
+
+        $suratMasuk = $disposisi->suratMasuk;
+
+        $belumSelesai = $suratMasuk->disposisi()
+            ->whereNotIn('status', ['selesai', 'ditolak'])
+            ->exists();
+
+        if (! $belumSelesai) {
+            $suratMasuk->update(['status' => 'selesai']);
+        }
+
+        LogAktivitas::catat('ubah_data', 'Disposisi Surat Masuk', "Menerima disposisi surat: {$suratMasuk->perihal}");
+        LogAktivitasSurat::catat(
+            LogAktivitasSurat::TIPE_MASUK,
+            $suratMasuk->id_surat_masuk,
+            LogAktivitasSurat::AKSI_TINDAK_LANJUT,
+            "Disposisi ke {$disposisi->tujuan_label} diterima"
+        );
+
+        if ($suratMasuk->status === 'selesai') {
+            LogAktivitasSurat::catat(
+                LogAktivitasSurat::TIPE_MASUK,
+                $suratMasuk->id_surat_masuk,
+                LogAktivitasSurat::AKSI_SELESAI,
+                "Semua disposisi selesai, surat ditandai selesai"
+            );
+
+            $kepsekList = User::where('role', 'kepala_sekolah')->where('status', 'aktif')->get();
+            foreach ($kepsekList as $kepsek) {
+                Notifikasi::kirim(
+                    $kepsek->id_user,
+                    'masuk',
+                    $suratMasuk->id_surat_masuk,
+                    null,
+                    'Surat sudah selesai ditindaklanjuti',
+                    "Surat \"{$suratMasuk->perihal}\" sudah selesai ditindaklanjuti oleh seluruh unit tujuan."
+                );
+            }
+        }
+
+        return back()->with('sukses', 'Disposisi diterima.');
+    }
+
     public function tindaklanjuti(DisposisiSuratMasuk $disposisi)
     {
         $this->bolehKelola($disposisi);

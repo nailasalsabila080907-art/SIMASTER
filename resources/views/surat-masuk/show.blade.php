@@ -183,29 +183,29 @@
                                 {{ ucfirst($d->status) }}
                             </span>
 
+                            <a href="{{ route('disposisi.show', $d) }}" class="btn btn-sm btn-light" style="font-size:.78rem">
+                                Lihat Detail
+                            </a>
+
                             @if(! $statusFinal && $bolehAksi)
+                                @if($modeUnitSederhana)
+                                    {{-- Tombol langsung terlihat, tidak disembunyikan di dropdown, biar cepat diproses --}}
+                                    <form method="POST" action="{{ route('disposisi.terima', $d) }}">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-success" style="font-size:.78rem">
+                                            <i class="bi bi-check2"></i> Terima
+                                        </button>
+                                    </form>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" style="font-size:.78rem"
+                                            data-bs-toggle="modal" data-bs-target="#tolakModal{{ $d->id_disposisi }}">
+                                        <i class="bi bi-x-lg"></i> Tolak
+                                    </button>
+                                @else
                                 <div class="dropdown">
                                     <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" style="font-size:.78rem">
                                         Aksi
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end">
-                                        @if($modeUnitSederhana)
-                                            {{-- Unit hanya punya 2 aksi: Terima (langsung selesai) atau Tolak --}}
-                                            <li>
-                                                <form method="POST" action="{{ route('disposisi.selesaikan', $d) }}">
-                                                    @csrf
-                                                    <button type="submit" class="dropdown-item" style="font-size:.85rem">
-                                                        <i class="bi bi-check2 me-1"></i> Terima
-                                                    </button>
-                                                </form>
-                                            </li>
-                                            <li>
-                                                <button type="button" class="dropdown-item text-danger" style="font-size:.85rem"
-                                                        data-bs-toggle="modal" data-bs-target="#tolakModal{{ $d->id_disposisi }}">
-                                                    <i class="bi bi-x-lg me-1"></i> Tolak
-                                                </button>
-                                            </li>
-                                        @else
                                             @if($d->status !== 'ditindaklanjuti')
                                                 <li>
                                                     <form method="POST" action="{{ route('disposisi.tindaklanjuti', $d) }}">
@@ -230,9 +230,9 @@
                                                     <i class="bi bi-x-lg me-1"></i> Tolak
                                                 </button>
                                             </li>
-                                        @endif
                                     </ul>
                                 </div>
+                                @endif
 
                                 <div class="modal fade" id="tolakModal{{ $d->id_disposisi }}" tabindex="-1">
                                     <div class="modal-dialog">
