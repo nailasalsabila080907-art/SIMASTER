@@ -32,6 +32,26 @@ class UnitKerja extends Model
     {
         return $this->hasMany(PenomoranSurat::class, 'id_unit', 'id_unit');
     }
+
+    public function admin(): HasMany
+    {
+        return $this->hasMany(UnitKerjaAdmin::class, 'id_unit', 'id_unit');
+    }
+
+    // Akun (User) yang sah pegang akun unit ini - utama & cadangan yang masih aktif
+    public function adminAktif(): HasMany
+    {
+        return $this->admin()->aktif();
+    }
+
+    public function penggunaAdminAktif()
+    {
+        return User::whereIn(
+            'id_user',
+            $this->adminAktif()->pluck('id_user')
+        )->where('status', 'aktif')->get();
+    }
+
      public function uniqueIds(): array
     {
         return ['uuid'];

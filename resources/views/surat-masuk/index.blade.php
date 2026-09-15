@@ -77,13 +77,11 @@
                 @forelse($suratMasuk as $i => $s)
                     @php
                         $badge = [
-                            'baru'                     => 'text-bg-warning',
-                            'menunggu_approval_kepsek' => 'text-bg-info',
-                            'siap_kirim'               => 'text-bg-primary',
-                            'didisposisi'              => 'text-bg-info',
-                            'diproses'                 => 'text-bg-primary',
-                            'selesai'                  => 'text-bg-success',
-                            'diarsipkan'               => 'text-bg-secondary',
+                            'baru'        => 'text-bg-warning',
+                            'didisposisi' => 'text-bg-info',
+                            'diproses'    => 'text-bg-primary',
+                            'selesai'     => 'text-bg-success',
+                            'diarsipkan'  => 'text-bg-secondary',
                         ][$s->status] ?? 'text-bg-secondary';
 
                         $avatarGradients = [
@@ -116,13 +114,11 @@
                         <td>
                             @php
                                 $labelStatus = [
-                                    'baru'                     => 'Baru',
-                                    'menunggu_approval_kepsek' => 'Menunggu Kepsek',
-                                    'siap_kirim'               => 'Siap Kirim',
-                                    'didisposisi'              => 'Didisposisi',
-                                    'diproses'                 => 'Diproses',
-                                    'selesai'                  => 'Selesai',
-                                    'diarsipkan'               => 'Diarsipkan',
+                                    'baru'        => 'Baru',
+                                    'didisposisi' => 'Didisposisi',
+                                    'diproses'    => 'Diproses',
+                                    'selesai'     => 'Selesai',
+                                    'diarsipkan'  => 'Diarsipkan',
                                 ][$s->status] ?? ucfirst($s->status);
                             @endphp
                             <span class="badge rounded-pill {{ $badge }}" style="font-size:.72rem">{{ $labelStatus }}</span>

@@ -65,6 +65,8 @@ Route::middleware('role:admin_tu,super_admin')->group(function () {
     Route::resource('template-surat', TemplateSuratController::class)->parameters(['template-surat' => 'templateSurat'])->except(['show']);
     Route::delete('/template-surat/variabel/{variabel}', [TemplateSuratController::class, 'hapusVariabel'])->name('template-surat.variabel.hapus');
     Route::resource('unit-kerja', UnitKerjaController::class)->parameters(['unit-kerja' => 'unitKerja'])->except(['show']);
+    Route::post('/unit-kerja/{unitKerja}/admin', [UnitKerjaController::class, 'tambahAdmin'])->name('unit-kerja.admin.store');
+    Route::delete('/unit-kerja/{unitKerja}/admin/{admin}', [UnitKerjaController::class, 'nonaktifkanAdmin'])->name('unit-kerja.admin.nonaktifkan');
     Route::resource('jurusan', JurusanController::class)->except(['show']);
     Route::resource('klasifikasi-arsip', KlasifikasiArsipController::class)->parameters(['klasifikasi-arsip' => 'klasifikasiArsip'])->except(['show']);
     Route::get('/pengguna', [PenggunaController::class, 'index'])->name('pengguna.index');
@@ -131,15 +133,13 @@ Route::middleware(['auth', 'role:admin_tu,super_admin,kepala_sekolah,wakil_kepal
         Route::delete('/surat-masuk/{uuid}/force', [SuratMasukController::class, 'forceDelete'])->name('surat-masuk.forceDelete');
     });
 
-    Route::post('/surat-masuk/{suratMasuk}/disposisi', [DisposisiSuratMasukController::class, 'store'])->name('surat-masuk.disposisi.store');
-    Route::post('/surat-masuk/{suratMasuk}/ajukan-kepsek', [DisposisiSuratMasukController::class, 'ajukanKeKepsek'])->name('surat-masuk.ajukan-kepsek');
-    Route::post('/surat-masuk/{suratMasuk}/setujui-kepsek', [DisposisiSuratMasukController::class, 'setujuiKepsek'])->name('surat-masuk.setujui-kepsek');
-    Route::post('/surat-masuk/{suratMasuk}/tolak-kepsek', [DisposisiSuratMasukController::class, 'tolakKepsek'])->name('surat-masuk.tolak-kepsek');
-    Route::post('/surat-masuk/{suratMasuk}/kirim-disposisi', [DisposisiSuratMasukController::class, 'kirim'])->name('surat-masuk.kirim-disposisi');
+    Route::post('/surat-masuk/{suratMasuk}/disposisi', [DisposisiSuratMasukController::class, 'disposisikan'])->name('surat-masuk.disposisikan');
     Route::controller(DisposisiSuratMasukController::class)->prefix('disposisi')->name('disposisi.')->group(function () {
         Route::get('/{disposisi}', 'show')->name('show');
+        Route::post('/{disposisi}/terima', 'terima')->name('terima');
         Route::post('/{disposisi}/tindaklanjuti', 'tindaklanjuti')->name('tindaklanjuti');
         Route::post('/{disposisi}/tolak', 'tolak')->name('tolak');
         Route::post('/{disposisi}/selesaikan', 'selesaikan')->name('selesaikan');
+        Route::post('/{disposisi}/tolak', 'tolak')->name('tolak');
     });
 });

@@ -18,7 +18,23 @@ class SuratMasukController extends Controller
         $query = SuratMasuk::with(['kategori', 'penerima.pegawai'])->latest('tanggal_diterima');
 
         if ($request->filled('status')) $query->where('status', $request->status);
-        if (! in_array(Auth::user()->role, ['admin_tu', 'super_admin', 'kepala_sekolah'], true)) $query->where('diterima_oleh', Auth::id());
+
+        $user = Auth::user();
+        if (! in_array($user->role, ['admin_tu', 'super_admin', 'kepala_sekolah'], true)) {
+            // Selain yang pertama input surat, surat juga harus muncul kalau
+            // user ini penerima disposisinya - baik sebagai pegawai perorangan,
+            // maupun sebagai admin aktif dari unit yang jadi tujuan disposisi.
+            $pegawaiId = $user->pegawai?->id_pegawai;
+            $idUnitDiadmini = $user->unitDiadmini()->aktif()->pluck('id_unit');
+
+            $query->where(function ($q) use ($user, $pegawaiId, $idUnitDiadmini) {
+                $q->where('diterima_oleh', $user->id_user)
+                    ->orWhereHas('disposisi', function ($dq) use ($pegawaiId, $idUnitDiadmini) {
+                        $dq->where('ke_pegawai', $pegawaiId)
+                            ->orWhereIn('ke_unit', $idUnitDiadmini);
+                    });
+            });
+        }
 
         return view('surat-masuk.index', [
             'suratMasuk' => $query->paginate(15)->withQueryString(),
@@ -73,11 +89,25 @@ class SuratMasukController extends Controller
 
     public function show(SuratMasuk $suratMasuk)
     {
-        if (! in_array(Auth::user()->role, ['admin_tu', 'super_admin', 'kepala_sekolah'], true)) {
-            abort_unless($suratMasuk->diterima_oleh === Auth::id(), 403);
+        $suratMasuk->load(['kategori', 'klasifikasi', 'penerima.pegawai', 'disposisi.penerimaPegawai', 'disposisi.penerimaUnit', 'disposisi.pemberiDisposisi']);
+
+        $user = Auth::user();
+        $bolehAdmin = in_array($user->role, ['admin_tu', 'super_admin', 'kepala_sekolah'], true);
+
+        if (! $bolehAdmin) {
+            $pegawaiId = $user->pegawai?->id_pegawai;
+
+            // Selain admin & kepsek, yang boleh buka surat ini cuma: yang
+            // pertama input surat ini, ATAU salah satu penerima disposisinya
+            // (pegawai perorangan, atau admin unit yang aktif untuk unit tujuan).
+            $penerimaDisposisi = $suratMasuk->disposisi->contains(
+                fn ($d) => $d->ke_pegawai === $pegawaiId
+                    || ($d->ke_unit && $user->adalahAdminUnit($d->ke_unit))
+            );
+
+            abort_unless($suratMasuk->diterima_oleh === Auth::id() || $penerimaDisposisi, 403);
         }
 
-        $suratMasuk->load(['kategori', 'klasifikasi', 'penerima.pegawai', 'disposisi.penerimaPegawai', 'disposisi.penerimaUnit', 'disposisi.pemberiDisposisi']);
         $pegawaiList = \App\Models\Pegawai::where('status', 'aktif')->orderBy('nama_lengkap')->get();
         $unitList = \App\Models\UnitKerja::where('status', 'aktif')->orderBy('nama_unit')->get();
 
@@ -133,8 +163,18 @@ class SuratMasukController extends Controller
             ->with(['kategori', 'penerima.pegawai'])
             ->latest('deleted_at');
 
-        if (! in_array(Auth::user()->role, ['admin_tu', 'super_admin', 'kepala_sekolah'], true)) {
-            $query->where('diterima_oleh', Auth::id());
+        $user = Auth::user();
+        if (! in_array($user->role, ['admin_tu', 'super_admin', 'kepala_sekolah'], true)) {
+            $pegawaiId = $user->pegawai?->id_pegawai;
+            $idUnitDiadmini = $user->unitDiadmini()->aktif()->pluck('id_unit');
+
+            $query->where(function ($q) use ($user, $pegawaiId, $idUnitDiadmini) {
+                $q->where('diterima_oleh', $user->id_user)
+                    ->orWhereHas('disposisi', function ($dq) use ($pegawaiId, $idUnitDiadmini) {
+                        $dq->where('ke_pegawai', $pegawaiId)
+                            ->orWhereIn('ke_unit', $idUnitDiadmini);
+                    });
+            });
         }
 
         return view('surat-masuk.trashed', [

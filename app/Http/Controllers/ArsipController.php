@@ -173,6 +173,7 @@ class ArsipController extends Controller
 
     public function arsipkanKeluar(SuratKeluar $suratKeluar)
     {
+        abort_unless(in_array(Auth::user()->role, ['admin_tu', 'super_admin'], true), 403, 'Hanya admin yang bisa mengarsipkan surat.');
         abort_unless($suratKeluar->status === 'terkirim', 422, 'Hanya surat yang sudah terbit yang dapat diarsipkan.');
         DB::transaction(function () use ($suratKeluar) {
             ArsipSurat::firstOrCreate(
@@ -187,6 +188,7 @@ class ArsipController extends Controller
 
     public function arsipkanMasuk(SuratMasuk $suratMasuk)
     {
+        abort_unless(in_array(Auth::user()->role, ['admin_tu', 'super_admin'], true), 403, 'Hanya admin yang bisa mengarsipkan surat.');
         abort_unless($suratMasuk->status === 'selesai', 422, 'Surat masuk harus selesai diproses sebelum diarsipkan.');
         DB::transaction(function () use ($suratMasuk) {
             ArsipSurat::firstOrCreate(

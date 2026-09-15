@@ -46,6 +46,20 @@ class User extends Authenticatable
         return $this->hasMany(Notifikasi::class, 'id_user', 'id_user');
     }
 
+    public function unitDiadmini(): HasMany
+    {
+        return $this->hasMany(UnitKerjaAdmin::class, 'id_user', 'id_user');
+    }
+
+    // True kalau akun ini adalah admin (utama/cadangan) yang masih aktif untuk unit tersebut
+    public function adalahAdminUnit(int $idUnit): bool
+    {
+        return $this->unitDiadmini()
+            ->where('id_unit', $idUnit)
+            ->where('status', 'aktif')
+            ->exists();
+    }
+
     // Laravel Auth defaultnya cari kolom "password" - kita override ke "password_hash"
     public function getAuthPassword(): string
     {
