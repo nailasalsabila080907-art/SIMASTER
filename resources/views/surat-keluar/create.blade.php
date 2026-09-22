@@ -110,7 +110,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label" style="font-size:.85rem">Tanggal Surat <span class="text-danger">*</span></label>
-                                <input type="date" name="tanggal_surat" value="{{ old('tanggal_surat', $suratKeluar?->tanggal_surat?->format('Y-m-d') ?? now()->format('Y-m-d')) }}" class="form-control" required>
+                                <input type="date" name="tanggal_surat" value="{{ old('tanggal_surat', $suratKeluar?->tanggal_surat?->format('D-m-y') ?? now()->format('D-m-y')) }}" class="form-control" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label" style="font-size:.85rem">Sifat Surat</label>

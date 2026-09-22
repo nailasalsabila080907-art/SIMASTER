@@ -331,7 +331,7 @@ class SuratKeluarController extends Controller
             LogAktivitasSurat::TIPE_KELUAR,
             $idSurat,
             LogAktivitasSurat::AKSI_HAPUS,
-            "Surat dipindahkan ke sampah: {$perihal}"
+            "Surat dipindahkan ke nonaktif: {$perihal}"
         );
 
         return redirect()
@@ -368,13 +368,13 @@ class SuratKeluarController extends Controller
         LogAktivitas::catat(
             'ubah_data',
             'Surat Keluar',
-            "Memulihkan surat dari sampah: {$suratKeluar->perihal}"
+            "Memulihkan surat dari nonaktif: {$suratKeluar->perihal}"
         );
         LogAktivitasSurat::catat(
             LogAktivitasSurat::TIPE_KELUAR,
             $suratKeluar->id_surat_keluar,
             LogAktivitasSurat::AKSI_DIPULIHKAN,
-            "Surat dipulihkan dari sampah: {$suratKeluar->perihal}"
+            "Surat dipulihkan dari nonaktif: {$suratKeluar->perihal}"
         );
 
         return back()->with('sukses', 'Surat berhasil dipulihkan.');
