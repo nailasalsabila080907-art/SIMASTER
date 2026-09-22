@@ -4,15 +4,28 @@
 
 @section('content')
 
-    {{-- Header --}}
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
-        <div>
-            <h5 class="mb-1" style="color:var(--ink)">Arsip Surat</h5>
-            <p class="mb-0" style="color:var(--ink-muted);font-size:.85rem">
-                Daftar surat yang telah selesai diproses dan diarsipkan.
-            </p>
-        </div>
+{{-- Header --}}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
+    <div>
+        <h5 class="mb-1" style="color:var(--ink)">Arsip Surat</h5>
+        <p class="mb-0" style="color:var(--ink-muted);font-size:.85rem">
+            Daftar surat yang telah selesai diproses dan diarsipkan.
+        </p>
     </div>
+
+    @if(Auth::user()->role === 'kepala_sekolah')
+    <a href="{{ route('approval.index') }}"
+       class="btn d-inline-flex align-items-center gap-2 px-3 py-2 text-white"
+       style="background:linear-gradient(135deg,#178754,#0EA5A4);
+              border:none;
+              border-radius:10px;
+              font-size:.85rem;
+              font-weight:600;">
+        <i class="bi bi-patch-check"></i>
+        Approval
+    </a>
+@endif
+</div>
 
     {{-- Filter --}}
     <form method="GET" action="{{ route('arsip.index') }}" class="d-flex flex-wrap align-items-center gap-2 mb-3">

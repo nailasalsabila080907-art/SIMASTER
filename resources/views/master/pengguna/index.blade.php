@@ -19,7 +19,7 @@
     <li class="nav-item">
         <a class="nav-link px-3 py-2" href="{{ route('pengguna.trashed') }}"
            style="color:var(--ink-muted);font-weight:600;">
-            Sampah
+            Data Terhapus
         </a>
     </li>
 </ul>
