@@ -413,47 +413,47 @@ class SuratKeluarController extends Controller
     }
 
     protected function form(
-        Request $request,
-        ?SuratKeluar $suratKeluar = null
-    ) {
-        $kategoriList = KategoriSurat::where(
-            'jenis',
-            'keluar'
-        )
-            ->orderBy('nama_kategori')
-            ->get();
+    Request $request,
+    ?SuratKeluar $suratKeluar = null
+) {
 
-        $kategoriId =
-            $request->input('kategori')
-            ?: $suratKeluar?->id_kategori;
+    $kategoriList = KategoriSurat::where('jenis', 'keluar')
+        ->orderBy('nama_kategori')
+        ->get();
 
-        $templateId =
-            $request->input('template')
-            ?: $suratKeluar?->id_template;
+    $kategoriId = $request->input('kategori')
+        ?: $suratKeluar?->id_kategori;
 
-        $templateList = $kategoriId
-            ? TemplateSurat::where(
-                'id_kategori',
-                $kategoriId
-            )
+    $template = null;
+
+    if ($kategoriId) {
+
+        if ($suratKeluar?->id_template) {
+
+            $template = TemplateSurat::with('variabel')
+                ->where('id_template', $suratKeluar->id_template)
+                ->where('id_kategori', $kategoriId)
+                ->where('is_active', true)
+                ->first();
+
+        } else {
+
+            $template = TemplateSurat::with('variabel')
+                ->where('id_kategori', $kategoriId)
                 ->where('is_active', true)
                 ->orderBy('nama_template')
-                ->get()
-            : collect();
-
-        $template = $templateId
-            ? TemplateSurat::with('variabel')
-                ->find($templateId)
-            : null;
-
-        return view('surat-keluar.create', [
-            'kategoriList' => $kategoriList,
-            'templateList' => $templateList,
-            'template' => $template,
-            'kategoriTerpilih' => $kategoriId,
-            'suratKeluar' => $suratKeluar,
-        ]);
+                ->first();
+        }
     }
+
+    return view('surat-keluar.create', [
+        'kategoriList' => $kategoriList,
+        'templateList' => collect(),
+        'template' => $template,
+        'kategoriTerpilih' => $kategoriId,
+        'suratKeluar' => $suratKeluar,
+    ]);
+}
 
     protected function validasiFormSurat(
         Request $request,

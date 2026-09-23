@@ -185,11 +185,6 @@
         <a href="{{ route('surat-keluar.index') }}" class="nav-link-custom {{ request()->routeIs('surat-keluar.*') ? 'active' : '' }}">
             <i class="bi bi-send"></i> Surat Keluar
         </a>
-        @if(in_array(auth()->user()->role,['admin_tu','super_admin','kepala_sekolah']))
-            <a href="{{ route('approval.index') }}" class="nav-link-custom {{ request()->routeIs('approval.*') ? 'active' : '' }}">
-                <i class="bi bi-patch-check"></i> Approval Surat
-            </a>
-        @endif
         <a href="{{ route('arsip.index') }}" class="nav-link-custom {{ request()->routeIs('arsip.*') ? 'active' : '' }}">
             <i class="bi bi-archive"></i> Arsip Surat
         </a>
