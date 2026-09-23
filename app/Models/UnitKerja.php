@@ -16,7 +16,7 @@ class UnitKerja extends Model
     protected $table = 'unit_kerja';
     protected $primaryKey = 'id_unit';
 
-    protected $fillable = ['id_sekolah', 'kode_unit', 'nama_unit', 'keterangan', 'status'];
+    protected $fillable = ['id_sekolah', 'kode_unitt', 'nama_unnit', 'keterangan', 'status'];
 
     public function sekolah(): BelongsTo
     {
