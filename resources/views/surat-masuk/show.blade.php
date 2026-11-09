@@ -188,27 +188,32 @@
                             </a>
 
                             @if(! $statusFinal && $bolehAksi)
-                                @if($modeUnitSederhana)
-                                    {{-- Tombol langsung terlihat, tidak disembunyikan di dropdown, biar cepat diproses --}}
-                                    <form method="POST" action="{{ route('disposisi.terima', $d) }}">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm btn-success" style="font-size:.78rem">
-                                            <i class="bi bi-check2"></i> Terima
-                                        </button>
-                                    </form>
-                                    <button type="button" class="btn btn-sm btn-outline-danger" style="font-size:.78rem"
-                                            data-bs-toggle="modal" data-bs-target="#tolakModal{{ $d->id_disposisi }}">
-                                        <i class="bi bi-x-lg"></i> Tolak
-                                    </button>
-                                @else
                                 <div class="dropdown">
                                     <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" style="font-size:.78rem">
                                         Aksi
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end">
+                                        @if($modeUnitSederhana)
+                                            <li>
+                                                <form method="POST" action="{{ route('disposisi.terima', $d) }}"
+                                                      onsubmit="return confirm('Terima disposisi surat ini? Setelah diterima, statusnya langsung dianggap selesai.')">
+                                                    @csrf
+                                                    <button type="submit" class="dropdown-item" style="font-size:.85rem">
+                                                        <i class="bi bi-check2 me-1"></i> Terima
+                                                    </button>
+                                                </form>
+                                            </li>
+                                            <li>
+                                                <button type="button" class="dropdown-item text-danger" style="font-size:.85rem"
+                                                        data-bs-toggle="modal" data-bs-target="#tolakModal{{ $d->id_disposisi }}">
+                                                    <i class="bi bi-x-lg me-1"></i> Tolak
+                                                </button>
+                                            </li>
+                                        @else
                                             @if($d->status !== 'ditindaklanjuti')
                                                 <li>
-                                                    <form method="POST" action="{{ route('disposisi.tindaklanjuti', $d) }}">
+                                                    <form method="POST" action="{{ route('disposisi.tindaklanjuti', $d) }}"
+                                                          onsubmit="return confirm('Tandai disposisi ini mulai ditindaklanjuti?')">
                                                         @csrf
                                                         <button type="submit" class="dropdown-item" style="font-size:.85rem">
                                                             <i class="bi bi-play-circle me-1"></i> Tindak Lanjuti
@@ -217,7 +222,8 @@
                                                 </li>
                                             @endif
                                             <li>
-                                                <form method="POST" action="{{ route('disposisi.selesaikan', $d) }}">
+                                                <form method="POST" action="{{ route('disposisi.selesaikan', $d) }}"
+                                                      onsubmit="return confirm('Tandai disposisi ini selesai?')">
                                                     @csrf
                                                     <button type="submit" class="dropdown-item" style="font-size:.85rem">
                                                         <i class="bi bi-check2 me-1"></i> Tandai Selesai
@@ -230,9 +236,9 @@
                                                     <i class="bi bi-x-lg me-1"></i> Tolak
                                                 </button>
                                             </li>
+                                        @endif
                                     </ul>
                                 </div>
-                                @endif
 
                                 <div class="modal fade" id="tolakModal{{ $d->id_disposisi }}" tabindex="-1">
                                     <div class="modal-dialog">
@@ -265,13 +271,20 @@
 @endif
 
 @if($suratMasuk->status === 'selesai' && in_array(auth()->user()->role, ['admin_tu', 'super_admin'], true))
-    <form method="POST" action="{{ route('arsip.surat-masuk', $suratMasuk) }}">
-        @csrf
-        <button type="submit" class="btn d-inline-flex align-items-center gap-2 text-white"
-                style="background:linear-gradient(135deg,#3E4652,#5B5D6B);border:none">
-            <i class="bi bi-archive"></i> Arsipkan Surat
-        </button>
-    </form>
+    <div class="d-flex justify-content-end mt-3 pt-3 border-top">
+        <form method="POST"
+              action="{{ route('arsip.surat-masuk', $suratMasuk) }}"
+              onsubmit="return confirm('Yakin ingin mengarsipkan surat ini?')">
+            @csrf
+
+            <button type="submit"
+                    class="btn d-inline-flex align-items-center gap-2 text-white"
+                    style="background:linear-gradient(135deg,#178754,#0F5C39);border:none">
+                <i class="bi bi-archive"></i>
+                Arsipkan Surat
+            </button>
+        </form>
+    </div>
 @endif
 
 @endsection

@@ -91,8 +91,7 @@ Route::middleware('role:admin_tu,super_admin')->group(function () {
         Route::post('/{suratKeluar}/ajukan', 'ajukan')->name('ajukan');
         Route::get('/{suratKeluar}/cetak-pdf', 'cetakPdf')->name('cetak-pdf');
         Route::delete('/{suratKeluar}', 'destroy')->name('destroy');
-        Route::get('/surat-keluar/{suratKeluar}/cetak-pdf', [SuratKeluarController::class, 'cetakPdf'])->name('surat-keluar.cetak-pdf');
-    });
+        });
 
     Route::middleware('role:admin_tu,super_admin,kepala_sekolah')->group(function () {
         Route::get('/surat-keluar-sampah', [SuratKeluarController::class, 'trashed'])->name('surat-keluar.trashed');
