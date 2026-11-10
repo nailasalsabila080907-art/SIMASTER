@@ -16,21 +16,26 @@
            style="background:var(--bs-primary);border-radius:8px;font-weight:600;padding:.55rem 1rem;">
             <i class="bi bi-plus-lg"></i> Tambah Pegawai
         </a>
-        <ul class="nav mb-4" style="border-bottom:1px solid var(--border);">
+    </div>
+
+<ul class="nav mb-4" 
+    style="border-bottom:1px solid var(--border);">
     <li class="nav-item">
-        <a class="nav-link active px-3 py-2" href="{{ route('pegawai.index') }}"
-           style="color:var(--bs-primary);font-weight:600;border-bottom:2px solid var(--bs-primary);">
+        <a class="nav-link active px-3 py-2" 
+            href="{{ route('pegawai.index') }}"
+            style="color:var(--bs-primary);font-weight:600;border-bottom:2px solid var(--bs-primary);">
             Data Aktif
         </a>
     </li>
+
     <li class="nav-item">
-        <a class="nav-link px-3 py-2" href="{{ route('pegawai.trashed') }}"
-           style="color:var(--ink-muted);font-weight:600;">
+        <a class="nav-link px-3 py-2" 
+            href="{{ route('pegawai.trashed') }}"
+            style="color:var(--ink-muted);font-weight:600;">
             Data Terhapus
         </a>
     </li>
 </ul>
-    </div>
 
     {{-- Alerts --}}
     @if(session('sukses'))

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\ApprovalSuratKeluar;
-use App\Models\ArsipSurat;
 use App\Models\LogAktivitas;
 use App\Models\LogAktivitasSurat;
 use App\Models\Notifikasi;
@@ -171,15 +170,7 @@ class ApprovalSuratKeluarController extends Controller
                     'tanggal_approval' => now(),
                 ]);
 
-            $suratKeluar->update([
-                'status' => 'ditolak',
-            ]);
-
-        LogAktivitas::catat(
-        'ubah_data',
-        'Approval Surat Keluar',
-        "Menolak surat: {$suratKeluar->perihal}"
-    );
+            
 
         LogAktivitasSurat::catat(
         LogAktivitasSurat::TIPE_KELUAR,
@@ -457,23 +448,10 @@ class ApprovalSuratKeluarController extends Controller
             );
         }
 
-        ArsipSurat::firstOrCreate(
-            ['tipe_surat' => 'keluar', 'id_surat' => $suratKeluar->id_surat_keluar],
-            [ 
-                'tahun_arsip' => (int) ($suratKeluar->tanggal_surat?->format('Y') ?? now()->format('Y')),
-                'tanggal_diarsipkan' => now(),
-                'diarsipkan_oleh' => $suratKeluar->dibuat_oleh,
-            ]
-        );
-
-        $suratKeluar->update([
-            'status' => 'diarsipkan',
-        ]);
-
         LogAktivitas::catat(
             'ubah_data',
-            'Arsip Surat',
-            "Surat keluar otomatis masuk catatan tahunan: {$suratKeluar->perihal} (Nomor: {$nomorSurat})"
+            'Surat Keluar',
+            "Surat keluar berhasil diterbitkan: {$suratKeluar->perihal} (Nomor: {$nomorSurat})"
         );
 
         $userTU = User::where('status', 'aktif')
@@ -487,7 +465,7 @@ class ApprovalSuratKeluarController extends Controller
                 $suratKeluar->id_surat_keluar,
                 null,
                 'Surat Terbit',
-                "Surat \"{$suratKeluar->perihal}\" sudah terbit dan masuk catatan tahunan dengan nomor {$nomorSurat}."
+                "Surat \"{$suratKeluar->perihal}\" sudah berhasil diterbitkan dengan nomor {$nomorSurat}."
             );
         }
     }

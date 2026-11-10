@@ -49,36 +49,35 @@ Route::middleware('auth')->group(function () {
     Route::post('/arsip/surat-keluar/{suratKeluar}', [ArsipController::class, 'arsipkanKeluar'])->name('arsip.surat-keluar');
     Route::post('/arsip/surat-masuk/{suratMasuk}', [ArsipController::class, 'arsipkanMasuk'])->name('arsip.surat-masuk');
 
-Route::middleware('role:admin_tu,super_admin')->group(function () {
-    Route::get('/sekolah', [SekolahController::class, 'edit'])->name('sekolah.edit');
-    Route::put('/sekolah', [SekolahController::class, 'update'])->name('sekolah.update');
-    Route::resource('jabatan', JabatanController::class)->except(['show']);
-    Route::get('/jabatan-sampah', [JabatanController::class, 'trashed'])->name('jabatan.trashed');
-    Route::put('/jabatan/{uuid}/restore', [JabatanController::class, 'restore'])->name('jabatan.restore');
-    Route::delete('/jabatan/{uuid}/force', [JabatanController::class, 'forceDelete'])->name('jabatan.forceDelete');
-    Route::resource('pegawai', PegawaiController::class)->except(['show']);
-    Route::get('/pegawai-sampah', [PegawaiController::class, 'trashed'])->name('pegawai.trashed');
-    Route::put('/pegawai/{uuid}/restore', [PegawaiController::class, 'restore'])->name('pegawai.restore');
-    Route::delete('/pegawai/{uuid}/force', [PegawaiController::class, 'forceDelete'])->name('pegawai.forceDelete');
+    Route::middleware('role:admin_tu,super_admin')->group(function () {
+        Route::get('/sekolah', [SekolahController::class, 'edit'])->name('sekolah.edit');
+        Route::put('/sekolah', [SekolahController::class, 'update'])->name('sekolah.update');
+        Route::resource('jabatan', JabatanController::class)->except(['show']);
+        Route::get('/jabatan-sampah', [JabatanController::class, 'trashed'])->name('jabatan.trashed');
+        Route::put('/jabatan/{uuid}/restore', [JabatanController::class, 'restore'])->name('jabatan.restore');
+        Route::delete('/jabatan/{uuid}/force', [JabatanController::class, 'forceDelete'])->name('jabatan.forceDelete');
+        Route::resource('pegawai', PegawaiController::class)->except(['show']);
+        Route::get('/pegawai-sampah', [PegawaiController::class, 'trashed'])->name('pegawai.trashed');
+        Route::put('/pegawai/{uuid}/restore', [PegawaiController::class, 'restore'])->name('pegawai.restore');
+        Route::delete('/pegawai/{uuid}/force', [PegawaiController::class, 'forceDelete'])->name('pegawai.forceDelete');
 
-    Route::resource('kategori-surat', KategoriSuratController::class)->parameters(['kategori-surat' => 'kategoriSurat'])->except(['show']);
-    Route::resource('template-surat', TemplateSuratController::class)->parameters(['template-surat' => 'templateSurat'])->except(['show']);
-    Route::delete('/template-surat/variabel/{variabel}', [TemplateSuratController::class, 'hapusVariabel'])->name('template-surat.variabel.hapus');
-    Route::resource('unit-kerja', UnitKerjaController::class)->parameters(['unit-kerja' => 'unitKerja'])->except(['show']);
-    Route::post('/unit-kerja/{unitKerja}/admin', [UnitKerjaController::class, 'tambahAdmin'])->name('unit-kerja.admin.store');
-    Route::delete('/unit-kerja/{unitKerja}/admin/{admin}', [UnitKerjaController::class, 'nonaktifkanAdmin'])->name('unit-kerja.admin.nonaktifkan');
-    Route::resource('jurusan', JurusanController::class)->except(['show']);
-    Route::resource('klasifikasi-arsip', KlasifikasiArsipController::class)->parameters(['klasifikasi-arsip' => 'klasifikasiArsip'])->except(['show']);
-    Route::get('/pengguna', [PenggunaController::class, 'index'])->name('pengguna.index');
-    Route::get('/pengguna/create', [PenggunaController::class, 'create'])->name('pengguna.create');
-    Route::post('/pengguna', [PenggunaController::class, 'store'])->name('pengguna.store');
-    Route::get('/pengguna/{pengguna}/edit', [PenggunaController::class, 'edit'])->name('pengguna.edit');
-    Route::put('/pengguna/{pengguna}', [PenggunaController::class, 'update'])->name('pengguna.update');
-    Route::delete('/pengguna/{pengguna}', [PenggunaController::class, 'destroy'])->name('pengguna.destroy');
-    Route::get('/pengguna-sampah', [PenggunaController::class, 'trashed'])->name('pengguna.trashed');
-    Route::put('/pengguna/{uuid}/restore', [PenggunaController::class, 'restore'])->name('pengguna.restore');
-    Route::delete('/pengguna/{uuid}/force', [PenggunaController::class, 'forceDelete'])->name('pengguna.forceDelete');
-
+        Route::resource('kategori-surat', KategoriSuratController::class)->parameters(['kategori-surat' => 'kategoriSurat'])->except(['show']);
+        Route::resource('template-surat', TemplateSuratController::class)->parameters(['template-surat' => 'templateSurat'])->except(['show']);
+        Route::delete('/template-surat/variabel/{variabel}', [TemplateSuratController::class, 'hapusVariabel'])->name('template-surat.variabel.hapus');
+        Route::resource('unit-kerja', UnitKerjaController::class)->parameters(['unit-kerja' => 'unitKerja'])->except(['show']);
+        Route::post('/unit-kerja/{unitKerja}/admin', [UnitKerjaController::class, 'tambahAdmin'])->name('unit-kerja.admin.store');
+        Route::delete('/unit-kerja/{unitKerja}/admin/{admin}', [UnitKerjaController::class, 'nonaktifkanAdmin'])->name('unit-kerja.admin.nonaktifkan');
+        Route::resource('jurusan', JurusanController::class)->except(['show']);
+        Route::resource('klasifikasi-arsip', KlasifikasiArsipController::class)->parameters(['klasifikasi-arsip' => 'klasifikasiArsip'])->except(['show']);
+        Route::get('/pengguna', [PenggunaController::class, 'index'])->name('pengguna.index');
+        Route::get('/pengguna/create', [PenggunaController::class, 'create'])->name('pengguna.create');
+        Route::post('/pengguna', [PenggunaController::class, 'store'])->name('pengguna.store');
+        Route::get('/pengguna/{pengguna}/edit', [PenggunaController::class, 'edit'])->name('pengguna.edit');
+        Route::put('/pengguna/{pengguna}', [PenggunaController::class, 'update'])->name('pengguna.update');
+        Route::delete('/pengguna/{pengguna}', [PenggunaController::class, 'destroy'])->name('pengguna.destroy');
+        Route::get('/pengguna-sampah', [PenggunaController::class, 'trashed'])->name('pengguna.trashed');
+        Route::put('/pengguna/{uuid}/restore', [PenggunaController::class, 'restore'])->name('pengguna.restore');
+        Route::delete('/pengguna/{uuid}/force', [PenggunaController::class, 'forceDelete'])->name('pengguna.forceDelete');
     });
 
     Route::controller(SuratKeluarController::class)->prefix('surat-keluar')->name('surat-keluar.')->group(function () {
@@ -91,7 +90,6 @@ Route::middleware('role:admin_tu,super_admin')->group(function () {
         Route::post('/{suratKeluar}/ajukan', 'ajukan')->name('ajukan');
         Route::get('/{suratKeluar}/cetak-pdf', 'cetakPdf')->name('cetak-pdf');
         Route::delete('/{suratKeluar}', 'destroy')->name('destroy');
-        Route::get('/surat-keluar/{suratKeluar}/cetak-pdf', [SuratKeluarController::class, 'cetakPdf'])->name('surat-keluar.cetak-pdf');
     });
 
     Route::middleware('role:admin_tu,super_admin,kepala_sekolah')->group(function () {
@@ -103,19 +101,12 @@ Route::middleware('role:admin_tu,super_admin')->group(function () {
         Route::delete('/surat-keluar/{uuid}/force', [SuratKeluarController::class, 'forceDelete'])->name('surat-keluar.forceDelete');
     });
 
+    Route::middleware(['auth', 'role:admin_tu,super_admin,kepala_sekolah,wakil_kepala_sekolah'])->group(function () {
+        Route::get('/approval', [ApprovalSuratKeluarController::class, 'index'])->name('approval.index');
+        Route::post('/approval/{approval}/setujui', [ApprovalSuratKeluarController::class, 'setujui'])->name('approval.setujui');
+        Route::post('/approval/{approval}/tolak', [ApprovalSuratKeluarController::class, 'tolak'])->name('approval.tolak');
+    });
 
-Route::middleware(['auth', 'role:admin_tu,super_admin,kepala_sekolah,wakil_kepala_sekolah'])->group(function () {
-
-    Route::get('/approval', [ApprovalSuratKeluarController::class, 'index'])
-        ->name('approval.index');
-
-    Route::post('/approval/{approval}/setujui', [ApprovalSuratKeluarController::class, 'setujui'])
-        ->name('approval.setujui');
-
-    Route::post('/approval/{approval}/tolak', [ApprovalSuratKeluarController::class, 'tolak'])
-        ->name('approval.tolak');
-
-});
     Route::controller(SuratMasukController::class)->prefix('surat-masuk')->name('surat-masuk.')->group(function () {
         Route::get('/', 'index')->name('index');
         Route::get('/create', 'create')->name('create');
@@ -133,13 +124,24 @@ Route::middleware(['auth', 'role:admin_tu,super_admin,kepala_sekolah,wakil_kepal
         Route::delete('/surat-masuk/{uuid}/force', [SuratMasukController::class, 'forceDelete'])->name('surat-masuk.forceDelete');
     });
 
-    Route::post('/surat-masuk/{suratMasuk}/disposisi', [DisposisiSuratMasukController::class, 'disposisikan'])->name('surat-masuk.disposisikan');
+    // ===== ROUTE BARU UNTUK ALUR KEPALA SEKOLAH =====
+    // 1. Admin TU mengajukan surat masuk ke Kepsek
+    Route::post('/surat-masuk/{suratMasuk}/ajukan-kepsek', [DisposisiSuratMasukController::class, 'ajukanKeKepsek'])
+        ->name('surat-masuk.ajukan-kepsek');
+
+    // 2. Kepala Sekolah memberikan catatan/arahan (arsipkan atau lanjut ke TU)
+    Route::post('/surat-masuk/{suratMasuk}/beri-arahan', [DisposisiSuratMasukController::class, 'beriArahanKepsek'])
+        ->name('surat-masuk.beri-arahan');
+
+    // 3. Admin TU melakukan disposisi setelah mendapat arahan Kepsek
+    Route::post('/surat-masuk/{suratMasuk}/disposisi', [DisposisiSuratMasukController::class, 'disposisikan'])
+        ->name('surat-masuk.disposisikan');
+
     Route::controller(DisposisiSuratMasukController::class)->prefix('disposisi')->name('disposisi.')->group(function () {
         Route::get('/{disposisi}', 'show')->name('show');
         Route::post('/{disposisi}/terima', 'terima')->name('terima');
         Route::post('/{disposisi}/tindaklanjuti', 'tindaklanjuti')->name('tindaklanjuti');
         Route::post('/{disposisi}/tolak', 'tolak')->name('tolak');
         Route::post('/{disposisi}/selesaikan', 'selesaikan')->name('selesaikan');
-        Route::post('/{disposisi}/tolak', 'tolak')->name('tolak');
     });
 });

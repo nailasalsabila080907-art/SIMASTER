@@ -4,19 +4,23 @@
 
 @php
     $badge = [
-        'baru'         => 'text-bg-warning',
-        'didisposisi'  => 'text-bg-info',
-        'diproses'     => 'text-bg-primary',
-        'selesai'      => 'text-bg-success',
-        'diarsipkan'   => 'text-bg-secondary',
+        'baru'                      => 'text-bg-warning',
+        'menunggu_disposisi_kepsek' => 'text-bg-primary',
+        'menunggu_disposisi_tu'     => 'text-bg-info',
+        'didisposisi'               => 'text-bg-info',
+        'diproses'                  => 'text-bg-primary',
+        'selesai'                   => 'text-bg-success',
+        'diarsipkan'                => 'text-bg-secondary',
     ][$suratMasuk->status] ?? 'text-bg-secondary';
 
     $labelStatus = [
-        'baru'        => 'Baru',
-        'didisposisi' => 'Didisposisi',
-        'diproses'    => 'Diproses',
-        'selesai'     => 'Selesai',
-        'diarsipkan'  => 'Diarsipkan',
+        'baru'                      => 'Baru',
+        'menunggu_disposisi_kepsek' => 'Menunggu Arahan Kepsek',
+        'menunggu_disposisi_tu'     => 'Menunggu Disposisi TU',
+        'didisposisi'               => 'Didisposisi',
+        'diproses'                  => 'Diproses',
+        'selesai'                   => 'Selesai',
+        'diarsipkan'                => 'Diarsipkan',
     ][$suratMasuk->status] ?? ucfirst($suratMasuk->status);
 @endphp
 
@@ -77,8 +81,72 @@
     </div>
 @endif
 
-{{-- Admin TU/super_admin membuat disposisi langsung ke pegawai/unit --}}
-@if(! in_array($suratMasuk->status, ['selesai', 'diarsipkan'], true) && in_array(auth()->user()->role, ['admin_tu', 'super_admin']))
+{{-- ========================================================= --}}
+{{-- 1. AKSI ADMIN TU: Mengajukan Surat ke Kepala Sekolah        --}}
+{{-- ========================================================= --}}
+@if($suratMasuk->status === 'baru' && in_array(auth()->user()->role, ['admin_tu', 'super_admin'], true))
+    <div class="card mb-3 border-warning">
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="mb-1" style="font-size:1rem">Ajukan ke Kepala Sekolah</h5>
+                <p class="text-muted mb-0" style="font-size:.8rem">Surat baru masuk. Ajukan ke Kepala Sekolah untuk mendapatkan catatan atau arahan.</p>
+            </div>
+            <form method="POST" action="{{ route('surat-masuk.ajukan-kepsek', $suratMasuk) }}">
+                @csrf
+                <button type="submit" class="btn btn-warning btn-sm text-dark fw-semibold">
+                    <i class="bi bi-arrow-up-right-circle"></i> Ajukan ke Kepala Sekolah
+                </button>
+            </form>
+        </div>
+    </div>
+@endif
+
+{{-- ========================================================= --}}
+{{-- 2. AKSI KEPALA SEKOLAH: Memberikan Catatan & Arahan        --}}
+{{-- ========================================================= --}}
+@if($suratMasuk->status === 'menunggu_disposisi_kepsek' && auth()->user()->role === 'kepala_sekolah')
+    <div class="card mb-3 border-primary">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0" style="font-size:1rem"><i class="bi bi-journal-text"></i> Lembar Disposisi / Arahan Kepala Sekolah</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ route('surat-masuk.beri-arahan', $suratMasuk) }}">
+                @csrf
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" style="font-size:.85rem">Catatan / Arahan Pimpinan</label>
+                    <textarea name="catatan_kepsek" rows="4" class="form-control" required placeholder="Tulis catatan atau arahan di sini (contoh: 'Dilanjutkan ke bidang terkait' atau 'Arsipkan saja')..."></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" style="font-size:.85rem">Pilih Aksi Lanjutan</label>
+                    <select name="aksi_kepsek" class="form-select" required>
+                        <option value="lanjut_tu">Teruskan ke Admin TU untuk Disposisi</option>
+                        <option value="arsip">Langsung Arsipkan Surat Ini</option>
+                    </select>
+                </div>
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="bi bi-send"></i> Kirim Arahan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+@endif
+
+{{-- Tampilkan Catatan Kepala Sekolah jika sudah diisi --}}
+@if($suratMasuk->catatan_kepsek)
+    <div class="card mb-3 bg-light border-success">
+        <div class="card-body">
+            <h6 class="text-success mb-1" style="font-size:.8rem"><i class="bi bi-check-circle"></i> Catatan / Arahan Kepala Sekolah:</h6>
+            <p class="mb-0 fw-semibold" style="font-size:.9rem; color: #333;">{{ $suratMasuk->catatan_kepsek }}</p>
+        </div>
+    </div>
+@endif
+
+{{-- ========================================================= --}}
+{{-- 3. AKSI ADMIN TU: Membuat Disposisi (Setelah Ada Arahan Kepsek) --}}
+{{-- ========================================================= --}}
+@if($suratMasuk->status === 'menunggu_disposisi_tu' && in_array(auth()->user()->role, ['admin_tu', 'super_admin']))
     <div class="card mb-3">
         <div class="card-header d-flex align-items-center gap-3">
             <span class="d-inline-flex align-items-center justify-content-center rounded-3 text-white flex-shrink-0"
@@ -87,7 +155,7 @@
             </span>
             <div>
                 <h3 class="mb-1" style="font-size:1.05rem">Buat Disposisi</h3>
-                <p class="text-muted mb-0" style="font-size:.78rem">Pilih satu atau lebih pegawai/unit tujuan untuk menindaklanjuti surat ini</p>
+                <p class="text-muted mb-0" style="font-size:.78rem">Kepala Sekolah sudah memberi arahan. Pilih satu atau lebih pegawai/unit tujuan.</p>
             </div>
         </div>
         <div class="card-body">
@@ -115,7 +183,7 @@
                         <input type="text" name="instruksi" class="form-control" placeholder="Mohon ditindaklanjuti">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label" style="font-size:.85rem">Catatan</label>
+                        <label class="form-label" style="font-size:.85rem">Catatan Tambahan</label>
                         <input type="text" name="catatan" class="form-control">
                     </div>
                 </div>
@@ -155,9 +223,7 @@
                         $bolehAksi = $bolehAdmin
                             || $d->ke_pegawai === auth()->user()->pegawai?->id_pegawai
                             || ($d->ke_unit && auth()->user()->adalahAdminUnit($d->ke_unit));
-                        // Untuk disposisi ke unit, aksinya disederhanakan jadi
-                        // Terima/Tolak saja (Terima = langsung selesai).
-                        // admin_tu/super_admin tetap boleh lihat opsi lengkap.
+                        
                         $modeUnitSederhana = $d->ke_unit && ! $bolehAdmin;
                         $statusFinal = in_array($d->status, ['selesai', 'ditolak'], true);
                     @endphp
@@ -188,27 +254,32 @@
                             </a>
 
                             @if(! $statusFinal && $bolehAksi)
-                                @if($modeUnitSederhana)
-                                    {{-- Tombol langsung terlihat, tidak disembunyikan di dropdown, biar cepat diproses --}}
-                                    <form method="POST" action="{{ route('disposisi.terima', $d) }}">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm btn-success" style="font-size:.78rem">
-                                            <i class="bi bi-check2"></i> Terima
-                                        </button>
-                                    </form>
-                                    <button type="button" class="btn btn-sm btn-outline-danger" style="font-size:.78rem"
-                                            data-bs-toggle="modal" data-bs-target="#tolakModal{{ $d->id_disposisi }}">
-                                        <i class="bi bi-x-lg"></i> Tolak
-                                    </button>
-                                @else
                                 <div class="dropdown">
                                     <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" style="font-size:.78rem">
                                         Aksi
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end">
+                                        @if($modeUnitSederhana)
+                                            <li>
+                                                <form method="POST" action="{{ route('disposisi.terima', $d) }}"
+                                                      onsubmit="return confirm('Terima disposisi surat ini? Setelah diterima, statusnya langsung dianggap selesai.')">
+                                                    @csrf
+                                                    <button type="submit" class="dropdown-item" style="font-size:.85rem">
+                                                        <i class="bi bi-check2 me-1"></i> Terima
+                                                    </button>
+                                                </form>
+                                            </li>
+                                            <li>
+                                                <button type="button" class="dropdown-item text-danger" style="font-size:.85rem"
+                                                        data-bs-toggle="modal" data-bs-target="#tolakModal{{ $d->id_disposisi }}">
+                                                    <i class="bi bi-x-lg me-1"></i> Tolak
+                                                </button>
+                                            </li>
+                                        @else
                                             @if($d->status !== 'ditindaklanjuti')
                                                 <li>
-                                                    <form method="POST" action="{{ route('disposisi.tindaklanjuti', $d) }}">
+                                                    <form method="POST" action="{{ route('disposisi.tindaklanjuti', $d) }}"
+                                                          onsubmit="return confirm('Tandai disposisi ini mulai ditindaklanjuti?')">
                                                         @csrf
                                                         <button type="submit" class="dropdown-item" style="font-size:.85rem">
                                                             <i class="bi bi-play-circle me-1"></i> Tindak Lanjuti
@@ -217,7 +288,8 @@
                                                 </li>
                                             @endif
                                             <li>
-                                                <form method="POST" action="{{ route('disposisi.selesaikan', $d) }}">
+                                                <form method="POST" action="{{ route('disposisi.selesaikan', $d) }}"
+                                                      onsubmit="return confirm('Tandai disposisi ini selesai?')">
                                                     @csrf
                                                     <button type="submit" class="dropdown-item" style="font-size:.85rem">
                                                         <i class="bi bi-check2 me-1"></i> Tandai Selesai
@@ -230,9 +302,9 @@
                                                     <i class="bi bi-x-lg me-1"></i> Tolak
                                                 </button>
                                             </li>
+                                        @endif
                                     </ul>
                                 </div>
-                                @endif
 
                                 <div class="modal fade" id="tolakModal{{ $d->id_disposisi }}" tabindex="-1">
                                     <div class="modal-dialog">
@@ -265,13 +337,20 @@
 @endif
 
 @if($suratMasuk->status === 'selesai' && in_array(auth()->user()->role, ['admin_tu', 'super_admin'], true))
-    <form method="POST" action="{{ route('arsip.surat-masuk', $suratMasuk) }}">
-        @csrf
-        <button type="submit" class="btn d-inline-flex align-items-center gap-2 text-white"
-                style="background:linear-gradient(135deg,#3E4652,#5B5D6B);border:none">
-            <i class="bi bi-archive"></i> Arsipkan Surat
-        </button>
-    </form>
+    <div class="d-flex justify-content-end mt-3 pt-3 border-top">
+        <form method="POST"
+              action="{{ route('arsip.surat-masuk', $suratMasuk) }}"
+              onsubmit="return confirm('Yakin ingin mengarsipkan surat ini?')">
+            @csrf
+
+            <button type="submit"
+                    class="btn d-inline-flex align-items-center gap-2 text-white"
+                    style="background:linear-gradient(135deg,#178754,#0F5C39);border:none">
+                <i class="bi bi-archive"></i>
+                Arsipkan Surat
+            </button>
+        </form>
+    </div>
 @endif
 
 @endsection

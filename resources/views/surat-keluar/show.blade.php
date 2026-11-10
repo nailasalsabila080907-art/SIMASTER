@@ -132,8 +132,22 @@
                 </div>
             @endif
 
-            @if(in_array($suratKeluar->status, ['terkirim', 'diarsipkan'], true))
-                <div class="d-flex flex-wrap gap-2 mt-4 pt-4 border-top">
+                    @if(in_array($suratKeluar->status, ['terkirim', 'diarsipkan'], true))
+                        <div class="d-flex flex-wrap gap-2 mt-4 pt-4 border-top">
+                            @if(
+            $suratKeluar->status === 'terkirim' &&
+            in_array(auth()->user()->role, ['admin_tu', 'super_admin'], true)
+        )
+            <form method="POST"
+                  action="{{ route('arsip.surat-keluar', $suratKeluar) }}"
+                  onsubmit="return confirm('Yakin ingin mengarsipkan surat ini?')">
+                @csrf
+                        
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-archive"></i> Arsipkan Surat
+                </button>
+            </form>
+        @endif
                     <a href="{{ route('surat-keluar.cetak-pdf', $suratKeluar) }}" target="_blank"
                        class="btn d-inline-flex align-items-center gap-2 text-white"
                        style="background:linear-gradient(135deg,#D98C00,#F0A202);border:none">
