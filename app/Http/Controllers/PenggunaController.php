@@ -36,7 +36,7 @@ class PenggunaController extends Controller
             'id_pegawai' => ['required', 'exists:pegawai,id_pegawai'],
             'username' => ['required', 'string', 'max:50', 'unique:users,username'],
             'password' => ['required', 'string', 'min:6'],
-            'role' => ['required', 'in:super_admin,admin_tu,kepala_sekolah,staff,guru,operator'],
+            'role' => ['required', 'in:super_admin,admin_tu,kepala_sekolah,wakil_kepala_sekolah,staff,guru,operator'],
             'status' => ['required', 'in:aktif,nonaktif'],
         ], [
             'id_pegawai.required' => 'Pegawai wajib dipilih.',
@@ -75,7 +75,7 @@ class PenggunaController extends Controller
     {
         $data = $request->validate([
             'username' => ['required', 'string', 'max:50', 'unique:users,username,' . $pengguna->id_user . ',id_user'],
-            'role' => ['required', 'in:super_admin,admin_tu,kepala_sekolah,staff,guru,operator'],
+            'role' => ['required', 'in:super_admin,admin_tu,kepala_sekolah,wakil_kepala_sekolah,staff,guru,operator'],
             'status' => ['required', 'in:aktif,nonaktif'],
             'password' => ['nullable', 'string', 'min:6'],
         ]);

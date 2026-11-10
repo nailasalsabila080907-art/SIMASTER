@@ -12,26 +12,32 @@
                 Kelola daftar jabatan dan level approval berjenjang.
             </p>
         </div>
+
         <a href="{{ route('jabatan.create') }}" class="btn btn-sm text-white d-inline-flex align-items-center gap-1"
            style="background:var(--bs-primary);border-radius:8px;font-weight:600;padding:.55rem 1rem;">
             <i class="bi bi-plus-lg"></i> Tambah Jabatan
         </a>
+    </div>
+
         {{-- Tab navigasi --}}
-<ul class="nav mb-4" style="border-bottom:1px solid var(--border);">
+<ul class="nav mb-4" 
+    style="border-bottom:1px solid var(--border);">
     <li class="nav-item">
-        <a class="nav-link active px-3 py-2" href="{{ route('jabatan.index') }}"
+        <a class="nav-link active px-3 py-2" 
+           href="{{ route('jabatan.index') }}"
            style="color:var(--bs-primary);font-weight:600;border-bottom:2px solid var(--bs-primary);">
             Data Aktif
         </a>
     </li>
+
     <li class="nav-item">
-        <a class="nav-link px-3 py-2" href="{{ route('jabatan.trashed') }}"
-           style="color:var(--ink-muted);font-weight:600;">
+        <a class="nav-link px-3 py-2" 
+            href="{{ route('jabatan.trashed') }}"
+            style="color:var(--ink-muted);font-weight:600;">
             Data Terhapus
         </a>
     </li>
 </ul>
-    </div>
 
     {{-- Alerts --}}
     @if(session('sukses'))

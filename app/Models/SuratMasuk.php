@@ -19,9 +19,19 @@ class SuratMasuk extends Model
     protected $primaryKey = 'id_surat_masuk';
 
     protected $fillable = [
-        'nomor_surat_masuk', 'nomor_surat_asal', 'asal_instansi', 'id_kategori',
-        'id_klasifikasi', 'perihal', 'tanggal_surat', 'tanggal_diterima',
-        'sifat_surat', 'file_scan_path', 'status', 'catatan_kepsek', 'diterima_oleh',
+        'nomor_surat_masuk', 
+        'nomor_surat_asal', 
+        'asal_instansi', 
+        'id_kategori',
+        'id_klasifikasi', 
+        'perihal', 
+        'tanggal_surat', 
+        'tanggal_diterima',
+        'sifat_surat', 
+        'file_scan_path', 
+        'status', 
+        'catatan_kepsek', 
+        'diterima_oleh',
     ];
 
     protected $casts = [
@@ -60,7 +70,8 @@ class SuratMasuk extends Model
     {
         return $this->disposisi()->whereNull('id_disposisi_asal');
     }
-     public function uniqueIds(): array
+
+    public function uniqueIds(): array
     {
         return ['uuid'];
     }

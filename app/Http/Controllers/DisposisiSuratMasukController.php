@@ -14,33 +14,123 @@ use Illuminate\Support\Facades\DB;
 
 class DisposisiSuratMasukController extends Controller
 {
-    // =====================================================
-    // ALUR:
-    // 1. Admin TU (atau super_admin) langsung membuat disposisi
-    //    ke satu/lebih pegawai & unit kerja (disposisikan).
-    // 2a. Kalau tujuannya PEGAWAI perorangan: penerima
-    //     menindaklanjuti (tindaklanjuti), menyelesaikan
-    //     (selesaikan), atau menolak (tolak) disposisinya.
-    // 2b. Kalau tujuannya UNIT: notifikasi & hak aksi HANYA
-    //     untuk akun admin unit (lihat UnitKerjaAdmin) - bukan
-    //     sembarang pegawai yang kebetulan satu unit. Aksinya
-    //     cuma dua: Terima (langsung selesai) atau Tolak.
-    //     Kalau unit itu belum punya admin aktif, surat tetap
-    //     dibuat & didisposisikan, tapi admin_tu/super_admin
-    //     diberi notifikasi supaya segera menunjuk admin unit.
-    // 3. Kepala Sekolah TIDAK ikut proses ini sama sekali -
-    //    dia cuma dapat notifikasi begitu SEMUA disposisi
-    //    surat itu selesai (lihat method selesaikan()).
-    // =====================================================
-
-    public function disposisikan(Request $request, SuratMasuk $suratMasuk)
+   
+    public function ajukanKeKepsek(Request $request, SuratMasuk $suratMasuk)
     {
         abort_unless(in_array(Auth::user()->role, ['admin_tu', 'super_admin'], true), 403);
 
         abort_if(
-            in_array($suratMasuk->status, ['selesai', 'diarsipkan'], true),
+            in_array($suratMasuk->status, ['selesai', 'diarsipkan', 'menunggu_disposisi_kepsek', 'menunggu_disposisi_tu'], true),
             422,
-            'Surat ini sudah selesai/diarsipkan, tidak bisa didisposisikan lagi.'
+            'Surat ini sudah diajukan, diproses, atau selesai.'
+        );
+
+        $suratMasuk->update([
+            'status' => 'menunggu_disposisi_kepsek'
+        ]);
+
+        // Kirim notifikasi ke seluruh Kepala Sekolah yang aktif
+        $kepsekList = User::where('role', 'kepala_sekolah')->where('status', 'aktif')->get();
+        foreach ($kepsekList as $kepsek) {
+            Notifikasi::kirim(
+                $kepsek->id_user,
+                'masuk',
+                $suratMasuk->id_surat_masuk,
+                null,
+                'Permintaan Arahan Surat Masuk',
+                "Surat \"{$suratMasuk->perihal}\" memerlukan catatan/arahan dari Bapak/Ibu."
+            );
+        }
+
+        LogAktivitas::catat('ubah_data', 'Surat Masuk', "Mengajukan surat ke Kepala Sekolah untuk arahan: {$suratMasuk->perihal}");
+        LogAktivitasSurat::catat(
+            LogAktivitasSurat::TIPE_MASUK,
+            $suratMasuk->id_surat_masuk,
+            LogAktivitasSurat::AKSI_DISPOSISI,
+            "Surat diajukan ke Kepala Sekolah untuk meminta arahan"
+        );
+
+        return back()->with('sukses', 'Surat berhasil diajukan ke Kepala Sekolah untuk diberi catatan.');
+    }
+
+    /**
+     * 2. Kepala Sekolah memberikan catatan/arahan (arsipkan atau lanjut ke TU).
+     */
+    public function beriArahanKepsek(Request $request, SuratMasuk $suratMasuk)
+    {
+        abort_unless(Auth::user()->role === 'kepala_sekolah', 403);
+
+        abort_unless(
+            $suratMasuk->status === 'menunggu_disposisi_kepsek',
+            422,
+            'Surat ini tidak sedang menunggu arahan Kepala Sekolah.'
+        );
+
+        $data = $request->validate([
+            'catatan_kepsek' => 'required|string|max:1000',
+            'aksi_kepsek' => 'required|in:lanjut_tu,arsip',
+        ]);
+
+        DB::transaction(function () use ($data, $suratMasuk) {
+            if ($data['aksi_kepsek'] === 'arsip') {
+                // Jika Kepsek minta langsung diarsipkan
+                $suratMasuk->update([
+                    'status' => 'diarsipkan',
+                    'catatan_kepsek' => $data['catatan_kepsek'],
+                ]);
+
+                LogAktivitasSurat::catat(
+                    LogAktivitasSurat::TIPE_MASUK,
+                    $suratMasuk->id_surat_masuk,
+                    LogAktivitasSurat::AKSI_SELESAI,
+                    "Surat diarsipkan oleh Kepala Sekolah dengan catatan: {$data['catatan_kepsek']}"
+                );
+            } else {
+                // Jika Kepsek minta dilanjutkan ke TU untuk didisposisikan
+                $suratMasuk->update([
+                    'status' => 'menunggu_disposisi_tu',
+                    'catatan_kepsek' => $data['catatan_kepsek'],
+                ]);
+
+                LogAktivitasSurat::catat(
+                    LogAktivitasSurat::TIPE_MASUK,
+                    $suratMasuk->id_surat_masuk,
+                    LogAktivitasSurat::AKSI_DISPOSISI,
+                    "Kepala Sekolah memberikan catatan/arahan: {$data['catatan_kepsek']}"
+                );
+            }
+        });
+
+        // Kirim notifikasi kembali ke Admin TU / Super Admin
+        $adminList = User::whereIn('role', ['admin_tu', 'super_admin'])->where('status', 'aktif')->get();
+        foreach ($adminList as $admin) {
+            Notifikasi::kirim(
+                $admin->id_user,
+                'masuk',
+                $suratMasuk->id_surat_masuk,
+                null,
+                'Catatan Arahan Kepala Sekolah',
+                "Kepala Sekolah telah memberikan catatan pada surat \"{$suratMasuk->perihal}\"."
+            );
+        }
+
+        LogAktivitas::catat('ubah_data', 'Surat Masuk', "Memberikan arahan/catatan pada surat: {$suratMasuk->perihal}");
+
+        return back()->with('sukses', 'Catatan arahan berhasil dikirim.');
+    }
+
+    /**
+     * 3. Admin TU membuat disposisi ke pegawai/unit berdasarkan arahan Kepsek.
+     */
+    public function disposisikan(Request $request, SuratMasuk $suratMasuk)
+    {
+        abort_unless(in_array(Auth::user()->role, ['admin_tu', 'super_admin'], true), 403);
+
+        // Pastikan surat sudah mendapat arahan dari Kepsek dan siap didisposisikan
+        abort_unless(
+            $suratMasuk->status === 'menunggu_disposisi_tu',
+            422,
+            'Surat ini belum mendapatkan arahan/catatan dari Kepala Sekolah atau belum siap didisposisikan.'
         );
 
         $data = $request->validate([
@@ -112,9 +202,6 @@ class DisposisiSuratMasukController extends Controller
                         );
                     }
                 } else {
-                    // Belum ada admin unit yang ditunjuk - surat tetap jalan,
-                    // tapi admin_tu/super_admin perlu tahu supaya segera
-                    // menunjuk siapa yang pegang akun unit ini.
                     $adminSistem = User::whereIn('role', ['admin_tu', 'super_admin'])
                         ->where('status', 'aktif')
                         ->get();
@@ -126,7 +213,7 @@ class DisposisiSuratMasukController extends Controller
                             $suratMasuk->id_surat_masuk,
                             $disposisi->id_disposisi,
                             'Unit belum punya admin',
-                            "Surat \"{$suratMasuk->perihal}\" didisposisikan ke unit {$unit?->nama_unit}, tapi unit ini belum punya akun admin. Segera tunjuk admin unit di halaman Unit Kerja."
+                            "Surat \"{$suratMasuk->perihal}\" didisposisikan ke unit {$unit?->nama_unit}, tapi unit ini belum punya akun admin."
                         );
                     }
                 }
@@ -138,7 +225,7 @@ class DisposisiSuratMasukController extends Controller
             LogAktivitasSurat::TIPE_MASUK,
             $suratMasuk->id_surat_masuk,
             LogAktivitasSurat::AKSI_DISPOSISI,
-            "Didisposisikan ke {$totalTujuan} tujuan" . (($data['instruksi'] ?? null) ? ": {$data['instruksi']}" : '')
+            "Didisposisikan ke {$totalTujuan} tujuan berdasarkan arahan Kepala Sekolah"
         );
 
         return back()->with('sukses', 'Disposisi berhasil dibuat dan dikirim ke tujuan.');
@@ -150,9 +237,6 @@ class DisposisiSuratMasukController extends Controller
 
         abort_unless($disposisi->status === 'menunggu', 422, 'Disposisi ini sudah diproses sebelumnya.');
 
-        // Tujuan UNIT: "Terima" langsung dianggap selesai (satu langkah, cepat).
-        // Tujuan PEGAWAI perorangan: "Terima" cuma menandai diterima,
-        // masih perlu ditindaklanjuti & diselesaikan terpisah.
         if ($disposisi->ke_unit) {
             $disposisi->update(['status' => 'selesai', 'tanggal_selesai' => now()]);
         } else {
@@ -223,8 +307,6 @@ class DisposisiSuratMasukController extends Controller
 
         $suratMasuk = $disposisi->suratMasuk;
 
-        // Surat ditandai selesai kalau SEMUA disposisinya sudah selesai
-        // (disposisi yang ditolak tidak dihitung menghalangi, karena memang tidak akan dikerjakan)
         $belumSelesai = $suratMasuk->disposisi()
             ->whereNotIn('status', ['selesai', 'ditolak'])
             ->exists();
@@ -234,7 +316,6 @@ class DisposisiSuratMasukController extends Controller
         }
 
         LogAktivitas::catat('ubah_data', 'Disposisi Surat Masuk', "Menyelesaikan disposisi surat: {$suratMasuk->perihal}");
-
         LogAktivitasSurat::catat(
             LogAktivitasSurat::TIPE_MASUK,
             $suratMasuk->id_surat_masuk,
@@ -250,8 +331,6 @@ class DisposisiSuratMasukController extends Controller
                 "Semua disposisi selesai, surat ditandai selesai"
             );
 
-            // Kepsek TIDAK ikut proses disposisi sama sekali - dia cuma
-            // diberi tahu lewat notifikasi begitu suratnya benar-benar tuntas.
             $kepsekList = User::where('role', 'kepala_sekolah')->where('status', 'aktif')->get();
             foreach ($kepsekList as $kepsek) {
                 Notifikasi::kirim(
@@ -283,7 +362,6 @@ class DisposisiSuratMasukController extends Controller
 
         $suratMasuk = $disposisi->suratMasuk;
 
-        // Beri tahu siapa yang membuat disposisi ini (Admin TU) kalau ditolak
         if ($disposisi->pemberiDisposisi?->user) {
             Notifikasi::kirim(
                 $disposisi->pemberiDisposisi->user->id_user,
@@ -331,7 +409,6 @@ class DisposisiSuratMasukController extends Controller
 
         $disposisi->load([
             'suratMasuk.kategori',
-            'suratMasuk.klasifikasi',
             'pemberiDisposisi',
             'penerimaPegawai',
             'penerimaUnit',

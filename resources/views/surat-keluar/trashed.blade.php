@@ -5,8 +5,8 @@
 <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
     <div>
         <p class="text-muted mb-1" style="font-size:.82rem">Persuratan</p>
-        <h2 class="mb-1" style="font-size:1.5rem">Sampah Surat Keluar</h2>
-        <p class="text-muted mb-0" style="font-size:.78rem">Surat yang sudah dihapus. Bisa dipulihkan atau dihapus permanen.</p>
+        <h2 class="mb-1" style="font-size:1.5rem">Surat Keluar Nonaktif</h2>
+        <p class="text-muted mb-0" style="font-size:.78rem">Surat yang sudah dihapus dapat dipulihkan atau dihapus permanen.</p>
     </div>
 </div>
 
@@ -35,7 +35,7 @@
     <li class="nav-item">
         <a class="nav-link active px-3 py-2" href="{{ route('surat-keluar.trashed') }}"
            style="color:var(--bs-primary);font-weight:600;border-bottom:2px solid var(--bs-primary);">
-            Sampah
+            Nonaktif
         </a>
     </li>
 </ul>
@@ -88,7 +88,7 @@
                     <tr>
                         <td colspan="6" class="text-center text-muted py-5" style="font-size:.85rem">
                             <i class="bi bi-trash3 fs-3 d-block mb-2"></i>
-                            Sampah kosong.
+                            Surat nonaktif kosong.
                         </td>
                     </tr>
                 @endforelse

@@ -43,13 +43,13 @@
                 <div class="row g-3">
                     <div class="col-md-4">
                         <label class="form-label small fw-semibold">Kode Unit</label>
-                        <input type="text" name="kode_unit" value="{{ old('kode_unit', $unit->kode) }}"
+                        <input type="text" name="kode_unit" value="{{ old('kode_unit', $unit->kode_unit) }}"
                                class="form-control" style="border-radius:10px;border-color:var(--border);font-size:.87rem;" required>
                     </div>
 
                     <div class="col-md-8">
                         <label class="form-label small fw-semibold">Nama Unit</label>
-                        <input type="text" name="nama_unit" value="{{ old('nama_unit', $unit->nama) }}"
+                        <input type="text" name="nama_unit" value="{{ old('nama_unit', $unit->nama_unit) }}"
                                class="form-control" style="border-radius:10px;border-color:var(--border);font-size:.87rem;" required>
                     </div>
 

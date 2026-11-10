@@ -42,7 +42,7 @@
         <li class="nav-item">
             <a class="nav-link px-3 py-2" href="{{ route('surat-keluar.trashed') }}"
                style="color:var(--ink-muted);font-weight:600;">
-                Sampah
+                Nonaktif
             </a>
         </li>
     @endif
@@ -110,7 +110,7 @@
                                 </a>
                                 @if(in_array($s->status, ['draft', 'ditolak'], true) && ($s->dibuat_oleh === Auth::id() || in_array(Auth::user()->role, ['admin_tu', 'super_admin'], true)))
                                     <form action="{{ route('surat-keluar.destroy', $s) }}" method="POST"
-                                          onsubmit="return confirm('Hapus surat ini? Surat akan dipindahkan ke sampah.')">
+                                          onsubmit="return confirm('Hapus surat ini? Surat akan dipindahkan ke nonaktif.')">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-light rounded-circle text-danger" title="Hapus">
                                             <i class="bi bi-trash3"></i>

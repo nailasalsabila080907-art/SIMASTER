@@ -129,7 +129,7 @@
                                     <p
                                         class="mb-1 text-muted"
                                         style="font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;">
-                                        Template otomatis
+                                        Template 
                                     </p>
 
                                     <p

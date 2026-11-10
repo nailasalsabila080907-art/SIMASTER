@@ -266,6 +266,12 @@
         <strong>
             {{ ucfirst($disposisi->status) }}
         </strong>
+    @if($disposisi->status === 'ditolak' && $disposisi->alasan_tolak)
+    <div class="text-start mt-2">
+        <small class="text-muted">Alasan penolakan:</small><br>
+        <span>{{ $disposisi->alasan_tolak }}</span>
+    </div>
+    @endif
 
     </div>
 
