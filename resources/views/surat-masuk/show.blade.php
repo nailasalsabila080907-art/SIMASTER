@@ -73,11 +73,39 @@
 </div>
 
 @if($suratMasuk->file_scan_path)
-    <div class="mb-3">
-        <a target="_blank" href="{{ asset('storage/' . $suratMasuk->file_scan_path) }}"
-           class="d-inline-flex align-items-center gap-2 text-decoration-none" style="font-size:.85rem">
-            <i class="bi bi-file-earmark-arrow-up"></i> Buka scan surat
-        </a>
+    <div class="card mb-3">
+        <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
+
+            <div class="d-flex align-items-center gap-3">
+                <div class="d-flex align-items-center justify-content-center rounded-3 flex-shrink-0"
+                     style="width:44px;height:44px;background:#E6F5EC;color:#178754">
+                    <i class="bi bi-file-earmark-pdf fs-4"></i>
+                </div>
+
+                <div>
+                    <h6 class="mb-1 fw-semibold" style="font-size:.9rem">
+                        Lampiran Surat Masuk
+                    </h6>
+
+                    <p class="text-muted mb-1" style="font-size:.78rem">
+                        Dokumen hasil scan surat asli
+                    </p>
+
+                    <span class="text-muted" style="font-size:.75rem">
+                        {{ basename($suratMasuk->file_scan_path) }}
+                    </span>
+                </div>
+            </div>
+
+            <a href="{{ asset('storage/' . $suratMasuk->file_scan_path) }}"
+               target="_blank"
+               class="btn btn-sm d-inline-flex align-items-center gap-2 text-white"
+               style="background:linear-gradient(135deg,#178754,#0EA5A4);border:none">
+                <i class="bi bi-eye"></i>
+                Lihat Scan Surat
+            </a>
+
+        </div>
     </div>
 @endif
 
@@ -202,8 +230,8 @@
 @if($suratMasuk->disposisi->isNotEmpty())
     <div class="card mb-3">
         <div class="card-header">
-            <h3 class="mb-1" style="font-size:1.05rem">Riwayat Disposisi</h3>
-            <p class="text-muted mb-0" style="font-size:.78rem">{{ $suratMasuk->disposisi->count() }} disposisi tercatat</p>
+            <h3 class="mb-1" style="font-size:1.2rem">Riwayat Disposisi</h3>
+            <p class="text-muted mb-0" style="font-size:.95rem">{{ $suratMasuk->disposisi->count() }} disposisi tercatat</p>
         </div>
         <div class="card-body p-0">
             <div class="list-group list-group-flush">
@@ -234,28 +262,28 @@
                                 <i class="bi bi-dot fs-4"></i>
                             </span>
                             <div class="min-w-0">
-                                <span class="d-block fw-semibold text-truncate" style="font-size:.85rem;color:var(--ink)">Ke: {{ $d->tujuan_label }}</span>
-                                <span class="d-block text-muted" style="font-size:.76rem">Dari {{ $d->pemberiDisposisi->nama_lengkap ?? '-' }} &middot; {{ $d->tanggal_disposisi?->diffForHumans() }}</span>
+                                <span class="d-block fw-semibold text-truncate" style="font-size:1rem;color:var(--ink)">Ke: {{ $d->tujuan_label }}</span>
+                                <span class="d-block text-muted" style="font-size:.9rem">Dari {{ $d->pemberiDisposisi->nama_lengkap ?? '-' }} &middot; {{ $d->tanggal_disposisi?->diffForHumans() }}</span>
                                 @if($d->instruksi)
-                                    <span class="d-block mt-1" style="font-size:.82rem">{{ $d->instruksi }}</span>
+                                    <span class="d-block mt-1" style="font-size:.95rem">{{ $d->instruksi }}</span>
                                 @endif
                                 @if($d->status === 'ditolak' && $d->catatan)
-                                    <span class="d-block mt-1 text-danger" style="font-size:.78rem"><i class="bi bi-info-circle"></i> {{ $d->catatan }}</span>
+                                    <span class="d-block mt-1 text-danger" style="font-size:.95rem"><i class="bi bi-info-circle"></i> {{ $d->catatan }}</span>
                                 @endif
                             </div>
                         </div>
                         <div class="d-flex align-items-center gap-2 flex-shrink-0">
-                            <span class="badge rounded-pill {{ $badgeStatus }}" style="font-size:.72rem">
+                            <span class="badge rounded-pill {{ $badgeStatus }}" style="font-size:.85rem;padding:.45rem .7rem">
                                 {{ ucfirst($d->status) }}
                             </span>
 
-                            <a href="{{ route('disposisi.show', $d) }}" class="btn btn-sm btn-light" style="font-size:.78rem">
+                            <a href="{{ route('disposisi.show', $d) }}" class="btn btn-sm btn-light" style="font-size:.9rem">
                                 Lihat Detail
                             </a>
 
                             @if(! $statusFinal && $bolehAksi)
                                 <div class="dropdown">
-                                    <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" style="font-size:.78rem">
+                                    <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" style="font-size:.9rem">
                                         Aksi
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end">
@@ -264,13 +292,13 @@
                                                 <form method="POST" action="{{ route('disposisi.terima', $d) }}"
                                                       onsubmit="return confirm('Terima disposisi surat ini? Setelah diterima, statusnya langsung dianggap selesai.')">
                                                     @csrf
-                                                    <button type="submit" class="dropdown-item" style="font-size:.85rem">
+                                                    <button type="submit" class="dropdown-item" style="font-size:.9rem">
                                                         <i class="bi bi-check2 me-1"></i> Terima
                                                     </button>
                                                 </form>
                                             </li>
                                             <li>
-                                                <button type="button" class="dropdown-item text-danger" style="font-size:.85rem"
+                                                <button type="button" class="dropdown-item text-danger" style="font-size:.9rem"
                                                         data-bs-toggle="modal" data-bs-target="#tolakModal{{ $d->id_disposisi }}">
                                                     <i class="bi bi-x-lg me-1"></i> Tolak
                                                 </button>
@@ -281,7 +309,7 @@
                                                     <form method="POST" action="{{ route('disposisi.tindaklanjuti', $d) }}"
                                                           onsubmit="return confirm('Tandai disposisi ini mulai ditindaklanjuti?')">
                                                         @csrf
-                                                        <button type="submit" class="dropdown-item" style="font-size:.85rem">
+                                                        <button type="submit" class="dropdown-item" style="font-size:.9rem">
                                                             <i class="bi bi-play-circle me-1"></i> Tindak Lanjuti
                                                         </button>
                                                     </form>
@@ -291,13 +319,13 @@
                                                 <form method="POST" action="{{ route('disposisi.selesaikan', $d) }}"
                                                       onsubmit="return confirm('Tandai disposisi ini selesai?')">
                                                     @csrf
-                                                    <button type="submit" class="dropdown-item" style="font-size:.85rem">
+                                                    <button type="submit" class="dropdown-item" style="font-size:.9rem">
                                                         <i class="bi bi-check2 me-1"></i> Tandai Selesai
                                                     </button>
                                                 </form>
                                             </li>
                                             <li>
-                                                <button type="button" class="dropdown-item text-danger" style="font-size:.85rem"
+                                                <button type="button" class="dropdown-item text-danger" style="font-size:.9rem"
                                                         data-bs-toggle="modal" data-bs-target="#tolakModal{{ $d->id_disposisi }}">
                                                     <i class="bi bi-x-lg me-1"></i> Tolak
                                                 </button>
@@ -316,12 +344,12 @@
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                 </div>
                                                 <div class="modal-body">
-                                                    <label class="form-label" style="font-size:.85rem">Alasan penolakan</label>
+                                                    <label class="form-label" style="font-size:.9rem">Alasan penolakan</label>
                                                     <textarea name="catatan_penolakan" rows="3" class="form-control" required placeholder="Jelaskan kenapa disposisi ini ditolak"></textarea>
                                                 </div>
                                                 <div class="modal-footer">
-                                                    <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="font-size:.85rem">Batal</button>
-                                                    <button type="submit" class="btn btn-danger" style="font-size:.85rem">Tolak Disposisi</button>
+                                                    <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="font-size:.9rem">Batal</button>
+                                                    <button type="submit" class="btn btn-danger" style="font-size:.9rem">Tolak Disposisi</button>
                                                 </div>
                                             </form>
                                         </div>
