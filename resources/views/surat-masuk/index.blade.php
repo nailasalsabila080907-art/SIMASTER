@@ -8,11 +8,14 @@
         <h2 class="mb-1" style="font-size:1.5rem">Daftar Surat Masuk</h2>
         <p class="text-muted mb-0" style="font-size:.78rem">Pencatatan surat, disposisi, tindak lanjut, dan arsip.</p>
     </div>
-    <a href="{{ route('surat-masuk.create') }}" class="btn d-inline-flex align-items-center gap-2 px-3 py-2 text-white"
-       style="background:linear-gradient(135deg,#178754,#0EA5A4);border:none">
-        <i class="bi bi-plus-lg"></i> Catat Surat Masuk
-    </a>
+    @if(Auth::user()->role !== 'kepala_sekolah')
+        <a href="{{ route('surat-masuk.create') }}" class="btn d-inline-flex align-items-center gap-2 px-3 py-2 text-white"
+            style="background:linear-gradient(135deg,#178754,#0EA5A4);border:none">
+            <i class="bi bi-plus-lg"></i> Catat Surat Masuk
+        </a>
+    @endif
 </div>
+
 
 @if(session('sukses'))
     <div class="alert alert-success rounded-3 d-flex align-items-center gap-2" style="font-size:.85rem" role="alert">
