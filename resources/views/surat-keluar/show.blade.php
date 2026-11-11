@@ -16,11 +16,7 @@
 <div style="max-width:760px">
 
     <div class="d-flex align-items-start gap-3 mb-4">
-        <a href="javascript:void(0)"
-   onclick="(document.referrer.includes(window.location.origin)) ? history.back() : window.location='{{ route('surat-keluar.index') }}'"
-   class="btn btn-light rounded-circle ..." title="Kembali">
-            <i class="bi bi-arrow-left"></i>
-        </a>
+        <x-tombol-kembali :href="route('surat-keluar.index')" />
         <div>
             <p class="text-muted mb-1" style="font-size:.82rem">Persuratan / Surat Keluar</p>
             <h2 class="mb-0" style="font-size:1.4rem">Detail Surat</h2>

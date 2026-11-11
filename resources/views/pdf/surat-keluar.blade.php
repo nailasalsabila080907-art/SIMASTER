@@ -52,12 +52,17 @@
 
         .nomor {
             text-align: center;
-            margin-bottom: 20px;
+            margin-top: 25px;
+            line-height: 1.5;
             text-decoration: underline;
         }
 
+        .isi {
+            line-height: 1.5;
+        }
+
         .isi p {
-            margin: 8px 0;
+            margin: 12px 0;
             text-align: justify;
         }
     </style>
@@ -125,7 +130,7 @@
 </p>
 
 <div class="isi">
-    {!! $suratKeluar->isi_surat !!}
+    {!! $suratKeluar->isi_surat_cetak !!}
 </div>
 
 </body>

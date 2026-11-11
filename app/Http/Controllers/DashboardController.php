@@ -8,6 +8,7 @@ use App\Models\LogAktivitas;
 use App\Models\Notifikasi;
 use App\Models\SuratKeluar;
 use App\Models\SuratMasuk;
+use App\Models\DisposisiSuratMasuk;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -326,9 +327,63 @@ class DashboardController extends Controller
 
         }
 
+        //button notif perlu tindakan
+        $data['aksiSuratMasuk'] = $this->hitungAksiSuratMasuk($user);
         return view(
             'dashboard',
             $data
         );
     }
+
+    private function hitungAksiSuratMasuk($user): array
+{
+    $aksi = [];
+
+    if ($user->role === 'kepala_sekolah') {
+        $jumlah = SuratMasuk::where('status', 'menunggu_disposisi_kepsek')->count();
+        if ($jumlah > 0) {
+            $aksi[] = [
+                'label' => "{$jumlah} surat masuk menunggu arahan",
+                'url' => route('surat-masuk.index', ['status' => 'menunggu_disposisi_kepsek']),
+            ];
+        }
+    }
+
+    if (in_array($user->role, ['admin_tu', 'super_admin'], true)) {
+        $jumlah = SuratMasuk::where('status', 'menunggu_disposisi_tu')->count();
+        if ($jumlah > 0) {
+            $aksi[] = [
+                'label' => "{$jumlah} surat masuk siap didisposisi",
+                'url' => route('surat-masuk.index', ['status' => 'menunggu_disposisi_tu']),
+            ];
+        }
+
+        $ditolak = DisposisiSuratMasuk::where('status', 'ditolak')->count();
+        if ($ditolak > 0) {
+            $aksi[] = [
+                'label' => "{$ditolak} disposisi ditolak, ubah tujuan",
+                'url' => route('surat-masuk.index', ['disposisi' => 'ditolak']),
+            ];
+        }
+    }
+
+    // Penerima disposisi (pegawai / admin unit)
+    $pegawaiId = $user->pegawai?->id_pegawai;
+    $idUnit = $user->unitDiadmini()->aktif()->pluck('id_unit');
+    if ($pegawaiId || $idUnit->isNotEmpty()) {
+        $jumlah = DisposisiSuratMasuk::where('status', 'menunggu')
+            ->where(function ($q) use ($pegawaiId, $idUnit) {
+                $q->where('ke_pegawai', $pegawaiId)->orWhereIn('ke_unit', $idUnit);
+            })
+            ->count();
+        if ($jumlah > 0) {
+            $aksi[] = [
+                'label' => "{$jumlah} disposisi menunggu Anda",
+                'url' => route('surat-masuk.index', ['disposisi' => 'menunggu']),
+            ];
+        }
+    }
+
+    return $aksi;
+}
 }

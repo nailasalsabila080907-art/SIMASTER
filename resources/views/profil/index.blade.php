@@ -102,7 +102,7 @@
                             <p class="fw-semibold mb-0" style="font-size:.9rem;color:var(--ink)">{{ $nama }}</p>
                         </div>
                         <div class="col-md-6">
-                            <p class="mb-1" style="color:var(--ink-muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.05em">NIP</p>
+                            <p class="mb-1" style="color:var(--ink-muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.05em">NIP/NIPPPK</p>
                             <p class="fw-semibold mb-0 font-monospace" style="font-size:.85rem;color:var(--ink)">{{ $pegawai?->nip ?? '-' }}</p>
                         </div>
                         <div class="col-md-6">

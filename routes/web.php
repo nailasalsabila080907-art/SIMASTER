@@ -142,6 +142,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/{disposisi}/terima', 'terima')->name('terima');
         Route::post('/{disposisi}/tindaklanjuti', 'tindaklanjuti')->name('tindaklanjuti');
         Route::post('/{disposisi}/tolak', 'tolak')->name('tolak');
+        Route::post('/{disposisi}/ubah', 'ubah')->name('ubah');
         Route::post('/{disposisi}/selesaikan', 'selesaikan')->name('selesaikan');
     });
 });

@@ -15,11 +15,35 @@ class SuratMasukController extends Controller
 {
     public function index(Request $request)
     {
-        $query = SuratMasuk::with(['kategori', 'penerima.pegawai'])->latest('tanggal_diterima');
+        $query = SuratMasuk::with(['kategori', 'penerima.pegawai'])
+        ->withCount([
+            'disposisi as disposisi_ditolak_count' => fn ($q) => $q->where('status', 'ditolak'),
+            'disposisi as disposisi_menunggu_count' => fn ($q) => $q->where('status', 'menunggu'),
+        ])
+        ->latest('tanggal_diterima');
 
         if ($request->filled('status')) $query->where('status', $request->status);
 
         $user = Auth::user();
+
+        //filter dari tomnol merah dashboard
+        //  ?disposisi=ditolak  -> surat yang punya disposisi ditolak (perlu diubah tujuannya)
+        //  ?disposisi=menunggu -> surat yang punya disposisi menunggu ditindaklanjuti
+
+        $filterDisposisi = in_array($request->disposisi, ['ditolak', 'menunggu'], true) ? $request->disposisi : null;
+        if ($filterDisposisi === 'ditolak') {
+            $query->whereHas('disposisi', fn ($dq) => $dq->where('status', 'ditolak'));
+        } elseif ($filterDisposisi === 'menunggu') {
+            $pegawaiIdSaya = $user->pegawai?->id_pegawai;
+            $idUnitSaya = $user->unitDiadmini()->aktif()->pluck('id_unit');
+            $query->whereHas('disposisi', function ($dq) use ($pegawaiIdSaya, $idUnitSaya) {
+                $dq->where('status', 'menunggu')
+                    ->where(function ($w) use ($pegawaiIdSaya, $idUnitSaya) {
+                        $w->where('ke_pegawai', $pegawaiIdSaya)->orWhereIn('ke_unit', $idUnitSaya);
+                    });
+            });
+        }
+
         if (! in_array($user->role, ['admin_tu', 'super_admin', 'kepala_sekolah'], true)) {
             // Selain yang pertama input surat, surat juga harus muncul kalau
             // user ini penerima disposisinya - baik sebagai pegawai perorangan,
@@ -39,6 +63,7 @@ class SuratMasukController extends Controller
         return view('surat-masuk.index', [
             'suratMasuk' => $query->paginate(15)->withQueryString(),
             'filterSuratMasuk' => $request->status,
+            'filterDisposisi' => $filterDisposisi,
         ]);
     }
 

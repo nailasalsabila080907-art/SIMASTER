@@ -85,11 +85,8 @@
 </style>
 
 <div class="tombol-atas d-flex justify-content-between align-items-center">
-    <a href="{{ url()->previous() }}"
-       class="btn btn-light">
-        <i class="bi bi-arrow-left"></i>
-        Kembali
-    </a>
+    <x-tombol-kembali :href="route('surat-masuk.show', $disposisi->suratMasuk)" label="Kembali ke Surat" />
+
 
     <button type="button"
             onclick="window.print()"

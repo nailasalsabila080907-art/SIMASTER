@@ -177,47 +177,7 @@ class DisposisiSuratMasukController extends Controller
         });
 
         foreach ($dibuat as $disposisi) {
-            if ($disposisi->ke_pegawai && $disposisi->penerimaPegawai?->user) {
-                Notifikasi::kirim(
-                    $disposisi->penerimaPegawai->user->id_user,
-                    'masuk',
-                    $suratMasuk->id_surat_masuk,
-                    $disposisi->id_disposisi,
-                    'Disposisi surat baru',
-                    "Surat \"{$suratMasuk->perihal}\" didisposisikan kepada Anda."
-                );
-            } elseif ($disposisi->ke_unit) {
-                $unit = $disposisi->penerimaUnit;
-                $adminUnit = $unit?->penggunaAdminAktif() ?? collect();
-
-                if ($adminUnit->isNotEmpty()) {
-                    foreach ($adminUnit as $userAdmin) {
-                        Notifikasi::kirim(
-                            $userAdmin->id_user,
-                            'masuk',
-                            $suratMasuk->id_surat_masuk,
-                            $disposisi->id_disposisi,
-                            'Disposisi surat baru',
-                            "Surat \"{$suratMasuk->perihal}\" didisposisikan ke unit {$unit?->nama_unit}."
-                        );
-                    }
-                } else {
-                    $adminSistem = User::whereIn('role', ['admin_tu', 'super_admin'])
-                        ->where('status', 'aktif')
-                        ->get();
-
-                    foreach ($adminSistem as $admin) {
-                        Notifikasi::kirim(
-                            $admin->id_user,
-                            'masuk',
-                            $suratMasuk->id_surat_masuk,
-                            $disposisi->id_disposisi,
-                            'Unit belum punya admin',
-                            "Surat \"{$suratMasuk->perihal}\" didisposisikan ke unit {$unit?->nama_unit}, tapi unit ini belum punya akun admin."
-                        );
-                    }
-                }
-            }
+            $this->kirimNotifikasiDisposisiBaru($disposisi, $suratMasuk);
         }
 
         LogAktivitas::catat('tambah_data', 'Disposisi Surat Masuk', "Membuat disposisi ke {$totalTujuan} tujuan: {$suratMasuk->perihal}");
@@ -246,7 +206,7 @@ class DisposisiSuratMasukController extends Controller
         $suratMasuk = $disposisi->suratMasuk;
 
         $belumSelesai = $suratMasuk->disposisi()
-            ->whereNotIn('status', ['selesai', 'ditolak'])
+            ->where('status', '!=', 'selesai')
             ->exists();
 
         if (! $belumSelesai) {
@@ -308,7 +268,7 @@ class DisposisiSuratMasukController extends Controller
         $suratMasuk = $disposisi->suratMasuk;
 
         $belumSelesai = $suratMasuk->disposisi()
-            ->whereNotIn('status', ['selesai', 'ditolak'])
+            ->where('status', '!=', 'selesai')
             ->exists();
 
         if (! $belumSelesai) {
@@ -323,25 +283,15 @@ class DisposisiSuratMasukController extends Controller
             "Disposisi selesai ditindaklanjuti"
         );
 
-        if ($suratMasuk->status === 'selesai') {
-            LogAktivitasSurat::catat(
-                LogAktivitasSurat::TIPE_MASUK,
-                $suratMasuk->id_surat_masuk,
-                LogAktivitasSurat::AKSI_SELESAI,
-                "Semua disposisi selesai, surat ditandai selesai"
-            );
+        $this->kirimKeAdmin(
+            $suratMasuk,
+            $disposisi,
+            'Disposisi diterima', //diselesaikan(): 'Disposisi selesai ditindaklanjuti'
+            "Disposisi surat \"{$suratMasuk->perihal}\" ke {$disposisi->tujuan_label} telah diterima."
+        );
 
-            $kepsekList = User::where('role', 'kepala_sekolah')->where('status', 'aktif')->get();
-            foreach ($kepsekList as $kepsek) {
-                Notifikasi::kirim(
-                    $kepsek->id_user,
-                    'masuk',
-                    $suratMasuk->id_surat_masuk,
-                    null,
-                    'Surat sudah selesai ditindaklanjuti',
-                    "Surat \"{$suratMasuk->perihal}\" sudah selesai ditindaklanjuti oleh seluruh unit tujuan."
-                );
-            }
+        if ($suratMasuk->status === 'selesai'){
+            $this->tandaiSuratSelesai($suratMasuk, $disposisi);
         }
 
         return back()->with('sukses', 'Disposisi ditandai selesai.');
@@ -357,21 +307,17 @@ class DisposisiSuratMasukController extends Controller
 
         $disposisi->update([
             'status' => 'ditolak',
-            'catatan' => $data['catatan_penolakan'],
+            'alasan_penolakan' => $data['catatan_penolakan'],
         ]);
 
         $suratMasuk = $disposisi->suratMasuk;
 
-        if ($disposisi->pemberiDisposisi?->user) {
-            Notifikasi::kirim(
-                $disposisi->pemberiDisposisi->user->id_user,
-                'masuk',
-                $suratMasuk->id_surat_masuk,
-                $disposisi->id_disposisi,
-                'Disposisi ditolak',
-                "Disposisi surat \"{$suratMasuk->perihal}\" ke {$disposisi->tujuan_label} ditolak: {$data['catatan_penolakan']}"
-            );
-        }
+        $this->kirimKeAdmin(
+            $suratMasuk,
+            $disposisi,
+            'Disposisi ditolak',
+            "Disposisi surat \"{$suratMasuk->perihal}\" ke {$disposisi->tujuan_label} telah ditolak dengan catatan: {$data['catatan_penolakan']}. SIlahkan ubah tujuan disposisi."
+        );
 
         LogAktivitas::catat('ubah_data', 'Disposisi Surat Masuk', "Disposisi ke {$disposisi->tujuan_label} ditolak: {$suratMasuk->perihal}");
         LogAktivitasSurat::catat(
@@ -384,6 +330,78 @@ class DisposisiSuratMasukController extends Controller
         return back()->with('sukses', 'Disposisi ditolak.');
     }
 
+    public function ubah(Request $request, DisposisiSuratMasuk $disposisi)
+{
+    abort_unless(in_array(Auth::user()->role, ['admin_tu', 'super_admin'], true), 403);
+    abort_unless($disposisi->status === 'ditolak', 422, 'Hanya disposisi yang ditolak yang bisa diubah tujuannya.');
+
+    $data = $request->validate([
+        'tujuan_pegawai' => 'nullable|array',
+        'tujuan_pegawai.*' => 'integer|exists:pegawai,id_pegawai',
+        'tujuan_unit' => 'nullable|array',
+        'tujuan_unit.*' => 'integer|exists:unit_kerja,id_unit',
+    ]);
+
+    $tujuanPegawai = $data['tujuan_pegawai'] ?? [];
+    $tujuanUnit = $data['tujuan_unit'] ?? [];
+    abort_if(count($tujuanPegawai) + count($tujuanUnit) === 0, 422, 'Pilih minimal satu tujuan baru (pegawai atau unit).');
+
+    $suratMasuk = $disposisi->suratMasuk;
+    $tujuanLama = $disposisi->tujuan_label;
+    $alasanTolakLama = $disposisi->alasan_tolak ?? $disposisi->catatan;
+
+    $semua = [];
+    foreach ($tujuanPegawai as $id) { $semua[] = ['ke_pegawai' => $id, 'ke_unit' => null]; }
+    foreach ($tujuanUnit as $id)    { $semua[] = ['ke_pegawai' => null, 'ke_unit' => $id]; }
+
+    $dikirim = [];
+
+    DB::transaction(function () use ($semua, $disposisi, $suratMasuk, &$dikirim) {
+        foreach ($semua as $i => $tujuan) {
+            $nilai = $tujuan + [
+                'ke_jurusan' => null,
+                'status' => 'menunggu',
+                'alasan_tolak' => null,
+                'tanggal_disposisi' => now(),
+                'tanggal_selesai' => null,
+            ];
+
+            if ($i === 0) {
+                // tujuan pertama memakai ulang lembar disposisi yang ditolak
+                $disposisi->update($nilai);
+                $dikirim[] = $disposisi->fresh();
+            } else {
+                // tujuan tambahan: salin isi disposisi yang sama
+                $dikirim[] = DisposisiSuratMasuk::create($nilai + [
+                    'id_surat_masuk' => $suratMasuk->id_surat_masuk,
+                    'dari_pegawai' => $disposisi->dari_pegawai,
+                    'instruksi' => $disposisi->instruksi,
+                    'catatan' => $disposisi->catatan,
+                ]);
+            }
+        }
+
+        // ada disposisi yang belum tuntas lagi, jadi surat kembali "didisposisi"
+        $suratMasuk->update(['status' => 'didisposisi']);
+    });
+
+    foreach ($dikirim as $d) {
+        $this->kirimNotifikasiDisposisiBaru($d, $suratMasuk);
+    }
+
+    $tujuanBaru = collect($dikirim)->map(fn ($d) => $d->tujuan_label)->implode(', ');
+
+    LogAktivitas::catat('ubah_data', 'Disposisi Surat Masuk', "Mengubah tujuan disposisi dari {$tujuanLama} ke {$tujuanBaru}: {$suratMasuk->perihal}");
+    LogAktivitasSurat::catat(
+        LogAktivitasSurat::TIPE_MASUK,
+        $suratMasuk->id_surat_masuk,
+        LogAktivitasSurat::AKSI_DISPOSISI,
+        "Tujuan disposisi diubah dari {$tujuanLama} (ditolak: {$alasanTolakLama}) ke {$tujuanBaru}"
+    );
+
+    return back()->with('sukses', 'Tujuan disposisi diubah dan dikirim ulang.');
+}
+    
     public function show(DisposisiSuratMasuk $disposisi)
     {
         $user = Auth::user();
@@ -422,6 +440,90 @@ class DisposisiSuratMasukController extends Controller
         ));
     }
 
+    private function kirimNotifikasiDisposisiBaru(DisposisiSuratMasuk $disposisi, SuratMasuk $suratMasuk): void
+{
+    if ($disposisi->ke_pegawai) {
+        if ($disposisi->penerimaPegawai?->user) {
+            Notifikasi::kirim(
+                $disposisi->penerimaPegawai->user->id_user, 'masuk',
+                $suratMasuk->id_surat_masuk, $disposisi->id_disposisi,
+                'Disposisi surat baru',
+                "Surat \"{$suratMasuk->perihal}\" didisposisikan kepada Anda."
+            );
+        }
+        return;
+    }
+
+    if (! $disposisi->ke_unit) {
+        return;
+    }
+
+    $unit = $disposisi->penerimaUnit;
+    $adminUnit = $unit?->penggunaAdminAktif() ?? collect();
+
+    if ($adminUnit->isNotEmpty()) {
+        foreach ($adminUnit as $userAdmin) {
+            Notifikasi::kirim(
+                $userAdmin->id_user, 'masuk',
+                $suratMasuk->id_surat_masuk, $disposisi->id_disposisi,
+                'Disposisi surat baru',
+                "Surat \"{$suratMasuk->perihal}\" didisposisikan ke unit {$unit?->nama_unit}."
+            );
+        }
+        return;
+    }
+
+    $adminSistem = User::whereIn('role', ['admin_tu', 'super_admin'])->where('status', 'aktif')->get();
+    foreach ($adminSistem as $admin) {
+        Notifikasi::kirim(
+            $admin->id_user, 'masuk',
+            $suratMasuk->id_surat_masuk, $disposisi->id_disposisi,
+            'Unit belum punya admin',
+            "Surat \"{$suratMasuk->perihal}\" didisposisikan ke unit {$unit?->nama_unit}, tapi unit ini belum punya akun admin."
+        );
+    }
+}
+
+private function kirimKeAdmin(SuratMasuk $suratMasuk, DisposisiSuratMasuk $disposisi, string $judul, string $pesan): void
+{
+    $idPenerima = User::whereIn('role', ['admin_tu', 'super_admin'])
+        ->where('status', 'aktif')
+        ->pluck('id_user');
+
+    $idPemberi = $disposisi->pemberiDisposisi?->user?->id_user;
+    if ($idPemberi) {
+        $idPenerima->push($idPemberi);
+    }
+
+    foreach ($idPenerima->unique() as $idUser) {
+        Notifikasi::kirim($idUser, 'masuk', $suratMasuk->id_surat_masuk, $disposisi->id_disposisi, $judul, $pesan);
+    }
+}
+
+private function tandaiSuratSelesai(SuratMasuk $suratMasuk, DisposisiSuratMasuk $disposisi): void
+{
+    LogAktivitasSurat::catat(
+        LogAktivitasSurat::TIPE_MASUK,
+        $suratMasuk->id_surat_masuk,
+        LogAktivitasSurat::AKSI_SELESAI,
+        'Semua disposisi selesai, surat ditandai selesai'
+    );
+
+    $kepsekList = User::where('role', 'kepala_sekolah')->where('status', 'aktif')->get();
+    foreach ($kepsekList as $kepsek) {
+        Notifikasi::kirim(
+            $kepsek->id_user, 'masuk', $suratMasuk->id_surat_masuk, null,
+            'Surat sudah selesai ditindaklanjuti',
+            "Surat \"{$suratMasuk->perihal}\" sudah selesai ditindaklanjuti oleh seluruh unit tujuan."
+        );
+    }
+
+    $this->kirimKeAdmin(
+        $suratMasuk, $disposisi,
+        'Surat selesai, siap diarsipkan',
+        "Semua disposisi surat \"{$suratMasuk->perihal}\" sudah selesai. Surat siap diarsipkan."
+    );
+}
     private function bolehKelola(DisposisiSuratMasuk $disposisi): void
     {
         $user = Auth::user();
