@@ -108,7 +108,8 @@
                                 <a href="{{ route('surat-keluar.show', $s) }}" class="btn btn-sm btn-light rounded-circle" title="Lihat detail">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                                @if(in_array($s->status, ['draft', 'ditolak'], true) && ($s->dibuat_oleh === Auth::id() || in_array(Auth::user()->role, ['admin_tu', 'super_admin'], true)))
+                               @if((in_array($s->status, ['draft', 'ditolak'], true) && ($s->dibuat_oleh === Auth::id() || in_array(Auth::user()->role, ['admin_tu', 'super_admin'], true) )
+                                )|| ( $s->status === 'diarsipkan' && in_array(Auth::user()->role, ['admin_tu', 'super_admin'], true)))
                                     <form action="{{ route('surat-keluar.destroy', $s) }}" method="POST"
                                           onsubmit="return confirm('Hapus surat ini? Surat akan dipindahkan ke nonaktif.')">
                                         @csrf @method('DELETE')

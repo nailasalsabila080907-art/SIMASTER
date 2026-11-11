@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo $__env->yieldContent('title', 'Dashboard'); ?> — SIMASTER</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+    <style>
+        :root{
+            --bs-primary:#178754;
+            --primary-rgb:23,135,84;
+            --primary-dark:#126841;
+            --primary-light:#E6F5EC;
+            --sidebar-w:260px;
+            --topbar-h:68px;
+            --ink:#1E1F26;
+            --ink-muted:#8B8D97;
+            --surface:#FAFBFA;
+            --border:#EBEFEC;
+            --success:#178754;
+            --warning:#F0A202;
+            --danger:#E5484D;
+            --info:#0EA5A4;
+        }
+        *{box-sizing:border-box}
+        html,body{height:100%}
+        body{
+            font-family:'Public Sans',system-ui,-apple-system,sans-serif;
+            background:#F6FAF7;
+            color:var(--ink);
+            font-size:.9rem;
+        }
+        h1,h2,h3,h4,h5,h6{font-weight:700;letter-spacing:-.01em}
+        a{text-decoration:none}
+
+        /* ===== Sidebar ===== */
+        .sidebar{
+            position:fixed;top:0;bottom:0;left:0;width:var(--sidebar-w);
+            background:#fff;border-right:1px solid var(--border);
+            display:flex;flex-direction:column;z-index:1030;
+            transition:transform .2s ease;
+        }
+        .sidebar-brand{
+            height:var(--topbar-h);display:flex;align-items:center;gap:.7rem;
+            padding:0 1.35rem;border-bottom:1px solid var(--border);flex-shrink:0;
+            background:linear-gradient(135deg,#E6F5EC,#FFFFFF 70%);
+        }
+        .sidebar-brand .logo-badge{
+            width:38px;height:38px;border-radius:11px;overflow:hidden;flex-shrink:0;
+            background:#fff;border:1px solid var(--border);
+            display:flex;align-items:center;justify-content:center;
+        }
+        .sidebar-brand .logo-badge img{width:100%;height:100%;object-fit:contain}
+        .sidebar-brand .logo-badge span{color:var(--bs-primary);font-weight:800;font-size:.85rem}
+        .sidebar-brand .brand-text p{margin:0;line-height:1.2}
+        .sidebar-brand .brand-title{font-weight:800;font-size:.9rem;color:var(--ink)}
+        .sidebar-brand .brand-sub{font-size:.7rem;color:var(--ink-muted);letter-spacing:.04em}
+
+        .sidebar-scroll{flex:1;overflow-y:auto;padding:1.1rem .85rem}
+        .sidebar-scroll::-webkit-scrollbar{width:5px}
+        .sidebar-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+
+        .nav-section-label{
+            font-size:.68rem;text-transform:uppercase;letter-spacing:.09em;
+            color:var(--ink-muted);font-weight:700;padding:1rem .65rem .4rem;
+        }
+        .nav-link-custom{
+            display:flex;align-items:center;gap:.7rem;padding:.6rem .7rem;
+            border-radius:10px;color:#5B5D6B;font-size:.855rem;font-weight:500;
+            margin-bottom:.15rem;position:relative;
+        }
+        .nav-link-custom i{font-size:1.05rem;width:20px;text-align:center;color:#A6A8B4}
+        .nav-link-custom:hover{background:var(--surface);color:var(--ink)}
+        .nav-link-custom.active{background:var(--primary-light);color:var(--bs-primary);font-weight:700}
+        .nav-link-custom.active i{color:var(--bs-primary)}
+        .nav-badge{
+            margin-left:auto;background:var(--bs-primary);color:#fff;font-size:.68rem;
+            font-weight:700;border-radius:99px;padding:.1rem .45rem;
+        }
+
+        /* ===== Collapsible sidebar group (e.g. Master Data) ===== */
+        .nav-link-toggle{cursor:pointer;width:100%;border:none;background:transparent;text-align:left}
+        .nav-chevron{margin-left:auto;font-size:.8rem;color:#A6A8B4;transition:transform .2s ease;flex-shrink:0}
+        .nav-link-toggle[aria-expanded="true"]{background:var(--surface);color:var(--ink)}
+        .nav-link-toggle[aria-expanded="true"] .nav-chevron{transform:rotate(180deg)}
+        .nav-submenu{padding-left:.2rem;margin-bottom:.15rem}
+        .nav-link-sub{padding-left:2.5rem;font-size:.82rem}
+        .nav-link-sub i{font-size:.95rem;width:16px}
+
+        .sidebar-footer{padding:.85rem;border-top:1px solid var(--border)}
+        .btn-logout{
+            display:flex;align-items:center;gap:.7rem;width:100%;border:none;background:transparent;
+            padding:.6rem .7rem;border-radius:10px;color:#C4463F;font-weight:600;font-size:.855rem;
+        }
+        .btn-logout:hover{background:#FCEBEA}
+
+        /* ===== Main / Topbar ===== */
+        .main-wrap{margin-left:var(--sidebar-w);min-height:100vh;display:flex;flex-direction:column}
+        .topbar{
+            height:var(--topbar-h);
+            background:#fff;
+            border-bottom:2px solid var(--primary-light);
+            display:flex;align-items:center;justify-content:space-between;
+            padding:0 1.75rem;position:sticky;top:0;z-index:1020;
+        }
+        .topbar .page-eyebrow{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-muted);margin:0}
+        .topbar .page-title{font-size:1.15rem;margin:0;color:var(--ink)}
+        .btn-icon-ghost{
+            width:38px;height:38px;border-radius:10px;border:1px solid var(--border);
+            display:inline-flex;align-items:center;justify-content:center;color:#5B5D6B;background:#fff;position:relative;
+        }
+        .btn-icon-ghost:hover{background:var(--surface)}
+        .notif-dot{
+            position:absolute;top:6px;right:6px;width:8px;height:8px;background:var(--danger);
+            border-radius:50%;border:2px solid #fff;
+        }
+        .user-chip{display:flex;align-items:center;gap:.65rem;padding:.3rem .5rem .3rem .3rem;border-radius:12px}
+        .user-chip:hover{background:var(--surface)}
+        .user-chip .avatar{width:38px;height:38px;border-radius:10px;overflow:hidden;background:var(--primary-light);flex-shrink:0}
+        .user-chip .avatar img{width:100%;height:100%;object-fit:cover}
+        .user-chip .avatar .fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--bs-primary);font-size:.85rem}
+        .user-chip .u-name{font-size:.83rem;font-weight:700;color:var(--ink);line-height:1.2;margin:0}
+        .user-chip .u-role{font-size:.7rem;color:var(--ink-muted);margin:0}
+
+        .content{flex:1;padding:1.75rem}
+
+        /* ===== Shared card look ===== */
+        .card{border:1px solid var(--border);border-radius:14px;box-shadow:0 1px 2px rgba(16,24,40,.03)}
+        .card-header{background:transparent;border-bottom:1px solid var(--border);padding:1.1rem 1.35rem}
+        .card-body{padding:1.35rem}
+
+        /* mobile */
+        .sidebar-toggle{display:none}
+        @media (max-width:991.98px){
+            .sidebar{transform:translateX(-100%)}
+            .sidebar.show{transform:translateX(0)}
+            .main-wrap{margin-left:0}
+            .sidebar-toggle{display:inline-flex}
+            .sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(15,17,26,.4);z-index:1025}
+            .sidebar-backdrop.show{display:block}
+        }
+    </style>
+    <?php echo $__env->yieldPushContent('head'); ?>
+</head>
+<body>
+
+<?php
+    $masterDataRoutes = ['pegawai.*','pengguna.*','unit-kerja.*','jurusan.*','jabatan.*','kategori-surat.*','klasifikasi-arsip.*','template-surat.*','sekolah.*'];
+    $masterDataAktif = request()->routeIs($masterDataRoutes);
+?>
+
+<aside class="sidebar" id="appSidebar">
+    <div class="sidebar-brand">
+        <div class="logo-badge">
+            <?php
+                $logoCandidates = ['images/logo-smkn7.jpeg.jpg', 'images/logo-smkn7.jpeg.jpeg', 'images/logo-smkn7.webp'];
+                $logoPath = collect($logoCandidates)->first(fn($path) => file_exists(public_path($path)));
+            ?>
+            <?php if($logoPath): ?>
+                <img src="<?php echo e(asset($logoPath)); ?>" alt="Logo SMK Negeri 7">
+            <?php else: ?>
+                <span>S7</span>
+            <?php endif; ?>
+        </div>
+        <div class="brand-text">
+            <p class="brand-title">SMK Negeri 7</p>
+            <p class="brand-sub">SIMASTER</p>
+        </div>
+    </div>
+
+    <div class="sidebar-scroll">
+        <a href="<?php echo e(route('dashboard')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('dashboard') ? 'active' : ''); ?>">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+
+        <p class="nav-section-label">Persuratan</p>
+        <a href="<?php echo e(route('surat-masuk.index')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('surat-masuk.*') ? 'active' : ''); ?>">
+            <i class="bi bi-envelope-arrow-down"></i> Surat Masuk
+        </a>
+        <a href="<?php echo e(route('surat-keluar.index')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('surat-keluar.*') ? 'active' : ''); ?>">
+            <i class="bi bi-send"></i> Surat Keluar
+        </a>
+        <a href="<?php echo e(route('arsip.index')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('arsip.*') ? 'active' : ''); ?>">
+            <i class="bi bi-archive"></i> Arsip Surat
+        </a>
+
+        <?php if(in_array(auth()->user()->role,['admin_tu','super_admin'])): ?>
+            <p class="nav-section-label">Master Data</p>
+
+            <button type="button"
+                    class="nav-link-custom nav-link-toggle <?php echo e($masterDataAktif ? 'active' : ''); ?>"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#masterDataMenu"
+                    aria-expanded="<?php echo e($masterDataAktif ? 'true' : 'false'); ?>"
+                    aria-controls="masterDataMenu">
+                <i class="bi bi-database"></i> Master Data
+                <i class="bi bi-chevron-down nav-chevron"></i>
+            </button>
+
+            <div class="collapse <?php echo e($masterDataAktif ? 'show' : ''); ?>" id="masterDataMenu">
+                <div class="nav-submenu">
+                    <a href="<?php echo e(route('pegawai.index')); ?>" class="nav-link-custom nav-link-sub <?php echo e(request()->routeIs('pegawai.*') ? 'active' : ''); ?>">
+                        <i class="bi bi-people"></i> Pegawai
+                    </a>
+                    <a href="<?php echo e(route('pengguna.index')); ?>" class="nav-link-custom nav-link-sub <?php echo e(request()->routeIs('pengguna.*') ? 'active' : ''); ?>">
+                        <i class="bi bi-person-gear"></i> Pengguna
+                    </a>
+                    <a href="<?php echo e(route('unit-kerja.index')); ?>" class="nav-link-custom nav-link-sub <?php echo e(request()->routeIs('unit-kerja.*') ? 'active' : ''); ?>">
+                        <i class="bi bi-diagram-3"></i> Unit Kerja
+                    </a>
+                    <a href="<?php echo e(route('jurusan.index')); ?>" class="nav-link-custom nav-link-sub <?php echo e(request()->routeIs('jurusan.*') ? 'active' : ''); ?>">
+                        <i class="bi bi-mortarboard"></i> Jurusan
+                    </a>
+                    <a href="<?php echo e(route('jabatan.index')); ?>" class="nav-link-custom nav-link-sub <?php echo e(request()->routeIs('jabatan.*') ? 'active' : ''); ?>">
+                        <i class="bi bi-briefcase"></i> Jabatan
+                    </a>
+                    <a href="<?php echo e(route('kategori-surat.index')); ?>" class="nav-link-custom nav-link-sub <?php echo e(request()->routeIs('kategori-surat.*') ? 'active' : ''); ?>">
+                        <i class="bi bi-tags"></i> Kategori Surat
+                    </a>
+                    <a href="<?php echo e(route('klasifikasi-arsip.index')); ?>" class="nav-link-custom nav-link-sub <?php echo e(request()->routeIs('klasifikasi-arsip.*') ? 'active' : ''); ?>">
+                        <i class="bi bi-folder2-open"></i> Klasifikasi Arsip
+                    </a>
+                    <a href="<?php echo e(route('template-surat.index')); ?>" class="nav-link-custom nav-link-sub <?php echo e(request()->routeIs('template-surat.*') ? 'active' : ''); ?>">
+                        <i class="bi bi-file-earmark-richtext"></i> Template Surat
+                    </a>
+                    <a href="<?php echo e(route('sekolah.edit')); ?>" class="nav-link-custom nav-link-sub <?php echo e(request()->routeIs('sekolah.*') ? 'active' : ''); ?>">
+                        <i class="bi bi-building"></i> Profil Sekolah
+                    </a>
+                </div>
+            </div>
+        <?php endif; ?>
+
+            <p class="nav-section-label">Sistem</p>
+    <a href="<?php echo e(route('notifikasi.index')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('notifikasi.*') ? 'active' : ''); ?>">
+        <i class="bi bi-bell"></i> Notifikasi
+        <?php $jmlNotif=\App\Models\Notifikasi::where('id_user',auth()->id())->where('sudah_dibaca',false)->count(); ?>
+        <?php if($jmlNotif>0): ?><span class="nav-badge"><?php echo e($jmlNotif); ?></span><?php endif; ?>
+    </a>
+    <a href="<?php echo e(route('log-surat.index')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('log-surat.*') ? 'active' : ''); ?>">
+        <i class="bi bi-file-earmark-text"></i> Riwayat Surat
+    </a>
+    <a href="<?php echo e(route('log-aktivitas.index')); ?>" class="nav-link-custom <?php echo e(request()->routeIs('log-aktivitas.*') ? 'active' : ''); ?>">
+        <i class="bi bi-clock-history"></i> Log Aktivitas
+    </a>
+    
+    </div>
+
+    <div class="sidebar-footer">
+    <form method="POST" action="<?php echo e(route('logout')); ?>" id="logoutForm">
+        <?php echo csrf_field(); ?>
+        <button type="button" class="btn-logout" data-bs-toggle="modal" data-bs-target="#modalKonfirmasiKeluar">
+            <i class="bi bi-box-arrow-right"></i> Keluar
+        </button>
+    </form>
+</div>
+</aside>
+
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+<div class="main-wrap">
+    <header class="topbar">
+        <div class="d-flex align-items-center gap-3">
+            <button class="btn-icon-ghost sidebar-toggle" id="sidebarToggle" type="button">
+                <i class="bi bi-list fs-5"></i>
+            </button>
+            <div>
+                <p class="page-eyebrow">Sistem Informasi Manajemen Surat Terintegrasi</p>
+                <h1 class="page-title"><?php echo $__env->yieldContent('title','Dashboard'); ?></h1>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            <a href="<?php echo e(route('notifikasi.index')); ?>" class="btn-icon-ghost">
+                <i class="bi bi-bell fs-6"></i>
+                <?php if(($jmlNotif ?? 0) > 0): ?><span class="notif-dot"></span><?php endif; ?>
+            </a>
+
+            <a href="<?php echo e(route('profil.index')); ?>" class="user-chip">
+                <div class="avatar">
+                    <?php if(auth()->user()->pegawai && auth()->user()->pegawai->foto_path): ?>
+                        <img src="<?php echo e(asset('storage/' . auth()->user()->pegawai->foto_path)); ?>" alt="Foto Profil">
+                    <?php else: ?>
+                        <div class="fallback"><?php echo e(strtoupper(substr(auth()->user()->pegawai->nama_lengkap ?? auth()->user()->username, 0, 1))); ?></div>
+                    <?php endif; ?>
+                </div>
+                <div class="d-none d-sm-block">
+                    <p class="u-name"><?php echo e(auth()->user()->pegawai->nama_lengkap ?? auth()->user()->username); ?></p>
+                    <p class="u-role"><?php echo e(ucwords(str_replace('_',' ',auth()->user()->role))); ?></p>
+                </div>
+                 </a>
+            </div>
+        </header>
+    <div class="modal fade" id="modalKonfirmasiKeluar" tabindex="-1" aria-hidden="true">
+<div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius:16px;border:none;">
+      <div class="modal-body text-center p-4">
+        <div class="mx-auto mb-3 d-flex align-items-center justify-content-center"
+             style="width:56px;height:56px;border-radius:50%;background:#FCEBEA;">
+            <i class="bi bi-box-arrow-right" style="font-size:1.5rem;color:#C4463F;"></i>
+        </div>
+        <h5 class="fw-bold mb-1">Keluar dari akun?</h5>
+        <p class="text-muted mb-4" style="font-size:.85rem;">
+          Apakah Anda yakin ingin keluar dari SIMASTER?
+        </p>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-light w-50" data-bs-dismiss="modal" style="border-radius:10px;">
+            Batal
+          </button>
+          <button type="submit" form="logoutForm" class="btn w-50"
+                  style="border-radius:10px;background:#C4463F;color:#fff;">
+            Ya, Keluar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <main class="content">
+        <?php echo $__env->yieldContent('content'); ?>
+    </main>
+</div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
+    <?php if(session('sukses')): ?>
+        <div class="toast align-items-center text-bg-success border-0 show" role="alert" data-bs-delay="2000" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <?php echo e(session('sukses')); ?>
+
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    <?php endif; ?>
+    <?php if(session('gagal')): ?>
+        <div class="toast align-items-center text-bg-danger border-0 show" role="alert" data-bs-delay="2000" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <?php echo e(session('gagal')); ?>
+
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    <?php endif; ?>
+    <?php if($errors->any()): ?>
+        <div class="toast align-items-center text-bg-danger border-0 show" role="alert" data-bs-delay="2000" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <?php echo e($errors->first()); ?>
+
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    <?php endif; ?>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const sidebar = document.getElementById('appSidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    const toggle = document.getElementById('sidebarToggle');
+    function closeSidebar(){ sidebar.classList.remove('show'); backdrop.classList.remove('show'); }
+    toggle?.addEventListener('click', () => {
+        sidebar.classList.toggle('show');
+        backdrop.classList.toggle('show');
+    });
+    backdrop?.addEventListener('click', closeSidebar);
+    const sidebarScroll = document.querySelector('.sidebar-scroll');
+if (sidebarScroll) {
+    const savedScroll = sessionStorage.getItem('sidebarScrollPos');
+    if (savedScroll !== null) {
+        sidebarScroll.scrollTop = parseInt(savedScroll, 10);
+    }
+    sidebarScroll.addEventListener('scroll', () => {
+        sessionStorage.setItem('sidebarScrollPos', sidebarScroll.scrollTop);
+    });
+    sidebarScroll.querySelectorAll('a, button').forEach((el) => {
+        el.addEventListener('click', () => {
+            sessionStorage.setItem('sidebarScrollPos', sidebarScroll.scrollTop);
+        });
+    });
+}
+    document.querySelectorAll('.toast').forEach(function (el) {
+    new bootstrap.Toast(el).show();
+});
+</script>
+<?php echo $__env->yieldPushContent('scripts'); ?>
+<script>
+window.addEventListener('pageshow', function (event) {
+    if (event.persisted) {
+        window.location.reload();
+    }
+});
+</script>
+</body>
+</html><?php /**PATH C:\xampp\htdocs\SIMASTER\resources\views/layouts/app.blade.php ENDPATH**/ ?>
