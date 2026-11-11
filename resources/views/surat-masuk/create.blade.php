@@ -4,9 +4,7 @@
 <div style="max-width:960px">
 
     <div class="d-flex align-items-center gap-3 mb-4">
-        <a href="{{ route('surat-masuk.index') }}" class="btn btn-light rounded-circle d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:38px;height:38px" title="Kembali">
-            <i class="bi bi-arrow-left"></i>
-        </a>
+        <x-tombol-kembali :href="route('surat-masuk.index')" />
         <div>
             <p class="text-muted mb-1" style="font-size:.82rem">Persuratan / Surat Masuk</p>
             <h2 class="mb-0" style="font-size:1.5rem">Catat Surat Masuk</h2>

@@ -26,9 +26,7 @@
 
 <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
     <div class="d-flex align-items-start gap-3">
-        <a href="{{ route('surat-masuk.index') }}" class="btn btn-light rounded-circle d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:38px;height:38px" title="Kembali">
-            <i class="bi bi-arrow-left"></i>
-        </a>
+        <x-tombol-kembali :href="route('surat-masuk.index')" />
         <div>
             <p class="text-muted mb-1" style="font-size:.82rem">Persuratan / Surat Masuk</p>
             <h2 class="mb-1" style="font-size:1.4rem">{{ $suratMasuk->perihal }}</h2>
@@ -267,8 +265,8 @@
                                 @if($d->instruksi)
                                     <span class="d-block mt-1" style="font-size:.95rem">{{ $d->instruksi }}</span>
                                 @endif
-                                @if($d->status === 'ditolak' && $d->catatan)
-                                    <span class="d-block mt-1 text-danger" style="font-size:.95rem"><i class="bi bi-info-circle"></i> {{ $d->catatan }}</span>
+                                @if($d->status === 'ditolak' && $d->alasan_penolakan ?? $d->catatan)
+                                    <span class="d-block mt-1 text-danger" style="font-size:.95rem"><i class="bi bi-info-circle"></i> Ditolak: {{ $d->alasan_penolakan ?? $d->catatan }}</span>
                                 @endif
                             </div>
                         </div>
@@ -280,6 +278,59 @@
                             <a href="{{ route('disposisi.show', $d) }}" class="btn btn-sm btn-light" style="font-size:.9rem">
                                 Lihat Detail
                             </a>
+
+                        @if($d->status === 'ditolak' && $bolehAdmin)
+    <button type="button" class="btn btn-sm btn-warning text-dark fw-semibold" style="font-size:.9rem"
+            data-bs-toggle="modal" data-bs-target="#ubahModal{{ $d->id_disposisi }}">
+        <i class="bi bi-arrow-repeat me-1"></i> Ubah Disposisi
+    </button>
+
+    <div class="modal fade" id="ubahModal{{ $d->id_disposisi }}" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form method="POST" action="{{ route('disposisi.ubah', $d) }}">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title" style="font-size:1rem">Ubah Tujuan Disposisi</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-light border mb-3" style="font-size:.85rem">
+                            <div><strong>Tujuan sebelumnya:</strong> {{ $d->tujuan_label }}</div>
+                            @if($d->alasan_tolak ?? $d->catatan)
+                                <div class="text-danger"><strong>Alasan ditolak:</strong> {{ $d->alasan_tolak ?? $d->catatan }}</div>
+                            @endif
+                            <div class="text-muted mt-1">Isi surat, instruksi, dan catatan tidak berubah. Hanya tujuan yang diganti.</div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" style="font-size:.85rem">Tujuan Pegawai Baru</label>
+                                <select name="tujuan_pegawai[]" class="form-select" multiple size="6">
+                                    @foreach($pegawaiList as $p)
+                                        <option value="{{ $p->id_pegawai }}">{{ $p->nama_lengkap }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" style="font-size:.85rem">Tujuan Unit Kerja Baru</label>
+                                <select name="tujuan_unit[]" class="form-select" multiple size="6">
+                                    @foreach($unitList as $u)
+                                        <option value="{{ $u->id_unit }}">{{ $u->nama_unit }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <p class="text-muted mt-2 mb-0" style="font-size:.78rem">Pilih minimal satu tujuan (boleh lebih dari satu).</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="font-size:.9rem">Batal</button>
+                        <button type="submit" class="btn btn-warning text-dark fw-semibold" style="font-size:.9rem">Kirim Ulang Disposisi</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+@endif
 
                             @if(! $statusFinal && $bolehAksi)
                                 <div class="dropdown">

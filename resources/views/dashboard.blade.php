@@ -19,6 +19,21 @@
         </p>
     </div>
 
+    <div class="d-flex flex-wrap gap-2 justify-content-end">
+    @foreach ($aksiSuratMasuk as $a)
+        <a href="{{ $a['url'] }}"
+           class="btn d-inline-flex align-items-center gap-2 px-3 py-2 text-white"
+           style="
+               background:linear-gradient(135deg,#DC2626,#EF4444);
+               border:none;
+               border-radius:10px;
+               font-weight:600;
+           ">
+            <i class="bi bi-patch-exclamation"></i>
+            {{ $a['label'] }}
+        </a>        
+    @endforeach
+
     {{-- Tombol Approval --}}
     @if($approvalSaya > 0)
         <a href="{{ route('approval.index') }}"
@@ -33,6 +48,7 @@
             {{ $approvalSaya }} approval menunggu
         </a>
     @endif
+    </div>
 </div>
 
 

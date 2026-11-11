@@ -141,4 +141,16 @@ class SuratKeluar extends Model
     {
         return !is_null($this->nomor_surat);
     }
+
+    public function getIsiSuratCetakAttribute(): string
+    {
+    $isi = (string) $this->isi_surat;
+
+    return preg_replace(
+        '/<p\s+style="([^"]*text-align:\s*right[^"]*)"/i',
+        '<p style="$1;margin-top:38px;page-break-inside:avoid"',
+        $isi,
+        1
+    ) ?? $isi;
+    }
 }

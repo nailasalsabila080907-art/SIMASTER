@@ -85,11 +85,27 @@
 </style>
 
 <div class="tombol-atas d-flex justify-content-between align-items-center">
-    <a href="<?php echo e(url()->previous()); ?>"
-       class="btn btn-light">
-        <i class="bi bi-arrow-left"></i>
-        Kembali
-    </a>
+    <?php if (isset($component)) { $__componentOriginal7df061e68ce253759b3c26462a603095 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal7df061e68ce253759b3c26462a603095 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.tombol-kembali','data' => ['href' => route('surat-masuk.show', $disposisi->suratMasuk),'label' => 'Kembali ke Surat']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('tombol-kembali'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['href' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(route('surat-masuk.show', $disposisi->suratMasuk)),'label' => 'Kembali ke Surat']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal7df061e68ce253759b3c26462a603095)): ?>
+<?php $attributes = $__attributesOriginal7df061e68ce253759b3c26462a603095; ?>
+<?php unset($__attributesOriginal7df061e68ce253759b3c26462a603095); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal7df061e68ce253759b3c26462a603095)): ?>
+<?php $component = $__componentOriginal7df061e68ce253759b3c26462a603095; ?>
+<?php unset($__componentOriginal7df061e68ce253759b3c26462a603095); ?>
+<?php endif; ?>
+
 
     <button type="button"
             onclick="window.print()"

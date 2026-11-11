@@ -6,10 +6,12 @@
 
     {{-- Header --}}
     <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
-        <div>
-            <p class="text-muted mb-1" style="font-size:.82rem">
-                Persuratan / Surat Keluar
-            </p>
+        <div class="d-flex align-items-start gap-3">
+            <x-tombol-kembali :href="route('surat-keluar.index')" />
+            <div>
+                <p class="text-muted mb-1" style="font-size:.82rem">
+                    Persuratan / Surat Keluar
+                </p>
 
             <h2 class="mb-1" style="font-size:1.5rem">
                 {{ $suratKeluar?->exists ? 'Ubah Surat Keluar' : 'Buat Surat Keluar' }}
@@ -18,6 +20,7 @@
             <p class="text-muted mb-0" style="font-size:.78rem">
                 Pilih kategori surat, lalu lengkapi datanya.
             </p>
+        </div>
         </div>
     </div>
 

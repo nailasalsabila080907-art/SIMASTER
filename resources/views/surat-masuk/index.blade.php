@@ -48,11 +48,23 @@
         </li>
     @endif
 </ul>
-
+    @if($filterDisposisi)
+    <div class="alert alert-warning d-flex flex-wrap align-items-center justify-content-between gap-2 py-2" style="font-size:.85rem">
+        <span>
+            <i class="bi bi-funnel me-1"></i>
+            @if($filterDisposisi === 'ditolak')
+                Menampilkan surat yang punya <strong>disposisi ditolak</strong>. Buka suratnya, lalu klik <strong>Ubah Disposisi</strong>.
+            @else
+                Menampilkan surat yang punya <strong>disposisi menunggu respons Anda</strong>. Buka suratnya, lalu terima atau tolak.
+            @endif
+        </span>
+        <a href="{{ route('surat-masuk.index') }}" class="btn btn-sm btn-light">Tampilkan semua</a>
+    </div>
+@endif
 <div class="card">
     <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-3">
         <div class="d-flex align-items-center gap-2 flex-wrap">        
-            @foreach(['' => 'Semua', 'baru' => 'Baru', 'didisposisi' => 'Didisposisi', 'diproses' => 'Diproses', 'selesai' => 'Selesai', 'diarsipkan' => 'Diarsipkan'] as $val => $label)
+           @foreach(['' => 'Semua', 'baru' => 'Baru', 'menunggu_disposisi_kepsek' => 'Menunggu Arahan Kepsek', 'menunggu_disposisi_tu' => 'Menunggu Disposisi TU', 'didisposisi' => 'Didisposisi', 'diproses' => 'Diproses', 'selesai' => 'Selesai', 'diarsipkan' => 'Diarsipkan'] as $val => $label)
                 @php $isActive = ($filterSuratMasuk === $val) || (!$filterSuratMasuk && !$val); @endphp
                 <a href="{{ route('surat-masuk.index', $val ? ['status' => $val] : []) }}"
                    class="badge rounded-pill text-decoration-none {{ $isActive ? 'text-white' : 'text-bg-light text-muted' }}"
@@ -81,6 +93,8 @@
                     @php
                         $badge = [
                             'baru'        => 'text-bg-warning',
+                            'menunggu_disposisi_kepsek' => 'text-bg-primary',
+                            'menunggu_disposisi_tu' => 'text-bg-info',
                             'didisposisi' => 'text-bg-info',
                             'diproses'    => 'text-bg-primary',
                             'selesai'     => 'text-bg-success',
@@ -112,12 +126,22 @@
                             <a href="{{ route('surat-masuk.show', $s) }}" class="fw-semibold text-decoration-none" style="font-size:.85rem;color:var(--ink)">
                                 {{ $s->perihal }}
                             </a>
+                            @if($s->disposisi_ditolak_count > 0)
+                                <span class="badge text-bg-danger ms-1" style="font-size:.68rem">
+                                    {{ $s->disposisi_ditolak_count }} disposisi ditolak
+                                </span>
+                            @endif
+                            @if(($filterDisposisi ?? null) === 'menunggu' && $s->disposisi_menunggu_count > 0)
+                                <span class="badge text-bg-warning ms-1" style="font-size:.68rem">menunggu respons</span>
+                            @endif
                         </td>
                         <td class="text-muted text-nowrap" style="font-size:.78rem">{{ $s->tanggal_diterima?->format('d M Y') }}</td>
                         <td>
                             @php
                                 $labelStatus = [
                                     'baru'        => 'Baru',
+                                    'menunggu_disposisi_kepsek' => 'Menunggu Arahan Kepsek',
+                                    'menunggu_disposisi_tu' => 'Menunggu Disposisi TU',
                                     'didisposisi' => 'Didisposisi',
                                     'diproses'    => 'Diproses',
                                     'selesai'     => 'Selesai',
