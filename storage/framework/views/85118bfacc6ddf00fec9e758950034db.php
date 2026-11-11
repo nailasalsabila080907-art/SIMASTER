@@ -7,11 +7,14 @@
         <h2 class="mb-1" style="font-size:1.5rem">Daftar Surat Masuk</h2>
         <p class="text-muted mb-0" style="font-size:.78rem">Pencatatan surat, disposisi, tindak lanjut, dan arsip.</p>
     </div>
-    <a href="<?php echo e(route('surat-masuk.create')); ?>" class="btn d-inline-flex align-items-center gap-2 px-3 py-2 text-white"
-       style="background:linear-gradient(135deg,#178754,#0EA5A4);border:none">
-        <i class="bi bi-plus-lg"></i> Catat Surat Masuk
-    </a>
+    <?php if(Auth::user()->role !== 'kepala_sekolah'): ?>
+        <a href="<?php echo e(route('surat-masuk.create')); ?>" class="btn d-inline-flex align-items-center gap-2 px-3 py-2 text-white"
+            style="background:linear-gradient(135deg,#178754,#0EA5A4);border:none">
+            <i class="bi bi-plus-lg"></i> Catat Surat Masuk
+        </a>
+    <?php endif; ?>
 </div>
+
 
 <?php if(session('sukses')): ?>
     <div class="alert alert-success rounded-3 d-flex align-items-center gap-2" style="font-size:.85rem" role="alert">
@@ -44,11 +47,23 @@
         </li>
     <?php endif; ?>
 </ul>
-
+    <?php if($filterDisposisi): ?>
+    <div class="alert alert-warning d-flex flex-wrap align-items-center justify-content-between gap-2 py-2" style="font-size:.85rem">
+        <span>
+            <i class="bi bi-funnel me-1"></i>
+            <?php if($filterDisposisi === 'ditolak'): ?>
+                Menampilkan surat yang punya <strong>disposisi ditolak</strong>. Buka suratnya, lalu klik <strong>Ubah Disposisi</strong>.
+            <?php else: ?>
+                Menampilkan surat yang punya <strong>disposisi menunggu respons Anda</strong>. Buka suratnya, lalu terima atau tolak.
+            <?php endif; ?>
+        </span>
+        <a href="<?php echo e(route('surat-masuk.index')); ?>" class="btn btn-sm btn-light">Tampilkan semua</a>
+    </div>
+<?php endif; ?>
 <div class="card">
     <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-3">
         <div class="d-flex align-items-center gap-2 flex-wrap">        
-            <?php $__currentLoopData = ['' => 'Semua', 'baru' => 'Baru', 'didisposisi' => 'Didisposisi', 'diproses' => 'Diproses', 'selesai' => 'Selesai', 'diarsipkan' => 'Diarsipkan']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $val => $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+           <?php $__currentLoopData = ['' => 'Semua', 'baru' => 'Baru', 'menunggu_disposisi_kepsek' => 'Menunggu Arahan Kepsek', 'menunggu_disposisi_tu' => 'Menunggu Disposisi TU', 'didisposisi' => 'Didisposisi', 'diproses' => 'Diproses', 'selesai' => 'Selesai', 'diarsipkan' => 'Diarsipkan']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $val => $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                 <?php $isActive = ($filterSuratMasuk === $val) || (!$filterSuratMasuk && !$val); ?>
                 <a href="<?php echo e(route('surat-masuk.index', $val ? ['status' => $val] : [])); ?>"
                    class="badge rounded-pill text-decoration-none <?php echo e($isActive ? 'text-white' : 'text-bg-light text-muted'); ?>"
@@ -78,6 +93,8 @@
                     <?php
                         $badge = [
                             'baru'        => 'text-bg-warning',
+                            'menunggu_disposisi_kepsek' => 'text-bg-primary',
+                            'menunggu_disposisi_tu' => 'text-bg-info',
                             'didisposisi' => 'text-bg-info',
                             'diproses'    => 'text-bg-primary',
                             'selesai'     => 'text-bg-success',
@@ -111,12 +128,22 @@
                                 <?php echo e($s->perihal); ?>
 
                             </a>
+                            <?php if($s->disposisi_ditolak_count > 0): ?>
+                                <span class="badge text-bg-danger ms-1" style="font-size:.68rem">
+                                    <?php echo e($s->disposisi_ditolak_count); ?> disposisi ditolak
+                                </span>
+                            <?php endif; ?>
+                            <?php if(($filterDisposisi ?? null) === 'menunggu' && $s->disposisi_menunggu_count > 0): ?>
+                                <span class="badge text-bg-warning ms-1" style="font-size:.68rem">menunggu respons</span>
+                            <?php endif; ?>
                         </td>
                         <td class="text-muted text-nowrap" style="font-size:.78rem"><?php echo e($s->tanggal_diterima?->format('d M Y')); ?></td>
                         <td>
                             <?php
                                 $labelStatus = [
                                     'baru'        => 'Baru',
+                                    'menunggu_disposisi_kepsek' => 'Menunggu Arahan Kepsek',
+                                    'menunggu_disposisi_tu' => 'Menunggu Disposisi TU',
                                     'didisposisi' => 'Didisposisi',
                                     'diproses'    => 'Diproses',
                                     'selesai'     => 'Selesai',

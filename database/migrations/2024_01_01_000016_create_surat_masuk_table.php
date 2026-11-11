@@ -31,6 +31,7 @@ return new class extends Migration
                 ->constrained('users', 'id_user')
                 ->restrictOnDelete();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

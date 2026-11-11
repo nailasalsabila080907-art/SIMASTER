@@ -3,9 +3,26 @@
 <div style="max-width:960px">
 
     <div class="d-flex align-items-center gap-3 mb-4">
-        <a href="<?php echo e(route('surat-masuk.index')); ?>" class="btn btn-light rounded-circle d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:38px;height:38px" title="Kembali">
-            <i class="bi bi-arrow-left"></i>
-        </a>
+        <?php if (isset($component)) { $__componentOriginal7df061e68ce253759b3c26462a603095 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal7df061e68ce253759b3c26462a603095 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.tombol-kembali','data' => ['href' => route('surat-masuk.index')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('tombol-kembali'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['href' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(route('surat-masuk.index'))]); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal7df061e68ce253759b3c26462a603095)): ?>
+<?php $attributes = $__attributesOriginal7df061e68ce253759b3c26462a603095; ?>
+<?php unset($__attributesOriginal7df061e68ce253759b3c26462a603095); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal7df061e68ce253759b3c26462a603095)): ?>
+<?php $component = $__componentOriginal7df061e68ce253759b3c26462a603095; ?>
+<?php unset($__componentOriginal7df061e68ce253759b3c26462a603095); ?>
+<?php endif; ?>
         <div>
             <p class="text-muted mb-1" style="font-size:.82rem">Persuratan / Surat Masuk</p>
             <h2 class="mb-0" style="font-size:1.5rem">Catat Surat Masuk</h2>

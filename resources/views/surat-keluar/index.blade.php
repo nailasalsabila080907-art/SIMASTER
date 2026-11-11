@@ -1,3 +1,4 @@
+
 @extends('layouts.app')
 @section('title', 'Surat Keluar')
 @section('content')
@@ -8,8 +9,10 @@
         <h2 class="mb-1" style="font-size:1.5rem">Daftar Surat Keluar</h2>
         <p class="text-muted mb-0" style="font-size:.78rem">Kelola draft, pengajuan, approval, dan surat yang sudah terbit.</p>
     </div>
-   @if(Auth::user()->role !== 'kepala_sekolah')
-        <a href="{{ route('surat-keluar.create') }}" class="btn d-inline-flex align-items-center gap-2 px-3 py-2 text-white"
+
+    @if(Auth::user()->role !== 'kepala_sekolah')
+        <a href="{{ route('surat-keluar.create') }}"
+           class="btn d-inline-flex align-items-center gap-2 px-3 py-2 text-white"
            style="background:linear-gradient(135deg,#178754,#0EA5A4);border:none">
             <i class="bi bi-plus-lg"></i> Buat Surat
         </a>
@@ -33,14 +36,17 @@
 {{-- Tab navigasi --}}
 <ul class="nav mb-4" style="border-bottom:1px solid var(--border);">
     <li class="nav-item">
-        <a class="nav-link active px-3 py-2" href="{{ route('surat-keluar.index') }}"
+        <a class="nav-link active px-3 py-2"
+           href="{{ route('surat-keluar.index') }}"
            style="color:var(--bs-primary);font-weight:600;border-bottom:2px solid var(--bs-primary);">
             Data Aktif
         </a>
     </li>
+
     @if(in_array(Auth::user()->role, ['admin_tu', 'super_admin', 'kepala_sekolah'], true))
         <li class="nav-item">
-            <a class="nav-link px-3 py-2" href="{{ route('surat-keluar.trashed') }}"
+            <a class="nav-link px-3 py-2"
+               href="{{ route('surat-keluar.trashed') }}"
                style="color:var(--ink-muted);font-weight:600;">
                 Nonaktif
             </a>
@@ -52,7 +58,10 @@
     <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-3">
         <div class="d-flex align-items-center gap-2 flex-wrap">
             @foreach(['' => 'Semua', 'draft' => 'Draft', 'ditolak' => 'Ditolak', 'diajukan' => 'Diajukan', 'terkirim' => 'Terbit'] as $val => $label)
-                @php $isActive = ($filterStatus === $val) || (!$filterStatus && !$val); @endphp
+                @php
+                    $isActive = ($filterStatus === $val) || (!$filterStatus && !$val);
+                @endphp
+
                 <a href="{{ route('surat-keluar.index', $val ? ['status' => $val] : []) }}"
                    class="badge rounded-pill text-decoration-none {{ $isActive ? 'text-white' : 'text-bg-light text-muted' }}"
                    style="font-size:.78rem;padding:.5rem .9rem;{{ $isActive ? 'background:linear-gradient(135deg,#178754,#0EA5A4)' : '' }}">
@@ -60,7 +69,10 @@
                 </a>
             @endforeach
         </div>
-        <span class="text-muted" style="font-size:.78rem">{{ $suratKeluar->total() }} surat</span>
+
+        <span class="text-muted" style="font-size:.78rem">
+            {{ $suratKeluar->total() }} surat
+        </span>
     </div>
 
     <div class="table-responsive">
@@ -76,6 +88,7 @@
                     <th class="pe-3 text-end">Aksi</th>
                 </tr>
             </thead>
+
             <tbody>
                 @forelse($suratKeluar as $s)
                     @php
@@ -87,33 +100,69 @@
                             'terkirim'   => 'text-bg-primary',
                             'diarsipkan' => 'text-bg-secondary',
                         ][$s->status] ?? 'text-bg-secondary';
+
+                        // Hak akses tombol hapus
+                        $bolehHapus = in_array(
+                            Auth::user()->role,
+                            ['admin_tu', 'super_admin'],
+                            true
+                        ) || (
+                            (int) $s->dibuat_oleh === (int) Auth::id()
+                            && in_array($s->status, ['draft', 'ditolak'], true)
+                        );
                     @endphp
+
                     <tr>
                         <td class="ps-3">
-                            <span class="font-monospace text-muted" style="font-size:.78rem">{{ $s->nomor_surat ?? '—' }}</span>
+                            <span class="font-monospace text-muted" style="font-size:.78rem">
+                                {{ $s->nomor_surat ?? '—' }}
+                            </span>
                         </td>
+
                         <td>
-                            <a href="{{ route('surat-keluar.show', $s) }}" class="fw-semibold text-decoration-none" style="font-size:.85rem;color:var(--ink)">
+                            <a href="{{ route('surat-keluar.show', $s) }}"
+                               class="fw-semibold text-decoration-none"
+                               style="font-size:.85rem;color:var(--ink)">
                                 {{ $s->perihal }}
                             </a>
                         </td>
-                        <td class="text-muted" style="font-size:.82rem">{{ $s->kategori->nama_kategori ?? '-' }}</td>
-                        <td class="text-muted text-nowrap" style="font-size:.78rem">{{ $s->tanggal_surat?->format('d M Y') ?? '-' }}</td>
-                        <td class="text-muted" style="font-size:.82rem">{{ $s->pembuat->pegawai->nama_lengkap ?? $s->pembuat->username ?? '-' }}</td>
-                        <td>
-                            <span class="badge rounded-pill {{ $badge }}" style="font-size:.72rem">{{ ucfirst($s->status) }}</span>
+
+                        <td class="text-muted" style="font-size:.82rem">
+                            {{ $s->kategori->nama_kategori ?? '-' }}
                         </td>
+
+                        <td class="text-muted text-nowrap" style="font-size:.78rem">
+                            {{ $s->tanggal_surat?->format('d M Y') ?? '-' }}
+                        </td>
+
+                        <td class="text-muted" style="font-size:.82rem">
+                            {{ $s->pembuat->pegawai->nama_lengkap ?? $s->pembuat->username ?? '-' }}
+                        </td>
+
+                        <td>
+                            <span class="badge rounded-pill {{ $badge }}" style="font-size:.72rem">
+                                {{ ucfirst($s->status) }}
+                            </span>
+                        </td>
+
                         <td class="pe-3 text-end">
                             <div class="d-inline-flex gap-1">
-                                <a href="{{ route('surat-keluar.show', $s) }}" class="btn btn-sm btn-light rounded-circle" title="Lihat detail">
+                                <a href="{{ route('surat-keluar.show', $s) }}"
+                                   class="btn btn-sm btn-light rounded-circle"
+                                   title="Lihat detail">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                               @if((in_array($s->status, ['draft', 'ditolak'], true) && ($s->dibuat_oleh === Auth::id() || in_array(Auth::user()->role, ['admin_tu', 'super_admin'], true) )
-                                )|| ( $s->status === 'diarsipkan' && in_array(Auth::user()->role, ['admin_tu', 'super_admin'], true)))
-                                    <form action="{{ route('surat-keluar.destroy', $s) }}" method="POST"
+
+                                @if($bolehHapus)
+                                    <form action="{{ route('surat-keluar.destroy', $s) }}"
+                                          method="POST"
                                           onsubmit="return confirm('Hapus surat ini? Surat akan dipindahkan ke nonaktif.')">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-light rounded-circle text-danger" title="Hapus">
+                                        @csrf
+                                        @method('DELETE')
+
+                                        <button type="submit"
+                                                class="btn btn-sm btn-light rounded-circle text-danger"
+                                                title="Hapus">
                                             <i class="bi bi-trash3"></i>
                                         </button>
                                     </form>
@@ -121,6 +170,7 @@
                             </div>
                         </td>
                     </tr>
+
                 @empty
                     <tr>
                         <td colspan="7" class="text-center text-muted py-5" style="font-size:.85rem">
@@ -133,14 +183,16 @@
         </table>
     </div>
 
-        @if($suratKeluar->hasPages())
-         <div class="card-footer bg-transparent d-flex flex-wrap align-items-center justify-content-between gap-2">
-         <span class="text-muted" style="font-size:.78rem">
-             Menampilkan {{ $suratKeluar->firstItem() }}–{{ $suratKeluar->lastItem() }} dari {{ $suratKeluar->total() }} data
-         </span>
-        {{ $suratKeluar->links('pagination::bootstrap-5') }}
-    </div>
-@endif
+    @if($suratKeluar->hasPages())
+        <div class="card-footer bg-transparent d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <span class="text-muted" style="font-size:.78rem">
+                Menampilkan {{ $suratKeluar->firstItem() }}–{{ $suratKeluar->lastItem() }}
+                dari {{ $suratKeluar->total() }} data
+            </span>
+
+            {{ $suratKeluar->links('pagination::bootstrap-5') }}
+        </div>
+    @endif
 </div>
 
 @endsection

@@ -25,9 +25,26 @@
 
 <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
     <div class="d-flex align-items-start gap-3">
-        <a href="<?php echo e(route('surat-masuk.index')); ?>" class="btn btn-light rounded-circle d-inline-flex align-items-center justify-content-center flex-shrink-0" style="width:38px;height:38px" title="Kembali">
-            <i class="bi bi-arrow-left"></i>
-        </a>
+        <?php if (isset($component)) { $__componentOriginal7df061e68ce253759b3c26462a603095 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal7df061e68ce253759b3c26462a603095 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.tombol-kembali','data' => ['href' => route('surat-masuk.index')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('tombol-kembali'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['href' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(route('surat-masuk.index'))]); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal7df061e68ce253759b3c26462a603095)): ?>
+<?php $attributes = $__attributesOriginal7df061e68ce253759b3c26462a603095; ?>
+<?php unset($__attributesOriginal7df061e68ce253759b3c26462a603095); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal7df061e68ce253759b3c26462a603095)): ?>
+<?php $component = $__componentOriginal7df061e68ce253759b3c26462a603095; ?>
+<?php unset($__componentOriginal7df061e68ce253759b3c26462a603095); ?>
+<?php endif; ?>
         <div>
             <p class="text-muted mb-1" style="font-size:.82rem">Persuratan / Surat Masuk</p>
             <h2 class="mb-1" style="font-size:1.4rem"><?php echo e($suratMasuk->perihal); ?></h2>
@@ -267,8 +284,8 @@
                                 <?php if($d->instruksi): ?>
                                     <span class="d-block mt-1" style="font-size:.95rem"><?php echo e($d->instruksi); ?></span>
                                 <?php endif; ?>
-                                <?php if($d->status === 'ditolak' && $d->catatan): ?>
-                                    <span class="d-block mt-1 text-danger" style="font-size:.95rem"><i class="bi bi-info-circle"></i> <?php echo e($d->catatan); ?></span>
+                                <?php if($d->status === 'ditolak' && $d->alasan_penolakan ?? $d->catatan): ?>
+                                    <span class="d-block mt-1 text-danger" style="font-size:.95rem"><i class="bi bi-info-circle"></i> Ditolak: <?php echo e($d->alasan_penolakan ?? $d->catatan); ?></span>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -281,6 +298,59 @@
                             <a href="<?php echo e(route('disposisi.show', $d)); ?>" class="btn btn-sm btn-light" style="font-size:.9rem">
                                 Lihat Detail
                             </a>
+
+                        <?php if($d->status === 'ditolak' && $bolehAdmin): ?>
+    <button type="button" class="btn btn-sm btn-warning text-dark fw-semibold" style="font-size:.9rem"
+            data-bs-toggle="modal" data-bs-target="#ubahModal<?php echo e($d->id_disposisi); ?>">
+        <i class="bi bi-arrow-repeat me-1"></i> Ubah Disposisi
+    </button>
+
+    <div class="modal fade" id="ubahModal<?php echo e($d->id_disposisi); ?>" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form method="POST" action="<?php echo e(route('disposisi.ubah', $d)); ?>">
+                    <?php echo csrf_field(); ?>
+                    <div class="modal-header">
+                        <h5 class="modal-title" style="font-size:1rem">Ubah Tujuan Disposisi</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-light border mb-3" style="font-size:.85rem">
+                            <div><strong>Tujuan sebelumnya:</strong> <?php echo e($d->tujuan_label); ?></div>
+                            <?php if($d->alasan_tolak ?? $d->catatan): ?>
+                                <div class="text-danger"><strong>Alasan ditolak:</strong> <?php echo e($d->alasan_tolak ?? $d->catatan); ?></div>
+                            <?php endif; ?>
+                            <div class="text-muted mt-1">Isi surat, instruksi, dan catatan tidak berubah. Hanya tujuan yang diganti.</div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" style="font-size:.85rem">Tujuan Pegawai Baru</label>
+                                <select name="tujuan_pegawai[]" class="form-select" multiple size="6">
+                                    <?php $__currentLoopData = $pegawaiList; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $p): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <option value="<?php echo e($p->id_pegawai); ?>"><?php echo e($p->nama_lengkap); ?></option>
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" style="font-size:.85rem">Tujuan Unit Kerja Baru</label>
+                                <select name="tujuan_unit[]" class="form-select" multiple size="6">
+                                    <?php $__currentLoopData = $unitList; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $u): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <option value="<?php echo e($u->id_unit); ?>"><?php echo e($u->nama_unit); ?></option>
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                </select>
+                            </div>
+                        </div>
+                        <p class="text-muted mt-2 mb-0" style="font-size:.78rem">Pilih minimal satu tujuan (boleh lebih dari satu).</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="font-size:.9rem">Batal</button>
+                        <button type="submit" class="btn btn-warning text-dark fw-semibold" style="font-size:.9rem">Kirim Ulang Disposisi</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>
 
                             <?php if(! $statusFinal && $bolehAksi): ?>
                                 <div class="dropdown">

@@ -300,44 +300,60 @@ class SuratKeluarController extends Controller
     // LogAktivitas (log umum) dan LogAktivitasSurat (log khusus surat).
     // =====================================================
 
-    public function destroy(SuratKeluar $suratKeluar)
-    {
-        $this->pastikanPemilikAtauAdmin($suratKeluar);
+    
+public function destroy(SuratKeluar $suratKeluar)
+{
+    $this->pastikanPemilikAtauAdmin($suratKeluar);
 
-        $bolehDihapusPemilik = in_array($suratKeluar->status, ['draft', 'ditolak'], true);
-        $bolehDihapusAdmin = $suratKeluar->status === 'diarsipkan'
-            && in_array(Auth::user()->role, ['admin_tu', 'super_admin'], true);
+    $role = Auth::user()->role;
 
-        abort_unless(
-            $bolehDihapusPemilik || $bolehDihapusAdmin,
-            422,
-            'Surat yang sudah diajukan/terbit tidak bisa dihapus. Batalkan pengajuannya terlebih dahulu.'
-        );
+    // Admin TU dan Super Admin boleh menghapus semua status surat.
+    $bolehDihapusAdmin = in_array(
+        $role,
+        ['admin_tu', 'super_admin'],
+        true
+    );
 
-        $perihal = $suratKeluar->perihal;
-        $idSurat = $suratKeluar->id_surat_keluar;
+    // Pemilik surat hanya boleh menghapus draft atau ditolak.
+    $bolehDihapusPemilik =
+        $suratKeluar->dibuat_oleh === Auth::id()
+        && in_array($suratKeluar->status, ['draft', 'ditolak'], true);
 
-        // Hapus juga catatan arsipnya (kalau ada), biar tidak nyangkut jadi baris kosong di halaman Arsip Surat
-        ArsipSurat::where('tipe_surat', 'keluar')->where('id_surat', $idSurat)->delete();
+    abort_unless(
+        $bolehDihapusAdmin || $bolehDihapusPemilik,
+        422,
+        'Anda tidak memiliki izin untuk menghapus surat ini.'
+    );
 
-        $suratKeluar->delete();
+    $perihal = $suratKeluar->perihal;
+    $idSurat = $suratKeluar->id_surat_keluar;
 
-        LogAktivitas::catat(
-            'hapus_data',
-            'Surat Keluar',
-            "Menghapus surat: {$perihal}"
-        );
-        LogAktivitasSurat::catat(
-            LogAktivitasSurat::TIPE_KELUAR,
-            $idSurat,
-            LogAktivitasSurat::AKSI_HAPUS,
-            "Surat dipindahkan ke nonaktif: {$perihal}"
-        );
+    // Hapus catatan arsip terkait jika ada.
+    ArsipSurat::where('tipe_surat', 'keluar')
+        ->where('id_surat', $idSurat)
+        ->delete();
 
-        return redirect()
-            ->route('surat-keluar.index')
-            ->with('sukses', 'Surat berhasil dihapus.');
-    }
+    // Pindahkan surat ke nonaktif (Soft Delete).
+    $suratKeluar->delete();
+
+    LogAktivitas::catat(
+        'hapus_data',
+        'Surat Keluar',
+        "Menghapus surat: {$perihal}"
+    );
+
+    LogAktivitasSurat::catat(
+        LogAktivitasSurat::TIPE_KELUAR,
+        $idSurat,
+        LogAktivitasSurat::AKSI_HAPUS,
+        "Surat dipindahkan ke nonaktif: {$perihal}"
+    );
+
+    return redirect()
+        ->route('surat-keluar.index')
+        ->with('sukses', 'Surat berhasil dipindahkan ke nonaktif.');
+}
+
 
     public function trashed()
     {

@@ -15,11 +15,26 @@
 <div style="max-width:760px">
 
     <div class="d-flex align-items-start gap-3 mb-4">
-        <a href="javascript:void(0)"
-   onclick="(document.referrer.includes(window.location.origin)) ? history.back() : window.location='<?php echo e(route('surat-keluar.index')); ?>'"
-   class="btn btn-light rounded-circle ..." title="Kembali">
-            <i class="bi bi-arrow-left"></i>
-        </a>
+        <?php if (isset($component)) { $__componentOriginal7df061e68ce253759b3c26462a603095 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal7df061e68ce253759b3c26462a603095 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.tombol-kembali','data' => ['href' => route('surat-keluar.index')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('tombol-kembali'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['href' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(route('surat-keluar.index'))]); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal7df061e68ce253759b3c26462a603095)): ?>
+<?php $attributes = $__attributesOriginal7df061e68ce253759b3c26462a603095; ?>
+<?php unset($__attributesOriginal7df061e68ce253759b3c26462a603095); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal7df061e68ce253759b3c26462a603095)): ?>
+<?php $component = $__componentOriginal7df061e68ce253759b3c26462a603095; ?>
+<?php unset($__componentOriginal7df061e68ce253759b3c26462a603095); ?>
+<?php endif; ?>
         <div>
             <p class="text-muted mb-1" style="font-size:.82rem">Persuratan / Surat Keluar</p>
             <h2 class="mb-0" style="font-size:1.4rem">Detail Surat</h2>
