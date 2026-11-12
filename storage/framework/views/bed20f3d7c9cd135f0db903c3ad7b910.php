@@ -1,5 +1,3 @@
-
-
 <?php $__env->startSection('title', 'Lembar Disposisi'); ?>
 
 <?php $__env->startSection('content'); ?>
@@ -308,4 +306,4 @@
 </div>
 
 <?php $__env->stopSection(); ?>
-<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\simaster\resources\views/disposisi/show.blade.php ENDPATH**/ ?>
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\SIMASTER\resources\views/disposisi/show.blade.php ENDPATH**/ ?>

@@ -10,6 +10,8 @@ use App\Models\LogAktivitas;
 use App\Models\LogAktivitasSurat;
 use App\Models\Notifikasi;
 use App\Models\SuratKeluar;
+use App\Models\Sekolah;
+use App\Models\User;
 use App\Models\TemplateSurat;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -142,20 +144,25 @@ class SuratKeluarController extends Controller
     }
 
     public function show(SuratKeluar $suratKeluar)
-    {
-        $this->pastikanBolehLihat($suratKeluar);
+{
+    $this->pastikanBolehLihat($suratKeluar);
 
-        $suratKeluar->load([
-            'template.variabel',
-            'kategori',
-            'pembuat.pegawai',
-            'approval.pegawaiPemberiApproval',
-        ]);
+    $suratKeluar->load([
+        'template.variabel',
+        'kategori',
+        'pembuat.pegawai',
+        'approval.pegawaiPemberiApproval',
+    ]);
 
-        $idPegawai = Auth::user()->id_pegawai;
+    // Cari approval yang memang sedang menunggu giliran pengguna.
+    $idPegawai = Auth::user()->pegawai?->id_pegawai;
 
+    $approvalSaya = null;
+
+    if ($idPegawai) {
         $approvalSaya = $suratKeluar->approval()
             ->where('id_pegawai_pemberi_approval', $idPegawai)
+            ->where('status', 'menunggu')
             ->first();
 
         if ($approvalSaya) {
@@ -167,105 +174,197 @@ class SuratKeluarController extends Controller
                 $approvalSaya = null;
             }
         }
+    }
 
-        $sekolah = \App\Models\Sekolah::first();
+    // Data sekolah dipakai pada kop surat di halaman detail.
+    $sekolah = Sekolah::first();
 
-        return view(
-            'surat-keluar.show',
-            compact('suratKeluar', 'approvalSaya', 'sekolah')
+    // Ambil akun Waka aktif untuk pilihan manual.
+    $daftarWaka = User::with(['pegawai.jabatan'])
+    ->where('status', 'aktif')
+    ->where('role', 'wakil_kepala_sekolah')
+    ->whereHas('pegawai', function ($query) {
+        $query->where('status', 'aktif')
+            ->whereHas('jabatan', function ($jabatan) {
+                $jabatan->where(
+                    'nama_jabatan',
+                    'like',
+                    'Wakil Kepala Sekolah%'
+                );
+            });
+    })
+    ->get();
+
+    return view(
+    'surat-keluar.show',
+    compact('suratKeluar', 'approvalSaya', 'sekolah', 'daftarWaka')
+    );
+}
+
+   public function ajukan(
+    Request $request,
+    SuratKeluar $suratKeluar
+) {
+    $this->pastikanPemilikAtauAdmin($suratKeluar);
+
+    abort_unless(
+        in_array($suratKeluar->status, ['draft', 'ditolak'], true),
+        422,
+        'Surat tidak dapat diajukan pada status saat ini.'
+    );
+
+    $data = $request->validate([
+        'id_waka' => ['nullable', 'integer'],
+    ]);
+
+    $suratKeluar->loadMissing('pembuat.pegawai');
+
+    $pembuatPegawaiId = $suratKeluar->pembuat?->id_pegawai;
+
+    // Cari Kepala TU berdasarkan jabatan, bukan nama role.
+    $kepalaTu = User::query()
+        ->with('pegawai.jabatan')
+        ->where('status', 'aktif')
+        ->whereHas('pegawai', function ($query) use ($pembuatPegawaiId) {
+            $query->where('status', 'aktif')
+                ->where('id_pegawai', '!=', $pembuatPegawaiId)
+                ->whereHas('jabatan', function ($jabatan) {
+                    $jabatan->where('nama_jabatan', 'Kepala TU');
+                });
+        })
+        ->first();
+
+    // Cari Kepala Sekolah berdasarkan jabatan.
+    $kepalaSekolah = User::query()
+        ->with('pegawai.jabatan')
+        ->where('status', 'aktif')
+        ->whereHas('pegawai', function ($query) use ($pembuatPegawaiId) {
+            $query->where('status', 'aktif')
+                ->where('id_pegawai', '!=', $pembuatPegawaiId)
+                ->whereHas('jabatan', function ($jabatan) {
+                    $jabatan->where('nama_jabatan', 'Kepala Sekolah');
+                });
+        })
+        ->first();
+
+    if (! $kepalaTu || ! $kepalaSekolah) {
+        return back()->with(
+            'gagal',
+            'Akun Kepala TU atau Kepala Sekolah belum tersedia, tidak aktif, atau belum memiliki jabatan yang sesuai.'
         );
     }
 
-    public function ajukan(SuratKeluar $suratKeluar)
-    {
-        $this->pastikanPemilikAtauAdmin($suratKeluar);
+    // Jika petugas memilih Waka, pastikan akun dan jabatannya valid.
+    $waka = null;
 
-        abort_unless(
-            in_array($suratKeluar->status, ['draft', 'ditolak'], true),
-            422,
-            'Surat tidak dapat diajukan pada status saat ini.'
-        );
-
-        $suratKeluar->loadMissing('pembuat.pegawai');
-
-        $pembuatPegawaiId = $suratKeluar->pembuat?->id_pegawai;
-
-        $approverUsers = \App\Models\User::with('pegawai.jabatan')
+    if (! empty($data['id_waka'])) {
+        $waka = User::query()
+            ->with('pegawai.jabatan')
+            ->where('id_user', $data['id_waka'])
             ->where('status', 'aktif')
-            ->whereIn('role', ['kepala_tu', 'kepala_sekolah'])
-            ->whereHas('pegawai', function ($query) use ($pembuatPegawaiId) {
-              $query->where('status', 'aktif')
-              ->where('id_pegawai', '!=', $pembuatPegawaiId);
+            ->where('role', 'wakil_kepala_sekolah')
+            ->whereHas('pegawai', function ($query) {
+                $query->where('status', 'aktif')
+                    ->whereHas('jabatan', function ($jabatan) {
+                        $jabatan->where(
+                            'nama_jabatan',
+                            'like',
+                            'Wakil Kepala Sekolah%'
+                        );
+                    });
             })
-            ->get()
-            ->sortBy(
-                fn ($user) =>
-                    $user->pegawai?->jabatan?->level_jabatan ?? 999
-            )
-            ->groupBy(
-                fn ($user) =>
-                    $user->pegawai?->jabatan?->level_jabatan ?? 999
-            )
-            ->map(
-                fn ($users) => $users->first()
-            )
-            ->values();
+            ->first();
 
-        if ($approverUsers->isEmpty()) {
-            return back()->with(
+        if (! $waka) {
+            return back()->withInput()->with(
                 'gagal',
-                'Belum ada approver aktif dengan level jabatan minimal 2. Isi Master Pegawai dan pastikan akun Kepala TU/Kepala Sekolah aktif.'
+                'Waka yang dipilih tidak valid atau akunnya tidak aktif.'
             );
         }
 
-        DB::transaction(function () use (
-            $suratKeluar,
-            $approverUsers
+        if (
+            $waka->id_pegawai == $pembuatPegawaiId ||
+            $waka->id_pegawai == $kepalaTu->id_pegawai ||
+            $waka->id_pegawai == $kepalaSekolah->id_pegawai
         ) {
-            $suratKeluar->approval()->delete();
+            return back()->withInput()->with(
+                'gagal',
+                'Waka yang dipilih tidak boleh sama dengan pembuat atau approver lainnya.'
+            );
+        }
+    }
 
-            foreach ($approverUsers as $index => $user) {
-                ApprovalSuratKeluar::create([
-                    'id_surat_keluar' => $suratKeluar->id_surat_keluar,
-                    'id_pegawai_pemberi_approval' => $user->id_pegawai,
-                    'urutan' => $index + 1,
-                    'status' => 'menunggu',
-                ]);
+    // Susun urutan approval.
+    $approverUsers = collect([
+        $kepalaTu,
+    ]);
 
-                if ($index === 0) {
-                    Notifikasi::kirim(
-                        $user->id_user,
-                        'keluar',
-                        $suratKeluar->id_surat_keluar,
-                        null,
-                        'Surat menunggu persetujuan Anda',
-                        "Surat \"{$suratKeluar->perihal}\" perlu Anda setujui."
-                    );
-                }
-            }
+    if ($waka) {
+        $approverUsers->push($waka);
+    }
 
-            $suratKeluar->update([
-                'status' => 'diajukan',
+    $approverUsers->push($kepalaSekolah);
+
+    DB::transaction(function () use (
+        $suratKeluar,
+        $approverUsers,
+        $waka
+    ) {
+        // Hapus riwayat approval lama jika surat diajukan ulang.
+        $suratKeluar->approval()->delete();
+
+        foreach ($approverUsers as $index => $user) {
+            ApprovalSuratKeluar::create([
+                'id_surat_keluar' => $suratKeluar->id_surat_keluar,
+                'id_pegawai_pemberi_approval' => $user->id_pegawai,
+                'urutan' => $index + 1,
+                'status' => 'menunggu',
             ]);
 
-            LogAktivitas::catat(
-                'ubah_data',
-                'Surat Keluar',
-                "Mengajukan surat: {$suratKeluar->perihal}"
-            );
-            LogAktivitasSurat::catat(
+            // Notifikasi hanya dikirim kepada approver pertama.
+            if ($index === 0) {
+                Notifikasi::kirim(
+                    $user->id_user,
+                    'keluar',
+                    $suratKeluar->id_surat_keluar,
+                    null,
+                    'Surat menunggu persetujuan Anda',
+                    "Surat \"{$suratKeluar->perihal}\" perlu Anda setujui."
+                );
+            }
+        }
+
+        $suratKeluar->update([
+            'status' => 'diajukan',
+        ]);
+
+        LogAktivitas::catat(
+            'ubah_data',
+            'Surat Keluar',
+            "Mengajukan surat: {$suratKeluar->perihal}"
+        );
+
+        $jumlahApprover = $approverUsers->count();
+
+        $keteranganWaka = $waka
+            ? ' dengan Waka sebagai approver'
+            : ' tanpa Waka';
+
+        LogAktivitasSurat::catat(
             LogAktivitasSurat::TIPE_KELUAR,
             $suratKeluar->id_surat_keluar,
             LogAktivitasSurat::AKSI_DIAJUKAN,
-            "Diajukan untuk persetujuan {$approverUsers->count()} approver"
+            "Diajukan kepada {$jumlahApprover} approver{$keteranganWaka}"
         );
-        });
+    });
 
-        return back()->with(
+    return redirect()
+        ->route('surat-keluar.show', $suratKeluar)
+        ->with(
             'sukses',
             'Surat berhasil diajukan untuk persetujuan.'
         );
-    }
+}
 
     public function cetakPdf(SuratKeluar $suratKeluar)
 {
@@ -279,7 +378,7 @@ class SuratKeluarController extends Controller
 
     $suratKeluar->load(['kategori', 'unitPembuat.sekolah']);
 
-    $sekolah = \App\Models\Sekolah::first();
+    $sekolah = Sekolah::first();
 
     $pdf = Pdf::loadView('surat-keluar.cetak-pdf', compact('suratKeluar', 'sekolah'))
         ->setPaper('a4', 'portrait');
@@ -316,7 +415,7 @@ public function destroy(SuratKeluar $suratKeluar)
 
     // Pemilik surat hanya boleh menghapus draft atau ditolak.
     $bolehDihapusPemilik =
-        $suratKeluar->dibuat_oleh === Auth::id()
+        (int) $suratKeluar->dibuat_oleh === (int) Auth::id()
         && in_array($suratKeluar->status, ['draft', 'ditolak'], true);
 
     abort_unless(
@@ -558,7 +657,7 @@ public function destroy(SuratKeluar $suratKeluar)
         SuratKeluar $suratKeluar
     ): void {
         abort_unless(
-            $suratKeluar->dibuat_oleh === Auth::id()
+            (int) $suratKeluar->dibuat_oleh === (int) Auth::id()
             || in_array(
                 Auth::user()->role,
                 ['admin_tu', 'super_admin'],
@@ -584,8 +683,17 @@ public function destroy(SuratKeluar $suratKeluar)
             return;
         }
 
+        $idPegawai = Auth::user()->pegawai?->id_pegawai;
+
+        $adalahApproverSurat = $idPegawai
+            ? $suratKeluar->approval()
+                ->where('id_pegawai_pemberi_approval', $idPegawai)
+                ->exists()
+            : false;
+
         abort_unless(
-            $suratKeluar->dibuat_oleh === Auth::id(),
+            (int) $suratKeluar->dibuat_oleh === (int) Auth::id()
+                || $adalahApproverSurat,
             403,
             'Anda tidak memiliki akses ke surat ini.'
         );

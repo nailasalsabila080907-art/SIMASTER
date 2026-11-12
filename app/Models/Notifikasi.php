@@ -29,26 +29,25 @@ class Notifikasi extends Model
         return $this->belongsTo(User::class, 'id_user', 'id_user');
     }
 
-    // Helper cepat buat kirim notifikasi ke seorang user
     public static function kirim(
-    int $idUser,
-    string $tipeSurat,
-    string $idSurat,
-    ? int $idDisposisi = null,
-    string $judul,
-    string $pesan
-): self {
-    return self::create([
-        'id_user' => $idUser,
-        'tipe_surat' => $tipeSurat,
-        'id_surat' => $idSurat,
-        'id_disposisi' => $idDisposisi,
-        'judul' => $judul,
-        'pesan' => $pesan,
-        'sudah_dibaca' => false,
-        'created_at' => now(),
-    ]);
-}
+        int $idUser,
+        string $tipeSurat,
+        string $idSurat,
+        ?int $idDisposisi = null,
+        string $judul,
+        string $pesan
+    ): self {
+        return self::create([
+            'id_user' => $idUser,
+            'tipe_surat' => $tipeSurat,
+            'id_surat' => $idSurat,
+            'id_disposisi' => $idDisposisi,
+            'judul' => $judul,
+            'pesan' => $pesan,
+            'sudah_dibaca' => false,
+            'created_at' => now(),
+        ]);
+    }
 
     public function tandaiDibaca(): void
     {

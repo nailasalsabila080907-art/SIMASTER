@@ -101,7 +101,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/surat-keluar/{uuid}/force', [SuratKeluarController::class, 'forceDelete'])->name('surat-keluar.forceDelete');
     });
 
-    Route::middleware(['auth', 'role:admin_tu,super_admin,kepala_sekolah,wakil_kepala_sekolah'])->group(function () {
+    Route::middleware(['auth','role:admin_tu,kepala_tu,super_admin,kepala_sekolah,wakil_kepala_sekolah'])->group(function () {
         Route::get('/approval', [ApprovalSuratKeluarController::class, 'index'])->name('approval.index');
         Route::post('/approval/{approval}/setujui', [ApprovalSuratKeluarController::class, 'setujui'])->name('approval.setujui');
         Route::post('/approval/{approval}/tolak', [ApprovalSuratKeluarController::class, 'tolak'])->name('approval.tolak');

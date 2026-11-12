@@ -70,14 +70,15 @@ class ApprovalSuratKeluarController extends Controller
         Request $request,
         ApprovalSuratKeluar $approval
     ) {
-        $this->pastikanApproverSah($approval);
+        $data = $request->validate([
+            'catatan' => ['nullable', 'string', 'max:255'],
+        ]);
 
+        $this->pastikanApproverSah($approval);
         $this->pastikanTahapBerjalan($approval);
 
-        DB::transaction(function () use ($approval, $request) {
-            $approval->setujui(
-                $request->input('catatan')
-            );
+        DB::transaction(function () use ($approval, $data) {
+            $approval->setujui($data['catatan'] ?? null);
 
             $suratKeluar = $approval
                 ->suratKeluar()
@@ -101,7 +102,7 @@ class ApprovalSuratKeluarController extends Controller
             $suratKeluar->id_surat_keluar,
             LogAktivitasSurat::AKSI_APPROVE,
             "Disetujui pada tahap urutan ke-{$approval->urutan}" .
-                ($request->input('catatan') ? ": {$request->input('catatan')}" : '')
+                (! empty($data['catatan']) ? ": {$data['catatan']}" : '')
         );
 
             $approvalBerikutnya = $suratKeluar
@@ -111,10 +112,10 @@ class ApprovalSuratKeluarController extends Controller
                 ->first();
 
             if ($approvalBerikutnya) {
-                $userBerikutnya =
-                    $approvalBerikutnya
-                        ->pegawaiPemberiApproval
-                        ?->user;
+                $userBerikutnya = User::query()
+                    ->where('id_pegawai', $approvalBerikutnya->id_pegawai_pemberi_approval)
+                    ->where('status', 'aktif')
+                    ->first();
 
                 if ($userBerikutnya) {
                     Notifikasi::kirim(
@@ -149,35 +150,40 @@ class ApprovalSuratKeluarController extends Controller
 
         $this->pastikanTahapBerjalan($approval);
 
-        DB::transaction(function () use (
-            $approval,
-            $data
-        ) {
+        DB::transaction(function () use ($approval, $data) {
             $suratKeluar = $approval
                 ->suratKeluar()
                 ->with('pembuat')
+                ->lockForUpdate()
                 ->firstOrFail();
 
-            $approval->tolak(
-                $data['catatan']
-            );
+            $approval->tolak($data['catatan']);
 
-            $suratKeluar
-                ->approval()
+            // Tahap berikutnya dibatalkan karena surat sudah ditolak.
+            $suratKeluar->approval()
                 ->where('status', 'menunggu')
                 ->update([
                     'status' => 'ditolak',
                     'tanggal_approval' => now(),
                 ]);
 
-            
+            // Status surat harus ditolak agar pembuat bisa memperbaikinya.
+            $suratKeluar->update([
+                'status' => 'ditolak',
+            ]);
 
-        LogAktivitasSurat::catat(
-        LogAktivitasSurat::TIPE_KELUAR,
-        $suratKeluar->id_surat_keluar,
-        LogAktivitasSurat::AKSI_TOLAK,
-        "Ditolak pada tahap urutan ke-{$approval->urutan}: {$data['catatan']}"
-    );
+            LogAktivitas::catat(
+                'ubah_data',
+                'Approval Surat Keluar',
+                "Menolak surat: {$suratKeluar->perihal}"
+            );
+
+            LogAktivitasSurat::catat(
+                LogAktivitasSurat::TIPE_KELUAR,
+                $suratKeluar->id_surat_keluar,
+                LogAktivitasSurat::AKSI_TOLAK,
+                "Ditolak pada tahap urutan ke-{$approval->urutan}: {$data['catatan']}"
+            );
 
             if ($suratKeluar->pembuat) {
                 Notifikasi::kirim(
@@ -200,7 +206,7 @@ class ApprovalSuratKeluarController extends Controller
     protected function pastikanApproverSah(
         ApprovalSuratKeluar $approval
     ): void {
-        if ($approval->id_pegawai_pemberi_approval !== Auth::user()->pegawai?->id_pegawai) {
+        if ((int) $approval->id_pegawai_pemberi_approval !== (int) (Auth::user()->pegawai?->id_pegawai ?? 0)) {
             throw new HttpResponseException(
                 back()->with('gagal', 'Anda bukan approver untuk surat ini.'
                 )
@@ -247,8 +253,16 @@ class ApprovalSuratKeluarController extends Controller
             return;
         }
 
+        $masihAdaApprovalBelumSelesai = $suratKeluar->approval()
+            ->where('status', '!=', 'disetujui')
+            ->exists();
+
+        if ($masihAdaApprovalBelumSelesai) {
+            throw new \RuntimeException('Surat belum disetujui oleh seluruh approver.');
+        }
+
         $suratKeluar->loadMissing([
-            'template',
+            'template.variabel',
             'klasifikasi',
             'unitPembuat',
             'pembuat',
