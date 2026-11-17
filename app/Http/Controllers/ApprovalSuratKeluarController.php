@@ -304,12 +304,13 @@ class ApprovalSuratKeluarController extends Controller
 
         $nomorSurat = $bangunNomorSurat($noUrut);
 
-        $percobaan = 0;
+       $percobaan = 0;
         while (
-            SuratKeluar::where('nomor_surat', $nomorSurat)
+            SuratKeluar::withTrashed()
+                ->where('nomor_surat', $nomorSurat)
                 ->where('id_surat_keluar', '!=', $suratKeluar->id_surat_keluar)
                 ->exists()
-            && $percobaan < 20
+            && $percobaan < 200
         ) {
             $noUrut = PenomoranSurat::nomorUrutBerikutnya(
                 $suratKeluar->id_unit_pembuat,
@@ -332,7 +333,7 @@ class ApprovalSuratKeluarController extends Controller
                 'tanggal_surat' =>
                     $suratKeluar
                         ->tanggal_surat
-                        ?->format('d F Y'),
+                        ?->locale('id')->translatedFormat('j F Y'),
             ]
         );
 
@@ -355,7 +356,7 @@ class ApprovalSuratKeluarController extends Controller
                         $dataUntukRender[
                             $variabel->nama_variabel
                         ]
-                    )->format('d F Y');
+                    )->locale('id')->translatedFormat('d F Y');
                 } catch (\Throwable $e) {
                 }
             }
@@ -379,8 +380,10 @@ class ApprovalSuratKeluarController extends Controller
                 '{{' . $key . '}}',
                 $nilaiAman,
                 $isiSurat
+                
             );
         }
+        $isiSurat = preg_replace('/\{\{\s*[a-z0-9_]+\s*\}\}/i', '', $isiSurat);
 
         $suratKeluar->update([
             'nomor_surat' => $nomorSurat,
