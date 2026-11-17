@@ -262,25 +262,11 @@
                             <div class="row g-3">
 
                                 {{-- Perihal --}}
-                                <div class="col-md-6">
-
-                                    <label
-                                        class="form-label"
-                                        style="font-size:.85rem">
-
-                                        Perihal
-                                        <span class="text-danger">*</span>
-
-                                    </label>
-
-                                    <input
-                                        type="text"
-                                        name="perihal"
-                                        value="{{ old('perihal', $suratKeluar?->perihal) }}"
-                                        class="form-control"
-                                        required>
-
-                                </div>
+                               {{-- Perihal otomatis mengikuti nama template --}}
+                                <input
+                                    type="hidden"
+                                    name="perihal"
+                                    value="{{ old('perihal', $suratKeluar?->perihal ?: $template->nama_template) }}">
 
 
                                 {{-- Tujuan --}}
